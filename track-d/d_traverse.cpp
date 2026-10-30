@@ -158,7 +158,7 @@ struct Graph {
 // One BFS region: nodes in discovery order and their out-degrees.
 struct Region {
     Array<uint32_t> order, degree;
-    uint32_t len = 0;
+    uint32_t len = 0, expanded = 0;
     uint64_t edges = 0;
 };
 
@@ -177,15 +177,23 @@ public:
 };
 
 static void grow(const Csr& raw, Claims& claims, Region& r) {
-    for (uint32_t head = 0; head < r.len; ++head) {
-        if (head + 16 < r.len) __builtin_prefetch(&raw.off[r.order[head + 16]]);
-        if (head + 8 < r.len) __builtin_prefetch(&raw.adj[raw.off[r.order[head + 8]]]);
-        uint32_t u = r.order[head], b = raw.off[u], e = raw.off[u + 1];
-        r.degree[head] = e - b;
-        r.edges += e - b;
+    uint32_t len = r.len;
+    uint64_t edges = r.edges;
+    uint32_t* order = r.order.p;
+    uint32_t* degree = r.degree.p;
+    uint32_t head = r.expanded;
+    for (; head < len; ++head) {
+        if (head + 16 < len) __builtin_prefetch(&raw.off[order[head + 16]]);
+        if (head + 8 < len) __builtin_prefetch(&raw.adj[raw.off[order[head + 8]]]);
+        uint32_t u = order[head], b = raw.off[u], e = raw.off[u + 1];
+        degree[head] = e - b;
+        edges += e - b;
         for (uint32_t i = b; i < e; ++i)
-            if (claims.take(raw.adj[i].to)) r.order[r.len++] = raw.adj[i].to;
+            if (claims.take(raw.adj[i].to)) order[len++] = raw.adj[i].to;
     }
+    r.len = len;
+    r.expanded = head;
+    r.edges = edges;
 }
 
 // Search ids follow concurrent BFS regions grown from scattered seeds, so graph neighbours stay close in memory.

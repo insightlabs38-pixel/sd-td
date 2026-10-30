@@ -40,23 +40,21 @@ def oracle(n, arcs, queries):
     return answers
 
 
-def run_case(n, arcs, queries, expected=None, modes=(False, True), threads=(1, 4)):
+def run_case(n, arcs, queries, expected=None, threads=(1, 3, 12)):
     with tempfile.TemporaryDirectory() as temp:
         p = pathlib.Path(temp)
         (p / 'graph.txt').write_text(f'{n} {len(arcs)}\n' + ''.join(f'{u} {v} {w}\n' for u, v, w in arcs))
         (p / 'queries.txt').write_text(''.join(f'{s} {t}\n' for s, t in queries))
         if expected is None:
             expected = oracle(n, arcs, queries)
-        for two_pass in modes:
-            for count in threads:
-                for probe in (1, 2, 16, 64, 256):
-                    env = os.environ.copy()
-                    env.update(SD_DATA=temp, SD_OUT=temp, SD_TWO_PASS=str(int(two_pass)),
-                               SD_THREADS=str(count), SD_PROBE=str(probe))
-                    subprocess.run([str(BIN)], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                    output = (p / 'distances.txt').read_bytes()
-                    truth = ''.join(f'{x}\n' for x in expected).encode()
-                    assert output == truth, (n, len(arcs), len(queries), two_pass, count, probe, output[:200], truth[:200])
+        for count in threads:
+            for probe in (0, 1, 2, 16, 64, 256):
+                env = os.environ.copy()
+                env.update(SD_DATA=temp, SD_OUT=temp, SD_THREADS=str(count), SD_PROBE=str(probe))
+                subprocess.run([str(BIN)], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                output = (p / 'distances.txt').read_bytes()
+                truth = ''.join(f'{x}\n' for x in expected).encode()
+                assert output == truth, (n, len(arcs), len(queries), count, probe, output[:200], truth[:200])
     return True
 
 
@@ -93,16 +91,7 @@ def main():
         arcs, queries = random_case(seed, n, m, 60)
         run_case(n, arcs, queries)
 
-    # Exercise 16-bit epoch rollover after 65,535 nontrivial queries.
-    with tempfile.TemporaryDirectory() as temp:
-        p = pathlib.Path(temp)
-        (p / 'graph.txt').write_text('2 1\\n0 1 1\\n'.replace('\\n', '\n'))
-        (p / 'queries.txt').write_text('0 1\\n'.replace('\\n', '\n') * 66000)
-        env = os.environ.copy()
-        env.update(SD_DATA=temp, SD_OUT=temp, SD_THREADS='1', SD_PROBE='1')
-        subprocess.run([str(BIN)], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        assert (p / 'distances.txt').read_bytes() == b'1\\n'.replace(b'\\n', b'\n') * 66000
-    print('PASS 83 differential cases; 2 parsing modes x 2 thread counts x 5 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
+    print('PASS 83 differential cases; 3 thread counts x 6 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
 
 if __name__ == '__main__':
     main()

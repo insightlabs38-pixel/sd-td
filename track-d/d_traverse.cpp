@@ -84,6 +84,8 @@ static Graph read_graph(const std::string& path, bool two_pass, bool bidirection
     } else {
         for (const Triple& e : triples) g.edges[cursor[e.from]++] = {e.to, e.weight};
     }
+    std::vector<Triple>().swap(triples);
+    std::vector<uint32_t>().swap(cursor);
     if (bidirectional) {
         g.reverse_offsets.assign(static_cast<size_t>(n) + 1, 0);
         for (uint32_t i = 0; i < n; ++i) g.reverse_offsets[i + 1] = g.reverse_offsets[i] + g.indegree[i];

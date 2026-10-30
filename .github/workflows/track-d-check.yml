@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
@@ -44,6 +46,25 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+
+      - name: Matched four-way memory tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show 1ef2355c42bff16ce975ce4f4b2add532900d806:track-d/d_traverse.cpp > /tmp/d-baseline.cpp
+          git show a7e249f893b441cacfd16e90b6f7803fc75af56b:track-d/d_traverse.cpp > /tmp/d-epoch16.cpp
+          git show ca89fc8462c1ea4ea614babfe42bdb81ecf1c49a:track-d/d_traverse.cpp > /tmp/d-release.cpp
+          for variant in baseline epoch16 release; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -o "/tmp/d-$variant" "/tmp/d-$variant.cpp"
+          done
+          for pass in 1 2 3 4 5 6 7; do
+            for variant in baseline epoch16 release combo; do
+              bin="/tmp/d-$variant"
+              if [ "$variant" = combo ]; then bin=/tmp/traverse; fi
+              SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -f "MEMTOUR pass=$pass variant=$variant elapsed=%e rss_kib=%M user=%U" "$bin"
+              echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+            done
+          done
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

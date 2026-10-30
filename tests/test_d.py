@@ -92,6 +92,16 @@ def main():
         m = (seed * 119) % (n * 7 + 1)
         arcs, queries = random_case(seed, n, m, 60)
         run_case(n, arcs, queries)
+
+    # Exercise 16-bit epoch rollover after 65,535 nontrivial queries.
+    with tempfile.TemporaryDirectory() as temp:
+        p = pathlib.Path(temp)
+        (p / 'graph.txt').write_text('2 1\\n0 1 1\\n'.replace('\\n', '\n'))
+        (p / 'queries.txt').write_text('0 1\\n'.replace('\\n', '\n') * 66000)
+        env = os.environ.copy()
+        env.update(SD_DATA=temp, SD_OUT=temp, SD_THREADS='1', SD_PROBE='1')
+        subprocess.run([str(BIN)], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        assert (p / 'distances.txt').read_bytes() == b'1\\n'.replace(b'\\n', b'\n') * 66000
     print('PASS 83 differential cases; 2 parsing modes x 2 thread counts x 5 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
 
 if __name__ == '__main__':

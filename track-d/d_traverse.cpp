@@ -166,21 +166,25 @@ struct Worker {
             backward_heap.reserve(16384);
         }
     }
-    int64_t solve_bidirectional(uint32_t s, uint32_t t) {
+    int64_t solve_bidirectional(uint32_t s, uint32_t t, bool reuse_forward = false) {
         if (s == t) return 0;
         if (graph.offsets[s] == graph.offsets[s + 1] || graph.indegree[t] == 0) return -1;
-        if (++epoch == 0) {
-            std::fill(stamp.begin(), stamp.end(), 0);
-            std::fill(backward_stamp.begin(), backward_stamp.end(), 0);
-            epoch = 1;
+        if (!reuse_forward) {
+            if (++epoch == 0) {
+                std::fill(stamp.begin(), stamp.end(), 0);
+                std::fill(backward_stamp.begin(), backward_stamp.end(), 0);
+                epoch = 1;
+            }
+            heap.clear();
+            stamp[s] = epoch;
+            distance[s] = 0;
+            heap.push(0, s);
         }
-        heap.clear();
         backward_heap.clear();
-        stamp[s] = backward_stamp[t] = epoch;
-        distance[s] = backward_distance[t] = 0;
-        heap.push(0, s);
+        backward_stamp[t] = epoch;
+        backward_distance[t] = 0;
         backward_heap.push(0, t);
-        uint64_t best = std::numeric_limits<uint64_t>::max();
+        uint64_t best = stamp[t] == epoch ? distance[t] : std::numeric_limits<uint64_t>::max();
         for (;;) {
             while (!heap.empty()) {
                 const HeapNode& x = heap.top();
@@ -226,6 +230,7 @@ struct Worker {
             if (probe) {
                 int64_t r = solve_forward(s, t, probe);
                 if (r != -2) return r;
+                return solve_bidirectional(s, t, true);
             }
             return solve_bidirectional(s, t);
         }
@@ -234,7 +239,11 @@ struct Worker {
     int64_t solve_forward(uint32_t s, uint32_t t, uint32_t max_settles) {
         if (s == t) return 0;
         if (graph.offsets[s] == graph.offsets[s + 1] || graph.indegree[t] == 0) return -1;
-        if (++epoch == 0) { std::fill(stamp.begin(), stamp.end(), 0); epoch = 1; }
+        if (++epoch == 0) {
+            std::fill(stamp.begin(), stamp.end(), 0);
+            std::fill(backward_stamp.begin(), backward_stamp.end(), 0);
+            epoch = 1;
+        }
         heap.clear();
         stamp[s] = epoch;
         distance[s] = 0;
@@ -246,7 +255,10 @@ struct Worker {
             uint64_t d = top.distance;
             if (stamp[u] != epoch || d != distance[u]) continue;
             if (u == t) return static_cast<int64_t>(d);
-            if (++settled >= max_settles) return -2;
+            if (++settled >= max_settles) {
+                heap.push(d, u); // Restore the unrelaxed vertex for exact continuation.
+                return -2;
+            }
             for (uint32_t i = graph.offsets[u], e = graph.offsets[u + 1]; i < e; ++i) {
                 const Edge& edge = graph.edges[i];
                 uint64_t nd = d + edge.weight;

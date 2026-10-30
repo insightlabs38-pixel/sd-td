@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 3
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git show HEAD^:track-d/d_traverse.cpp > /tmp/baseline-d.cpp
+          git show 41ccb500be132b5bc5b53a9fdb9e6ae53c8dffc9:track-d/d_traverse.cpp > /tmp/baseline-d.cpp
           g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse-baseline /tmp/baseline-d.cpp
           for pass in 1 2 3 4 5; do
             for variant in baseline candidate; do

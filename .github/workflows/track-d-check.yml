@@ -34,6 +34,16 @@ jobs:
             sha256sum "/tmp/out-$scale-$seed/distances.txt"
           done
           echo 'a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/out-sample-1/distances.txt' | sha256sum -c
+      - name: Full seed-1 official hashes and native resource use
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/full-data /tmp/full-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/full-data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/full-data/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
+          SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison
@@ -43,3 +53,6 @@ jobs:
           mkdir -p /tmp/docker-out
           docker run --rm --network none --read-only -e TRACK=d -v /tmp/data-sample-1:/data:ro -v /tmp/docker-out:/out:rw sd-td-check
           cmp /tmp/ref-sample-1/distances.txt /tmp/docker-out/distances.txt
+          mkdir -p /tmp/docker-full-out
+          docker run --rm --network none --read-only --memory 8g -e TRACK=d -v /tmp/full-data:/data:ro -v /tmp/docker-full-out:/out:rw sd-td-check
+          cmp /tmp/full-out/distances.txt /tmp/docker-full-out/distances.txt

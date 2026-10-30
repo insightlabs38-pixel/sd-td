@@ -54,8 +54,19 @@ template <class F> static void blocked(unsigned threads, size_t total, F&& f) {
     parallel(threads, [&](unsigned t) { f(total * t / threads, total * (t + 1) / threads); });
 }
 
-static inline uint32_t number(const char*& p) {
+static inline uint32_t number(const char*& p, const char* end) {
     uint32_t x = 0;
+    if (end - p >= 8) {
+        uint64_t w;
+        memcpy(&w, p, 8);
+        uint64_t stop = (w & 0xF0F0F0F0F0F0F0F0ull) ^ 0x3030303030303030ull; // nonzero byte = separator
+        unsigned digits = stop ? __builtin_ctzll(stop) >> 3 : 8;
+        uint64_t d = (w & 0x0F0F0F0F0F0F0F0Full) << (8 * (8 - digits));
+        d = d * 10 + (d >> 8);
+        d = (((d & 0x000000FF000000FFull) * 0x000F424000000064ull) + (((d >> 16) & 0x000000FF000000FFull) * 0x0000271000000001ull)) >> 32;
+        x = static_cast<uint32_t>(d);
+        p += digits;
+    }
     while (*p >= '0' && *p <= '9') { x = x * 10 + static_cast<uint32_t>(*p - '0'); ++p; }
     ++p; // Official input has one space or LF after every integer.
     return x;
@@ -90,24 +101,73 @@ struct Csr {
     Csr(size_t n, size_t m) : off(n + 1), adj(m) {}
 };
 
-// Exclusive prefix sum of counts stored in off[0..n), leaving off[n] = total; cursor receives a copy.
-static Array<uint32_t> prefix(Csr& g, uint32_t n) {
-    uint32_t sum = 0;
-    for (uint32_t k = 0; k < n; ++k) { uint32_t c = g.off[k]; g.off[k] = sum; sum += c; }
-    g.off[n] = sum;
-    Array<uint32_t> cursor(n);
-    memcpy(cursor.p, g.off.p, n * sizeof(uint32_t));
-    return cursor;
-}
+struct Triple { uint32_t u, v, w; };
 
-static inline uint32_t bump(uint32_t& x) { return __atomic_fetch_add(&x, 1u, __ATOMIC_RELAXED); }
-
-struct Triples {
-    Array<uint32_t> u, v, w;
-    size_t len = 0;
+// One thread's edges partitioned by u >> shift into short chunk runs, so each bucket can later become CSR in cache.
+class Binner {
+    static constexpr uint32_t CHUNK = 256;
+    Array<Triple> pool_;
+    size_t used_ = 0;
+    std::vector<Triple*> fill_, limit_;
+    std::vector<std::vector<std::pair<const Triple*, uint32_t>>> runs_;
+    unsigned shift_;
+    void open_chunk(size_t b) {
+        close(b);
+        fill_[b] = pool_.p + used_;
+        limit_[b] = fill_[b] + CHUNK;
+        used_ += CHUNK;
+    }
+    void close(size_t b) {
+        if (!limit_[b]) return;
+        Triple* start = limit_[b] - CHUNK;
+        if (fill_[b] != start) runs_[b].push_back({start, static_cast<uint32_t>(fill_[b] - start)});
+    }
+public:
+    Binner(unsigned shift, size_t buckets, size_t max_edges)
+        : pool_(max_edges + (buckets + 1) * CHUNK), fill_(buckets, nullptr), limit_(buckets, nullptr), runs_(buckets), shift_(shift) {}
+    void add(uint32_t u, uint32_t v, uint32_t w) {
+        size_t b = u >> shift_;
+        if (fill_[b] == limit_[b]) open_chunk(b);
+        *fill_[b]++ = {u, v, w};
+    }
+    void finish() { for (size_t b = 0; b < runs_.size(); ++b) { close(b); limit_[b] = nullptr; } }
+    const std::vector<std::pair<const Triple*, uint32_t>>& runs(size_t b) const { return runs_[b]; }
 };
 
-static std::vector<Triples> parse_edges(const char* begin, const char* end, unsigned threads) {
+static unsigned bucket_shift(uint32_t n) {
+    unsigned shift = 0;
+    while ((n >> shift) > 256) ++shift;
+    return shift;
+}
+
+// Builds CSR keyed by Triple::u (head Triple::v) from the per-thread bins, one bucket at a time.
+static Csr bins_to_csr(const std::vector<Binner>& bins, uint32_t n, unsigned shift, unsigned threads) {
+    size_t buckets = (static_cast<size_t>(n) + (size_t(1) << shift) - 1) >> shift;
+    std::vector<size_t> base(buckets + 1, 0);
+    for (size_t b = 0; b < buckets; ++b) {
+        base[b + 1] = base[b];
+        for (const Binner& bin : bins) for (auto& run : bin.runs(b)) base[b + 1] += run.second;
+    }
+    Csr g(n, base[buckets]);
+    g.off[n] = static_cast<uint32_t>(base[buckets]);
+    std::atomic<size_t> next{0};
+    parallel(threads, [&](unsigned) {
+        std::vector<uint32_t> cursor(size_t(1) << shift);
+        for (size_t b; (b = next.fetch_add(1)) < buckets;) {
+            size_t lo = b << shift, hi = std::min<size_t>(n, lo + (size_t(1) << shift));
+            std::fill(cursor.begin(), cursor.begin() + (hi - lo), 0);
+            for (const Binner& bin : bins) for (auto& run : bin.runs(b)) for (uint32_t i = 0; i < run.second; ++i) ++cursor[run.first[i].u - lo];
+            uint32_t sum = static_cast<uint32_t>(base[b]);
+            for (size_t k = lo; k < hi; ++k) { uint32_t c = cursor[k - lo]; g.off[k] = cursor[k - lo] = sum; sum += c; }
+            for (const Binner& bin : bins)
+                for (auto& run : bin.runs(b))
+                    for (uint32_t i = 0; i < run.second; ++i) g.adj[cursor[run.first[i].u - lo]++] = {run.first[i].v, run.first[i].w};
+        }
+    });
+    return g;
+}
+
+static std::vector<Binner> parse_edges(const char* begin, const char* end, uint32_t n, unsigned shift, unsigned threads) {
     std::vector<const char*> cut(threads + 1, end);
     cut[0] = begin;
     for (unsigned i = 1; i < threads; ++i) {
@@ -115,38 +175,24 @@ static std::vector<Triples> parse_edges(const char* begin, const char* end, unsi
         q = static_cast<const char*>(memchr(q, '\n', end - q));
         cut[i] = q ? q + 1 : end;
     }
-    std::vector<Triples> parts(threads);
+    size_t buckets = (static_cast<size_t>(n) + (size_t(1) << shift) - 1) >> shift;
+    std::vector<Binner> bins;
+    for (unsigned t = 0; t < threads; ++t) bins.emplace_back(shift, buckets, static_cast<size_t>(cut[t + 1] - cut[t]) / 6 + 1);
     parallel(threads, [&](unsigned t) {
-        Triples& e = parts[t];
-        size_t cap = static_cast<size_t>(cut[t + 1] - cut[t]) / 6 + 1;
-        e.u = Array<uint32_t>(cap); e.v = Array<uint32_t>(cap); e.w = Array<uint32_t>(cap);
+        Binner& bin = bins[t];
         const char* p = cut[t];
         while (p < cut[t + 1]) {
             const char* block = p;
             const char* stop = std::min(cut[t + 1], p + (size_t(2) << 20));
-            for (; p < stop; ++e.len) {
-                e.u[e.len] = number(p);
-                e.v[e.len] = number(p);
-                e.w[e.len] = number(p);
+            while (p < stop) {
+                uint32_t u = number(p, end), v = number(p, end), w = number(p, end);
+                bin.add(u, v, w);
             }
             MappedFile::drop(block, p);
         }
+        bin.finish();
     });
-    return parts;
-}
-
-static Csr build_raw(std::vector<Triples>& parts, uint32_t n, size_t m, unsigned threads) {
-    Csr g(n, m);
-    memset(g.off.p, 0, (n + 1) * sizeof(uint32_t));
-    parallel(threads, [&](unsigned t) {
-        for (size_t i = 0; i < parts[t].len; ++i) bump(g.off[parts[t].u[i]]);
-    });
-    Array<uint32_t> cursor = prefix(g, n);
-    parallel(threads, [&](unsigned t) {
-        const Triples& e = parts[t];
-        for (size_t i = 0; i < e.len; ++i) g.adj[bump(cursor[e.u[i]])] = {e.v[i], e.w[i]};
-    });
-    return g;
+    return bins;
 }
 
 struct Graph {
@@ -247,30 +293,32 @@ static Graph reorder(const Csr& raw, uint32_t n, unsigned threads) {
 }
 
 static void add_reverse(Graph& g, unsigned threads) {
-    uint32_t n = g.n, m = g.fwd.off[n];
-    g.rev = Csr(n, m);
-    memset(g.rev.off.p, 0, (n + 1) * sizeof(uint32_t));
-    blocked(threads, m, [&](size_t lo, size_t hi) { for (size_t i = lo; i < hi; ++i) bump(g.rev.off[g.fwd.adj[i].to]); });
-    Array<uint32_t> cursor = prefix(g.rev, n);
-    blocked(threads, n, [&](size_t lo, size_t hi) {
-        for (size_t u = lo; u < hi; ++u)
-            for (uint32_t i = g.fwd.off[u]; i < g.fwd.off[u + 1]; ++i)
-                g.rev.adj[bump(cursor[g.fwd.adj[i].to])] = {static_cast<uint32_t>(u), g.fwd.adj[i].w};
+    uint32_t n = g.n;
+    unsigned shift = bucket_shift(n);
+    size_t buckets = (static_cast<size_t>(n) + (size_t(1) << shift) - 1) >> shift;
+    auto first = [&](unsigned t) { return static_cast<uint32_t>(uint64_t(n) * t / threads); };
+    std::vector<Binner> bins;
+    for (unsigned t = 0; t < threads; ++t) bins.emplace_back(shift, buckets, g.fwd.off[first(t + 1)] - g.fwd.off[first(t)]);
+    parallel(threads, [&](unsigned t) {
+        for (uint32_t u = first(t); u < first(t + 1); ++u)
+            for (uint32_t i = g.fwd.off[u]; i < g.fwd.off[u + 1]; ++i) bins[t].add(g.fwd.adj[i].to, u, g.fwd.adj[i].w);
+        bins[t].finish();
     });
+    g.rev = bins_to_csr(bins, n, shift, threads);
 }
 
 static Graph read_graph(const std::string& path, unsigned threads) {
     MappedFile file(path);
     const char* p = file.data;
-    uint32_t n = number(p);
-    (void)number(p);
+    const char* end = p + file.size;
+    uint32_t n = number(p, end);
+    (void)number(p, end);
     Graph g;
     {
-        std::vector<Triples> parts = parse_edges(p, file.data + file.size, threads);
-        size_t m = 0;
-        for (const Triples& e : parts) m += e.len;
-        Csr raw = build_raw(parts, n, m, threads);
-        parts.clear();
+        unsigned shift = bucket_shift(n);
+        std::vector<Binner> bins = parse_edges(p, end, n, shift, threads);
+        Csr raw = bins_to_csr(bins, n, shift, threads);
+        bins.clear();
         g = reorder(raw, n, threads);
     }
     add_reverse(g, threads);
@@ -285,7 +333,7 @@ static std::vector<Query> read_queries(const std::string& path, const Graph& g) 
     const char* p = file.data;
     const char* end = p + file.size;
     while (p < end) {
-        uint32_t s = number(p), t = number(p);
+        uint32_t s = number(p, end), t = number(p, end);
         result.push_back({g.perm[s], g.perm[t]});
     }
     return result;

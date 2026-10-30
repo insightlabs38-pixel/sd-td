@@ -73,29 +73,31 @@ static Graph read_graph(const std::string& path, bool two_pass, bool bidirection
     }
     for (uint32_t i = 1; i <= n; ++i) g.offsets[i] += g.offsets[i - 1];
     g.edges.resize(m);
-    std::vector<uint32_t> cursor(g.offsets.begin(), g.offsets.end() - 1);
     if (two_pass) {
         p = begin;
         (void)number(p); (void)number(p);
         for (uint32_t i = 0; i < m; ++i) {
             uint32_t u = number(p), v = number(p), w = number(p);
-            g.edges[cursor[u]++] = {v, w};
+            g.edges[g.offsets[u]++] = {v, w};
         }
     } else {
-        for (const Triple& e : triples) g.edges[cursor[e.from]++] = {e.to, e.weight};
+        for (const Triple& e : triples) g.edges[g.offsets[e.from]++] = {e.to, e.weight};
     }
+    // Scatter advanced each start to its end; shift right to restore CSR starts.
+    for (uint32_t i = n; i > 0; --i) g.offsets[i] = g.offsets[i - 1];
+    g.offsets[0] = 0;
     std::vector<Triple>().swap(triples);
-    std::vector<uint32_t>().swap(cursor);
     if (bidirectional) {
         g.reverse_offsets.assign(static_cast<size_t>(n) + 1, 0);
         for (uint32_t i = 0; i < n; ++i) g.reverse_offsets[i + 1] = g.reverse_offsets[i] + g.indegree[i];
         g.reverse_edges.resize(m);
-        std::vector<uint32_t> rpos(g.reverse_offsets.begin(), g.reverse_offsets.end() - 1);
         for (uint32_t u = 0; u < n; ++u)
             for (uint32_t i = g.offsets[u]; i < g.offsets[u + 1]; ++i) {
                 const Edge& e = g.edges[i];
-                g.reverse_edges[rpos[e.to]++] = {u, e.weight};
+                g.reverse_edges[g.reverse_offsets[e.to]++] = {u, e.weight};
             }
+        for (uint32_t i = n; i > 0; --i) g.reverse_offsets[i] = g.reverse_offsets[i - 1];
+        g.reverse_offsets[0] = 0;
     }
     return g;
 }

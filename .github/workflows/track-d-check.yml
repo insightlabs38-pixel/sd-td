@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
@@ -24,7 +26,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for item in 'tiny 2' 'sample 1' 'sample 2'; do
+          for item in 'tiny 2' 'sample 1' 'sample 2' 'sample 3'; do
             read -r scale seed <<< "$item"
             mkdir -p "/tmp/data-$scale-$seed" "/tmp/ref-$scale-$seed" "/tmp/out-$scale-$seed"
             python /tmp/official/generators/d_traverse.py --seed "$seed" --scale "$scale" --out "/tmp/data-$scale-$seed"
@@ -44,6 +46,25 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Matched full-seed exact-search variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show a7e34fe89f682e533c39d95bcca064bf36ccbf75:track-d/d_traverse.cpp > /tmp/baseline-d.cpp
+          git fetch origin d/radix-nonempty-mask
+          git show cd22d8c585f47ff8d2721da51680263c29213f0a:track-d/d_traverse.cpp > /tmp/mask-d.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse-baseline /tmp/baseline-d.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse-mask /tmp/mask-d.cpp
+          SD_TEST_BINARY=/tmp/traverse-mask python tests/test_d.py
+          for pass in 1 2 3 4 5; do
+            for variant in baseline reuse mask; do
+              bin=/tmp/traverse
+              if [ "$variant" = baseline ]; then bin=/tmp/traverse-baseline; fi
+              if [ "$variant" = mask ]; then bin=/tmp/traverse-mask; fi
+              SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -f "EXPERIMENT pass=$pass variant=$variant elapsed=%e rss_kib=%M user=%U" "$bin"
+              echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+            done
+          done
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

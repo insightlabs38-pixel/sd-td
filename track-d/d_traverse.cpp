@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cstdint>
 #include <cstdio>
@@ -110,38 +111,41 @@ static std::vector<Query> read_queries(const std::string& path) {
 }
 
 struct HeapNode { uint64_t distance; uint32_t node; };
-#ifndef HEAP_ARITY
-#define HEAP_ARITY 4
-#endif
 struct Heap {
-    std::vector<HeapNode> a;
-    inline void push(uint64_t d, uint32_t u) {
-        size_t i = a.size();
-        a.push_back({d, u});
-        while (i) {
-            size_t parent = (i - 1) / HEAP_ARITY;
-            if (a[parent].distance <= d) break;
-            a[i] = a[parent];
-            i = parent;
-        }
-        a[i] = {d, u};
+    std::array<std::vector<HeapNode>, 65> buckets;
+    uint64_t last = 0;
+    size_t count = 0;
+    inline static unsigned index(uint64_t x) { return x ? 64 - __builtin_clzll(x) : 0; }
+    void reserve(size_t) {}
+    void clear() {
+        for (auto& b : buckets) b.clear();
+        last = 0;
+        count = 0;
     }
-    inline HeapNode pop() {
-        HeapNode root = a[0], last = a.back();
-        a.pop_back();
-        if (a.empty()) return root;
-        size_t i = 0, n = a.size();
-        while (HEAP_ARITY * i + 1 < n) {
-            size_t child = HEAP_ARITY * i + 1;
-            size_t end = std::min(child + HEAP_ARITY, n);
-            for (size_t j = child + 1; j < end; ++j)
-                if (a[j].distance < a[child].distance) child = j;
-            if (last.distance <= a[child].distance) break;
-            a[i] = a[child];
-            i = child;
-        }
-        a[i] = last;
-        return root;
+    bool empty() const { return count == 0; }
+    void push(uint64_t d, uint32_t v) {
+        buckets[index(d ^ last)].push_back({d, v});
+        ++count;
+    }
+    void prepare() {
+        if (!buckets[0].empty()) return;
+        unsigned i = 1;
+        while (i < 65 && buckets[i].empty()) ++i;
+        if (i == 65) std::abort();
+        uint64_t minimum = std::numeric_limits<uint64_t>::max();
+        for (const auto& e : buckets[i]) minimum = std::min(minimum, e.distance);
+        last = minimum;
+        std::vector<HeapNode> moved;
+        moved.swap(buckets[i]);
+        for (const auto& e : moved) buckets[index(e.distance ^ last)].push_back(e);
+    }
+    const HeapNode& top() { prepare(); return buckets[0].back(); }
+    HeapNode pop() {
+        prepare();
+        HeapNode e = buckets[0].back();
+        buckets[0].pop_back();
+        --count;
+        return e;
     }
 };
 
@@ -156,11 +160,11 @@ struct Worker {
     std::vector<uint64_t> backward_distance;
     std::vector<uint32_t> backward_stamp;
     explicit Worker(const Graph& g, uint32_t p) : graph(g), distance(g.n), stamp(g.n, 0), probe(p) {
-        heap.a.reserve(16384);
+        heap.reserve(16384);
         if (!graph.reverse_edges.empty()) {
             backward_distance.resize(g.n);
             backward_stamp.resize(g.n, 0);
-            backward_heap.a.reserve(16384);
+            backward_heap.reserve(16384);
         }
     }
     int64_t solve_bidirectional(uint32_t s, uint32_t t) {
@@ -171,26 +175,26 @@ struct Worker {
             std::fill(backward_stamp.begin(), backward_stamp.end(), 0);
             epoch = 1;
         }
-        heap.a.clear();
-        backward_heap.a.clear();
+        heap.clear();
+        backward_heap.clear();
         stamp[s] = backward_stamp[t] = epoch;
         distance[s] = backward_distance[t] = 0;
         heap.push(0, s);
         backward_heap.push(0, t);
         uint64_t best = std::numeric_limits<uint64_t>::max();
         for (;;) {
-            while (!heap.a.empty()) {
-                const HeapNode& x = heap.a[0];
+            while (!heap.empty()) {
+                const HeapNode& x = heap.top();
                 if (stamp[x.node] == epoch && distance[x.node] == x.distance) break;
                 heap.pop();
             }
-            while (!backward_heap.a.empty()) {
-                const HeapNode& x = backward_heap.a[0];
+            while (!backward_heap.empty()) {
+                const HeapNode& x = backward_heap.top();
                 if (backward_stamp[x.node] == epoch && backward_distance[x.node] == x.distance) break;
                 backward_heap.pop();
             }
-            if (heap.a.empty() || backward_heap.a.empty()) break;
-            uint64_t f = heap.a[0].distance, b = backward_heap.a[0].distance;
+            if (heap.empty() || backward_heap.empty()) break;
+            uint64_t f = heap.top().distance, b = backward_heap.top().distance;
             if (f + b >= best) break;
             bool forward = f <= b;
             Heap& pq = forward ? heap : backward_heap;
@@ -232,12 +236,12 @@ struct Worker {
         if (s == t) return 0;
         if (graph.offsets[s] == graph.offsets[s + 1] || graph.indegree[t] == 0) return -1;
         if (++epoch == 0) { std::fill(stamp.begin(), stamp.end(), 0); epoch = 1; }
-        heap.a.clear();
+        heap.clear();
         stamp[s] = epoch;
         distance[s] = 0;
         heap.push(0, s);
         uint32_t settled = 0;
-        while (!heap.a.empty()) {
+        while (!heap.empty()) {
             HeapNode top = heap.pop();
             uint32_t u = top.node;
             uint64_t d = top.distance;

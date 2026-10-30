@@ -49,12 +49,14 @@ def run_case(n, arcs, queries, expected=None, modes=(False, True), threads=(1, 4
             expected = oracle(n, arcs, queries)
         for two_pass in modes:
             for count in threads:
-                env = os.environ.copy()
-                env.update(SD_DATA=temp, SD_OUT=temp, SD_TWO_PASS=str(int(two_pass)), SD_THREADS=str(count))
-                subprocess.run([str(BIN)], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                output = (p / 'distances.txt').read_bytes()
-                truth = ''.join(f'{x}\n' for x in expected).encode()
-                assert output == truth, (n, len(arcs), len(queries), two_pass, count, output[:200], truth[:200])
+                for probe in (1, 2, 16, 64, 256):
+                    env = os.environ.copy()
+                    env.update(SD_DATA=temp, SD_OUT=temp, SD_TWO_PASS=str(int(two_pass)),
+                               SD_THREADS=str(count), SD_PROBE=str(probe))
+                    subprocess.run([str(BIN)], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    output = (p / 'distances.txt').read_bytes()
+                    truth = ''.join(f'{x}\n' for x in expected).encode()
+                    assert output == truth, (n, len(arcs), len(queries), two_pass, count, probe, output[:200], truth[:200])
     return True
 
 
@@ -90,7 +92,7 @@ def main():
         m = (seed * 119) % (n * 7 + 1)
         arcs, queries = random_case(seed, n, m, 60)
         run_case(n, arcs, queries)
-    print('PASS 83 differential cases; 2 parsing modes x 2 thread counts, elapsed %.2fs' % (time.monotonic() - t0))
+    print('PASS 83 differential cases; 2 parsing modes x 2 thread counts x 5 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
 
 if __name__ == '__main__':
     main()

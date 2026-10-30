@@ -116,29 +116,37 @@ struct HeapNode { uint64_t distance; uint32_t node; };
 struct Heap {
     std::array<std::vector<HeapNode>, 65> buckets;
     uint64_t last = 0;
+    uint64_t nonempty = 0; // Bit i-1 tracks occupied bucket i, for i in [1, 64].
     size_t count = 0;
     inline static unsigned index(uint64_t x) { return x ? 64 - __builtin_clzll(x) : 0; }
     void reserve(size_t) {}
     void clear() {
         for (auto& b : buckets) b.clear();
         last = 0;
+        nonempty = 0;
         count = 0;
     }
     bool empty() const { return count == 0; }
     void push(uint64_t d, uint32_t v) {
-        buckets[index(d ^ last)].push_back({d, v});
+        unsigned i = index(d ^ last);
+        buckets[i].push_back({d, v});
+        if (i) nonempty |= uint64_t{1} << (i - 1);
         ++count;
     }
     void prepare() {
         if (!buckets[0].empty()) return;
-        unsigned i = 1;
-        while (i < 65 && buckets[i].empty()) ++i;
-        if (i == 65) std::abort();
+        if (!nonempty) std::abort();
+        unsigned i = 1 + __builtin_ctzll(nonempty);
         uint64_t minimum = std::numeric_limits<uint64_t>::max();
         for (const auto& e : buckets[i]) minimum = std::min(minimum, e.distance);
         last = minimum;
-        for (const auto& e : buckets[i]) buckets[index(e.distance ^ last)].push_back(e);
+        for (const auto& e : buckets[i]) {
+            unsigned j = index(e.distance ^ last);
+            buckets[j].push_back(e);
+            if (j) nonempty |= uint64_t{1} << (j - 1);
+        }
         buckets[i].clear();
+        nonempty &= ~(uint64_t{1} << (i - 1));
     }
     const HeapNode& top() { prepare(); return buckets[0].back(); }
     HeapNode pop() {

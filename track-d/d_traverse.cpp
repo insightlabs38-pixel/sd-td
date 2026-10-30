@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
+#include <unordered_map>
 #include <string>
 #include <thread>
 #include <utility>
@@ -148,15 +149,38 @@ struct Heap {
     }
 };
 
+struct DistStore {
+    std::vector<uint32_t> low;
+    std::unordered_map<uint32_t, uint64_t> large;
+    DistStore() = default;
+    explicit DistStore(size_t n) : low(n) {}
+    void resize(size_t n) { low.resize(n); }
+    void clear() { large.clear(); }
+    uint64_t get(uint32_t v) const {
+        uint32_t x = low[v];
+        if (x != UINT32_MAX) return x;
+        auto it = large.find(v);
+        if (it == large.end()) std::abort();
+        return it->second;
+    }
+    void set(uint32_t v, uint64_t d) {
+        if (d < UINT32_MAX) low[v] = static_cast<uint32_t>(d);
+        else {
+            low[v] = UINT32_MAX;
+            large[v] = d;
+        }
+    }
+};
+
 struct Worker {
     const Graph& graph;
-    std::vector<uint64_t> distance;
+    DistStore distance;
     std::vector<uint32_t> stamp;
     uint32_t epoch = 0;
     uint32_t probe = 0;
     Heap heap;
     Heap backward_heap;
-    std::vector<uint64_t> backward_distance;
+    DistStore backward_distance;
     std::vector<uint32_t> backward_stamp;
     explicit Worker(const Graph& g, uint32_t p) : graph(g), distance(g.n), stamp(g.n, 0), probe(p) {
         heap.reserve(16384);
@@ -175,25 +199,27 @@ struct Worker {
                 std::fill(backward_stamp.begin(), backward_stamp.end(), 0);
                 epoch = 1;
             }
+            distance.clear();
             heap.clear();
             stamp[s] = epoch;
-            distance[s] = 0;
+            distance.set(s, 0);
             heap.push(0, s);
         }
+        backward_distance.clear();
         backward_heap.clear();
         backward_stamp[t] = epoch;
-        backward_distance[t] = 0;
+        backward_distance.set(t, 0);
         backward_heap.push(0, t);
-        uint64_t best = stamp[t] == epoch ? distance[t] : std::numeric_limits<uint64_t>::max();
+        uint64_t best = stamp[t] == epoch ? distance.get(t) : std::numeric_limits<uint64_t>::max();
         for (;;) {
             while (!heap.empty()) {
                 const HeapNode& x = heap.top();
-                if (stamp[x.node] == epoch && distance[x.node] == x.distance) break;
+                if (stamp[x.node] == epoch && distance.get(x.node) == x.distance) break;
                 heap.pop();
             }
             while (!backward_heap.empty()) {
                 const HeapNode& x = backward_heap.top();
-                if (backward_stamp[x.node] == epoch && backward_distance[x.node] == x.distance) break;
+                if (backward_stamp[x.node] == epoch && backward_distance.get(x.node) == x.distance) break;
                 backward_heap.pop();
             }
             if (heap.empty() || backward_heap.empty()) break;
@@ -201,25 +227,25 @@ struct Worker {
             if (f + b >= best) break;
             bool forward = f <= b;
             Heap& pq = forward ? heap : backward_heap;
-            std::vector<uint64_t>& dist = forward ? distance : backward_distance;
+            DistStore& dist = forward ? distance : backward_distance;
             std::vector<uint32_t>& seen = forward ? stamp : backward_stamp;
-            const std::vector<uint64_t>& other_dist = forward ? backward_distance : distance;
+            const DistStore& other_dist = forward ? backward_distance : distance;
             const std::vector<uint32_t>& other_seen = forward ? backward_stamp : stamp;
             const std::vector<uint32_t>& off = forward ? graph.offsets : graph.reverse_offsets;
             const std::vector<Edge>& edges = forward ? graph.edges : graph.reverse_edges;
             HeapNode top = pq.pop();
             uint32_t u = top.node;
             uint64_t d = top.distance;
-            if (other_seen[u] == epoch) best = std::min(best, d + other_dist[u]);
+            if (other_seen[u] == epoch) best = std::min(best, d + other_dist.get(u));
             for (uint32_t i = off[u], e = off[u + 1]; i < e; ++i) {
                 const Edge& edge = edges[i];
                 uint32_t v = edge.to;
                 uint64_t nd = d + edge.weight;
-                if (seen[v] != epoch || nd < dist[v]) {
+                if (seen[v] != epoch || nd < dist.get(v)) {
                     seen[v] = epoch;
-                    dist[v] = nd;
+                    dist.set(v, nd);
                     pq.push(nd, v);
-                    if (other_seen[v] == epoch) best = std::min(best, nd + other_dist[v]);
+                    if (other_seen[v] == epoch) best = std::min(best, nd + other_dist.get(v));
                 }
             }
         }
@@ -244,16 +270,17 @@ struct Worker {
             std::fill(backward_stamp.begin(), backward_stamp.end(), 0);
             epoch = 1;
         }
+        distance.clear();
         heap.clear();
         stamp[s] = epoch;
-        distance[s] = 0;
+        distance.set(s, 0);
         heap.push(0, s);
         uint32_t settled = 0;
         while (!heap.empty()) {
             HeapNode top = heap.pop();
             uint32_t u = top.node;
             uint64_t d = top.distance;
-            if (stamp[u] != epoch || d != distance[u]) continue;
+            if (stamp[u] != epoch || d != distance.get(u)) continue;
             if (u == t) return static_cast<int64_t>(d);
             if (++settled >= max_settles) {
                 heap.push(d, u); // Restore the unrelaxed vertex for exact continuation.
@@ -263,9 +290,9 @@ struct Worker {
                 const Edge& edge = graph.edges[i];
                 uint64_t nd = d + edge.weight;
                 uint32_t v = edge.to;
-                if (stamp[v] != epoch || nd < distance[v]) {
+                if (stamp[v] != epoch || nd < distance.get(v)) {
                     stamp[v] = epoch;
-                    distance[v] = nd;
+                    distance.set(v, nd);
                     heap.push(nd, v);
                 }
             }

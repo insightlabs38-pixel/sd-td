@@ -292,38 +292,56 @@ static std::vector<Query> read_queries(const std::string& path, const Graph& g) 
 }
 
 struct HeapNode { uint64_t distance; uint32_t node; };
+// Monotone queue: keys within B of the minimum sit in exact-key buckets, larger jumps in a binary heap.
 struct Heap {
-    std::array<std::vector<HeapNode>, 65> buckets;
-    uint64_t last = 0;
-    size_t count = 0;
-    inline static unsigned index(uint64_t x) { return x ? 64 - __builtin_clzll(x) : 0; }
+    static constexpr unsigned B = 4096;
+    std::array<std::vector<uint32_t>, B> bucket;
+    std::array<uint64_t, B / 64> occupied{};
+    std::vector<HeapNode> far;
+    uint64_t cur = 0;
+    size_t near = 0;
+    bool from_far = false;
+    static bool later(const HeapNode& a, const HeapNode& b) { return a.distance > b.distance; }
     void clear() {
-        for (auto& b : buckets) b.clear();
-        last = 0;
-        count = 0;
+        for (size_t w = 0; w < occupied.size(); ++w)
+            for (uint64_t bits = occupied[w]; bits; bits &= bits - 1) bucket[w * 64 + __builtin_ctzll(bits)].clear();
+        occupied.fill(0);
+        far.clear();
+        cur = 0;
+        near = 0;
     }
-    bool empty() const { return count == 0; }
+    bool empty() const { return near == 0 && far.empty(); }
     void push(uint64_t d, uint32_t v) {
-        buckets[index(d ^ last)].push_back({d, v});
-        ++count;
+        if (d - cur >= B) { far.push_back({d, v}); std::push_heap(far.begin(), far.end(), later); return; }
+        unsigned b = d & (B - 1);
+        bucket[b].push_back(v);
+        occupied[b >> 6] |= 1ull << (b & 63);
+        ++near;
     }
-    void prepare() {
-        if (!buckets[0].empty()) return;
-        unsigned i = 1;
-        while (buckets[i].empty()) ++i;
-        uint64_t minimum = INF;
-        for (const auto& e : buckets[i]) minimum = std::min(minimum, e.distance);
-        last = minimum;
-        for (const auto& e : buckets[i]) buckets[index(e.distance ^ last)].push_back(e);
-        buckets[i].clear();
+    HeapNode top() {
+        if (near) {
+            unsigned b = cur & (B - 1), w = b >> 6;
+            uint64_t bits = occupied[w] & (~0ull << (b & 63));
+            while (!bits) { w = (w + 1) & (B / 64 - 1); bits = occupied[w]; }
+            unsigned idx = (w << 6) | __builtin_ctzll(bits);
+            uint64_t key = cur + ((idx - b) & (B - 1));
+            if (far.empty() || far.front().distance > key) { cur = key; from_far = false; return {key, bucket[idx].back()}; }
+        }
+        from_far = true;
+        return far.front();
     }
-    HeapNode top() { prepare(); return buckets[0].back(); }
-    HeapNode pop() {
-        prepare();
-        HeapNode e = buckets[0].back();
-        buckets[0].pop_back();
-        --count;
-        return e;
+    // Removes the entry returned by the preceding top().
+    void drop(const HeapNode& t) {
+        if (from_far) {
+            std::pop_heap(far.begin(), far.end(), later);
+            far.pop_back();
+            if (near == 0) cur = t.distance;
+            return;
+        }
+        unsigned b = t.distance & (B - 1);
+        bucket[b].pop_back();
+        if (bucket[b].empty()) occupied[b >> 6] &= ~(1ull << (b & 63));
+        --near;
     }
 };
 
@@ -363,13 +381,20 @@ struct Side {
     Heap heap;
     Side(const Csr& c, uint32_t n) : csr(c), dist(n) {}
     void start(uint32_t s) { dist.reset(); heap.clear(); dist.set(s, 0); heap.push(0, s); }
-    void skip_stale() { while (!heap.empty() && dist.get(heap.top().node) != heap.top().distance) heap.pop(); }
+    // Drops outdated entries and returns the live minimum (heap must be nonempty on entry to the loop).
+    bool live_top(HeapNode& t) {
+        while (!heap.empty()) {
+            t = heap.top();
+            if (dist.get(t.node) == t.distance) return true;
+            heap.drop(t);
+        }
+        return false;
+    }
     // Settles the next vertex and relaxes its edges; `best` improves wherever the opposite search has a label.
-    void step(const Side& other, uint64_t& best) {
-        HeapNode top = heap.pop();
+    void step(const Side& other, HeapNode top, uint64_t& best) {
         uint32_t u = top.node;
         uint64_t d = top.distance;
-        best = std::min(best, d + other.dist.get(u));
+        heap.drop(top);
         for (uint32_t i = csr.off[u], e = csr.off[u + 1]; i < e; ++i) {
             uint32_t v = csr.adj[i].to;
             uint64_t nd = d + csr.adj[i].w;
@@ -393,21 +418,16 @@ struct Worker {
         bwd.dist.reset();
         fwd.start(s);
         uint64_t best = INF;
+        HeapNode ft, bt;
         for (uint32_t settled = 0; settled < probe; ++settled) {
-            fwd.skip_stale();
-            if (fwd.heap.empty()) return -1;
-            if (fwd.heap.top().node == t) return static_cast<int64_t>(fwd.heap.top().distance);
-            fwd.step(bwd, best);
+            if (!fwd.live_top(ft)) return -1;
+            if (ft.node == t) return static_cast<int64_t>(ft.distance);
+            fwd.step(bwd, ft, best);
         }
         bwd.start(t);
         best = std::min(best, fwd.dist.get(t));
-        for (;;) {
-            fwd.skip_stale();
-            bwd.skip_stale();
-            if (fwd.heap.empty() || bwd.heap.empty()) break;
-            uint64_t f = fwd.heap.top().distance, b = bwd.heap.top().distance;
-            if (f + b >= best) break;
-            if (f <= b) fwd.step(bwd, best); else bwd.step(fwd, best);
+        while (fwd.live_top(ft) && bwd.live_top(bt) && ft.distance + bt.distance < best) {
+            if (ft.distance <= bt.distance) fwd.step(bwd, ft, best); else bwd.step(fwd, bt, best);
         }
         return best == INF ? -1 : static_cast<int64_t>(best);
     }

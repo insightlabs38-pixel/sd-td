@@ -103,7 +103,7 @@ def main():
         env.update(SD_DATA=temp, SD_OUT=temp, SD_THREADS='1', SD_PROBE='1')
         subprocess.run([str(BIN)], env=env, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         assert (p / 'distances.txt').read_bytes() == b'1\\n'.replace(b'\\n', b'\n') * 66000
-    print('PASS 83 differential cases; 2 parsing modes x 2 thread counts x 5 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
+    print('PASS 84 differential cases; 2 parsing modes x 2 thread counts x 5 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
 
 if __name__ == '__main__':
     main()

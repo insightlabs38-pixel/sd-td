@@ -62,7 +62,7 @@ static Graph read_graph(const std::string& path, bool two_pass, bool bidirection
     Graph g;
     g.n = n;
     g.offsets.assign(static_cast<size_t>(n) + 1, 0);
-    g.indegree.assign(n, 0);
+    g.indegree.assign(static_cast<size_t>(n) + 1, 0); // Reserve the sentinel for in-place reverse CSR.
     std::vector<Triple> triples;
     if (!two_pass) triples.reserve(m);
     for (uint32_t i = 0; i < m; ++i) {
@@ -87,8 +87,14 @@ static Graph read_graph(const std::string& path, bool two_pass, bool bidirection
     std::vector<Triple>().swap(triples);
     std::vector<uint32_t>().swap(cursor);
     if (bidirectional) {
-        g.reverse_offsets.assign(static_cast<size_t>(n) + 1, 0);
-        for (uint32_t i = 0; i < n; ++i) g.reverse_offsets[i + 1] = g.reverse_offsets[i] + g.indegree[i];
+        g.reverse_offsets = std::move(g.indegree);
+        uint32_t prefix = 0;
+        for (uint32_t i = 0; i < n; ++i) {
+            uint32_t degree = g.reverse_offsets[i];
+            g.reverse_offsets[i] = prefix;
+            prefix += degree;
+        }
+        g.reverse_offsets[n] = prefix;
         g.reverse_edges.resize(m);
         std::vector<uint32_t> rpos(g.reverse_offsets.begin(), g.reverse_offsets.end() - 1);
         for (uint32_t u = 0; u < n; ++u)
@@ -96,7 +102,6 @@ static Graph read_graph(const std::string& path, bool two_pass, bool bidirection
                 const Edge& e = g.edges[i];
                 g.reverse_edges[rpos[e.to]++] = {u, e.weight};
             }
-        std::vector<uint32_t>().swap(g.indegree); // Reverse offsets also encode in-degree.
     }
     return g;
 }

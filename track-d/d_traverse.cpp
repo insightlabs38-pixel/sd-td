@@ -96,6 +96,7 @@ static Graph read_graph(const std::string& path, bool two_pass, bool bidirection
                 const Edge& e = g.edges[i];
                 g.reverse_edges[rpos[e.to]++] = {u, e.weight};
             }
+        std::vector<uint32_t>().swap(g.indegree); // Reverse offsets also encode in-degree.
     }
     return g;
 }
@@ -170,7 +171,7 @@ struct Worker {
     }
     int64_t solve_bidirectional(uint32_t s, uint32_t t, bool reuse_forward = false) {
         if (s == t) return 0;
-        if (graph.offsets[s] == graph.offsets[s + 1] || graph.indegree[t] == 0) return -1;
+        if (graph.offsets[s] == graph.offsets[s + 1] || graph.reverse_offsets[t] == graph.reverse_offsets[t + 1]) return -1;
         if (!reuse_forward) {
             if (++epoch == 0) {
                 std::fill(stamp.begin(), stamp.end(), 0);
@@ -240,7 +241,7 @@ struct Worker {
     }
     int64_t solve_forward(uint32_t s, uint32_t t, uint32_t max_settles) {
         if (s == t) return 0;
-        if (graph.offsets[s] == graph.offsets[s + 1] || graph.indegree[t] == 0) return -1;
+        if (graph.offsets[s] == graph.offsets[s + 1] || (graph.reverse_edges.empty() ? graph.indegree[t] == 0 : graph.reverse_offsets[t] == graph.reverse_offsets[t + 1])) return -1;
         if (++epoch == 0) {
             std::fill(stamp.begin(), stamp.end(), 0);
             std::fill(backward_stamp.begin(), backward_stamp.end(), 0);

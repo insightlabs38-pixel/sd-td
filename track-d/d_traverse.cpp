@@ -84,6 +84,8 @@ static Graph read_graph(const std::string& path, bool two_pass, bool bidirection
     } else {
         for (const Triple& e : triples) g.edges[cursor[e.from]++] = {e.to, e.weight};
     }
+    std::vector<Triple>().swap(triples);
+    std::vector<uint32_t>().swap(cursor);
     if (bidirectional) {
         g.reverse_offsets.assign(static_cast<size_t>(n) + 1, 0);
         for (uint32_t i = 0; i < n; ++i) g.reverse_offsets[i + 1] = g.reverse_offsets[i] + g.indegree[i];
@@ -151,13 +153,13 @@ struct Heap {
 struct Worker {
     const Graph& graph;
     std::vector<uint64_t> distance;
-    std::vector<uint32_t> stamp;
-    uint32_t epoch = 0;
+    std::vector<uint16_t> stamp;
+    uint16_t epoch = 0;
     uint32_t probe = 0;
     Heap heap;
     Heap backward_heap;
     std::vector<uint64_t> backward_distance;
-    std::vector<uint32_t> backward_stamp;
+    std::vector<uint16_t> backward_stamp;
     explicit Worker(const Graph& g, uint32_t p) : graph(g), distance(g.n), stamp(g.n, 0), probe(p) {
         heap.reserve(16384);
         if (!graph.reverse_edges.empty()) {
@@ -202,9 +204,9 @@ struct Worker {
             bool forward = f <= b;
             Heap& pq = forward ? heap : backward_heap;
             std::vector<uint64_t>& dist = forward ? distance : backward_distance;
-            std::vector<uint32_t>& seen = forward ? stamp : backward_stamp;
+            std::vector<uint16_t>& seen = forward ? stamp : backward_stamp;
             const std::vector<uint64_t>& other_dist = forward ? backward_distance : distance;
-            const std::vector<uint32_t>& other_seen = forward ? backward_stamp : stamp;
+            const std::vector<uint16_t>& other_seen = forward ? backward_stamp : stamp;
             const std::vector<uint32_t>& off = forward ? graph.offsets : graph.reverse_offsets;
             const std::vector<Edge>& edges = forward ? graph.edges : graph.reverse_edges;
             HeapNode top = pq.pop();

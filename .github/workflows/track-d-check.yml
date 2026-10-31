@@ -56,3 +56,12 @@ jobs:
           mkdir -p /tmp/docker-full-out
           docker run --rm --network none --read-only --memory 8g -e TRACK=d -v /tmp/full-data:/data:ro -v /tmp/docker-full-out:/out:rw sd-td-check
           cmp /tmp/full-out/distances.txt /tmp/docker-full-out/distances.txt
+      - name: Docker worker-count matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          for t in 1 4 12; do
+            mkdir -p "/tmp/docker-t$t"
+            docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
+            cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
+          done

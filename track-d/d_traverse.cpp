@@ -103,18 +103,19 @@ struct Packed {
     Array<uint32_t> off, adj;
     std::vector<std::pair<uint32_t, uint64_t>> escapes;
     unsigned wbits = 0;
-    uint32_t mask = 0;
+    uint32_t mask = 0, dead = 0; // `dead` is a head one past the last id: an edge that leads nowhere
     Packed() = default;
     Packed(uint32_t n, size_t m) : off(size_t(n) + 1), adj(m) {
         wbits = 32 - id_bits(uint64_t(n) + 1); // room for one past the last id, used as a marker
         mask = (uint32_t(1) << wbits) - 1;
+        dead = n << wbits;
     }
     uint32_t pack(uint32_t head, uint64_t w) const { return head << wbits | static_cast<uint32_t>(std::min<uint64_t>(w, mask)); }
     uint32_t head(uint32_t e) const { return e >> wbits; }
+    uint64_t escape(uint32_t i) const { return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint64_t(0)))->second; }
     uint64_t weight(uint32_t i) const {
         uint32_t w = adj[i] & mask;
-        if (w != mask) return w;
-        return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint64_t(0)))->second;
+        return w != mask ? w : escape(i);
     }
 };
 
@@ -226,69 +227,67 @@ struct Graph {
     Array<uint32_t> perm; // original id -> search id
 };
 
-// Raw edges after bypass resolution, indexed like raw.adj: a vertex with out-degree <= 2 that is not a query endpoint
-// is skipped while exactly one way leads on, so only the surviving heads remain; `dead` marks edges that lead nowhere.
-struct Resolved {
-    Array<uint32_t> adj;
-    std::vector<std::pair<uint32_t, uint64_t>> escapes;
-    uint32_t dead = 0;
-    uint64_t weight(uint32_t i) const { return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint64_t(0)))->second; }
-};
-
 // A raw edge whose walk through bypassable vertices is still going.
 struct Walk { uint32_t edge, root, prev, at; uint64_t weight; unsigned steps; };
 
-// Blocks of vertices are resolved together and their walks advance one hop per round, so the cache misses overlap.
+constexpr size_t BLOCK = 512;
 using Bits = std::vector<uint64_t>;
 static bool test(const Bits& bits, uint32_t v) { return bits[v >> 6] >> (v & 63) & 1; }
 
-static Resolved resolve_edges(const Packed& raw, uint32_t n, const Bits& bypass, unsigned threads) {
-    Resolved res;
-    res.adj = Array<uint32_t>(raw.off[n]);
-    res.dead = raw.pack(n, 0);
-    Array<uint64_t> ways(n); // the (at most two) edge words of every bypassable vertex, so a hop touches one line
+// Rewrites raw edges in place. A vertex with out-degree <= 2 that is not a query endpoint is skipped while exactly one
+// way leads on, so only surviving heads remain; `dead` edges lead nowhere. Walks of a block advance one hop per round,
+// so their cache misses overlap, and read only a snapshot of the bypassable vertices' edges.
+static void bypass_edges(Packed& raw, uint32_t n, const Bits& bypass, unsigned threads) {
+    Array<uint64_t> ways(n);
     blocked(threads, n, [&](size_t lo, size_t hi) {
         for (size_t x = lo; x < hi; ++x)
             if (test(bypass, x)) {
                 uint32_t b = raw.off[x], e = raw.off[x + 1];
-                ways[x] = (e > b ? raw.adj[b] : res.dead) | (uint64_t(e > b + 1 ? raw.adj[b + 1] : res.dead) << 32);
+                ways[x] = (e > b ? raw.adj[b] : raw.dead) | (uint64_t(e > b + 1 ? raw.adj[b + 1] : raw.dead) << 32);
             }
     });
-    std::vector<std::vector<std::pair<uint32_t, uint64_t>>> escapes(threads);
+    std::vector<std::vector<std::pair<uint32_t, uint64_t>>> fresh(threads);
+    std::vector<std::vector<uint32_t>> stale(threads);
     parallel(threads, [&](unsigned t) {
         std::vector<Walk> walks, onward;
-        auto& esc = escapes[t];
+        std::vector<uint32_t> starts;
         auto finish = [&](uint32_t edge, uint32_t head, uint64_t w) {
-            res.adj[edge] = raw.pack(head, w);
-            if (w >= raw.mask) esc.push_back({edge, w});
+            raw.adj[edge] = raw.pack(head, w);
+            if (w >= raw.mask) fresh[t].push_back({edge, w});
         };
         size_t lo = size_t(n) * t / threads, hi = size_t(n) * (t + 1) / threads;
-        for (size_t block = lo; block < hi; block += 64) {
+        for (size_t block = lo; block < hi; block += BLOCK) {
+            size_t top = std::min(hi, block + BLOCK);
+            uint32_t first = raw.off[block], last = raw.off[top];
+            starts.resize(last - first);
+            size_t count = 0;
+            for (uint32_t i = first; i < last; ++i) {
+                starts[count] = i;
+                count += test(bypass, raw.head(raw.adj[i]));
+            }
             walks.clear();
-            for (uint32_t u = block; u < std::min(hi, block + 64); ++u)
-                for (uint32_t i = raw.off[u]; i < raw.off[u + 1]; ++i) {
-                    uint32_t y = raw.head(raw.adj[i]);
-                    if (y == u) res.adj[i] = res.dead;
-                    else if (test(bypass, y)) walks.push_back({i, u, u, y, raw.weight(i), 0});
-                    else {
-                        res.adj[i] = raw.adj[i];
-                        if ((raw.adj[i] & raw.mask) == raw.mask) esc.push_back({i, raw.weight(i)});
-                    }
-                }
+            uint32_t u = block;
+            for (size_t k = 0; k < count; ++k) {
+                uint32_t i = starts[k], y = raw.head(raw.adj[i]);
+                while (raw.off[u + 1] <= i) ++u;
+                if ((raw.adj[i] & raw.mask) == raw.mask) stale[t].push_back(i);
+                if (y == u) raw.adj[i] = raw.dead;
+                else walks.push_back({i, u, u, y, raw.weight(i), 0});
+            }
             while (!walks.empty()) {
                 for (const Walk& w : walks) __builtin_prefetch(&ways[w.at]);
                 onward.clear();
                 for (Walk& w : walks) {
-                    uint32_t count = 0, next = w.at, word = 0, which = 0;
+                    uint32_t ahead = 0, next = w.at, word = 0, which = 0;
                     for (unsigned k = 0; k < 2; ++k) {
                         uint32_t e = static_cast<uint32_t>(ways[w.at] >> (32 * k));
-                        if (e == res.dead) continue;
+                        if (e == raw.dead) continue;
                         uint32_t y = raw.head(e);
-                        if (y != w.prev && y != w.at) { ++count; next = y; word = e; which = k; }
+                        if (y != w.prev && y != w.at) { ++ahead; next = y; word = e; which = k; }
                     }
-                    if (count > 1) { finish(w.edge, w.at, w.weight); continue; }
-                    if (count == 0 || next == w.root) { res.adj[w.edge] = res.dead; continue; }
-                    w.weight += (word & raw.mask) == raw.mask ? raw.weight(raw.off[w.at] + which) : (word & raw.mask);
+                    if (ahead > 1) { finish(w.edge, w.at, w.weight); continue; }
+                    if (ahead == 0 || next == w.root) { raw.adj[w.edge] = raw.dead; continue; }
+                    w.weight += (word & raw.mask) == raw.mask ? raw.escape(raw.off[w.at] + which) : (word & raw.mask);
                     w.prev = w.at;
                     w.at = next;
                     if (!test(bypass, next) || ++w.steps == 64) finish(w.edge, next, w.weight);
@@ -297,10 +296,15 @@ static Resolved resolve_edges(const Packed& raw, uint32_t n, const Bits& bypass,
                 walks.swap(onward);
             }
         }
-        std::sort(esc.begin(), esc.end());
     });
-    for (auto& e : escapes) res.escapes.insert(res.escapes.end(), e.begin(), e.end());
-    return res;
+    std::vector<uint32_t> gone;
+    for (auto& v : stale) gone.insert(gone.end(), v.begin(), v.end());
+    std::sort(gone.begin(), gone.end());
+    std::vector<std::pair<uint32_t, uint64_t>> merged;
+    for (auto& e : raw.escapes) if (!std::binary_search(gone.begin(), gone.end(), e.first)) merged.push_back(e);
+    for (auto& v : fresh) merged.insert(merged.end(), v.begin(), v.end());
+    std::sort(merged.begin(), merged.end());
+    raw.escapes.swap(merged);
 }
 
 // One BFS region: nodes in discovery order and their out-degrees.
@@ -324,7 +328,7 @@ public:
     size_t words() const { return bits_.size(); }
 };
 
-static void grow(const Packed& raw, const Resolved& res, Claims& claims, Region& r) {
+static void grow(const Packed& raw, Claims& claims, Region& r) {
     uint32_t len = r.len;
     uint64_t edges = r.edges;
     uint32_t* order = r.order.p;
@@ -332,12 +336,12 @@ static void grow(const Packed& raw, const Resolved& res, Claims& claims, Region&
     uint32_t head = r.expanded;
     for (; head < len; ++head) {
         if (head + 16 < len) __builtin_prefetch(&raw.off[order[head + 16]]);
-        if (head + 8 < len) __builtin_prefetch(&res.adj[raw.off[order[head + 8]]]);
+        if (head + 8 < len) __builtin_prefetch(&raw.adj[raw.off[order[head + 8]]]);
         uint32_t u = order[head], live = 0;
         for (uint32_t i = raw.off[u]; i < raw.off[u + 1]; ++i) {
-            if (res.adj[i] == res.dead) continue;
+            if (raw.adj[i] == raw.dead) continue;
             ++live;
-            if (claims.take(raw.head(res.adj[i]))) order[len++] = raw.head(res.adj[i]);
+            if (claims.take(raw.head(raw.adj[i]))) order[len++] = raw.head(raw.adj[i]);
         }
         degree[head] = live;
         edges += live;
@@ -349,14 +353,14 @@ static void grow(const Packed& raw, const Resolved& res, Claims& claims, Region&
 
 // Search ids follow concurrent BFS regions grown from scattered seeds over the surviving vertices, so neighbours stay
 // close in memory. Query endpoints survive; other low-degree vertices are replaced by shortcut edges.
-static Graph reorder(const Packed& raw, uint32_t n, const std::vector<uint8_t>& terminal, unsigned threads) {
+static Graph reorder(Packed& raw, uint32_t n, const std::vector<uint8_t>& terminal, unsigned threads) {
     Graph g;
     Bits bypass((size_t(n) + 63) / 64, 0);
     blocked(threads, bypass.size(), [&](size_t lo, size_t hi) {
         for (size_t x = lo * 64; x < std::min<size_t>(n, hi * 64); ++x)
             if (!terminal[x] && raw.off[x + 1] - raw.off[x] <= 2) bypass[x >> 6] |= 1ull << (x & 63);
     });
-    Resolved res = resolve_edges(raw, n, bypass, threads);
+    bypass_edges(raw, n, bypass, threads);
     Claims claims(n);
     std::vector<Region> regions(threads + 1);
     for (unsigned t = 0; t <= threads; ++t) { regions[t].order = Array<uint32_t>(n, true); regions[t].degree = Array<uint32_t>(n, true); }
@@ -367,12 +371,12 @@ static Graph reorder(const Packed& raw, uint32_t n, const std::vector<uint8_t>& 
                 break;
             }
     }
-    parallel(threads, [&](unsigned t) { grow(raw, res, claims, regions[t]); });
+    parallel(threads, [&](unsigned t) { grow(raw, claims, regions[t]); });
     Region& rest = regions[threads];
     for (size_t w = 0; w < claims.words(); ++w)
         for (uint64_t free = ~claims.word(w); free; free &= free - 1) {
             uint32_t v = static_cast<uint32_t>(w * 64 + __builtin_ctzll(free));
-            if (v < n && !test(bypass, v) && claims.take(v)) { rest.order[rest.len++] = v; grow(raw, res, claims, rest); }
+            if (v < n && !test(bypass, v) && claims.take(v)) { rest.order[rest.len++] = v; grow(raw, claims, rest); }
         }
 
     std::vector<uint32_t> base(threads + 2, 0);
@@ -397,13 +401,12 @@ static Graph reorder(const Packed& raw, uint32_t n, const std::vector<uint8_t>& 
     std::vector<std::vector<std::pair<uint32_t, uint64_t>>> escapes(threads);
     parallel(threads, [&](unsigned t) {
         for (size_t k = size_t(g.n) * t / threads, hi = size_t(g.n) * (t + 1) / threads; k < hi; ++k) {
-            if (k + 8 < hi) __builtin_prefetch(&res.adj[raw.off[order[k + 8]]]);
+            if (k + 8 < hi) __builtin_prefetch(&raw.adj[raw.off[order[k + 8]]]);
             uint32_t o = order[k], pos = g.fwd.off[k];
             for (uint32_t i = raw.off[o]; i < raw.off[o + 1]; ++i) {
-                if (res.adj[i] == res.dead) continue;
-                uint64_t w = res.adj[i] & raw.mask;
-                if (w == raw.mask) w = res.weight(i);
-                g.fwd.adj[pos] = g.fwd.pack(g.perm[raw.head(res.adj[i])], w);
+                if (raw.adj[i] == raw.dead) continue;
+                uint64_t w = raw.weight(i);
+                g.fwd.adj[pos] = g.fwd.pack(g.perm[raw.head(raw.adj[i])], w);
                 if (w >= g.fwd.mask) escapes[t].push_back({pos, w});
                 ++pos;
             }

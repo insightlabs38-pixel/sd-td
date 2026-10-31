@@ -148,6 +148,7 @@ public:
         if (fill_[b] == limit_[b]) open_chunk(b);
         *fill_[b]++ = {static_cast<uint32_t>((uint64_t(u) & ((uint64_t(1) << shift_) - 1)) << bits_) | v, w};
     }
+    void discard() { madvise(pool_.p, pool_.bytes, MADV_DONTNEED); }
     void finish() { for (size_t b = 0; b < runs_.size(); ++b) { close(b); limit_[b] = nullptr; } }
     const std::vector<std::pair<const Entry*, uint32_t>>& runs(size_t b) const { return runs_[b]; }
 };
@@ -375,6 +376,7 @@ static Graph read_graph(const std::string& path, unsigned threads) {
         unsigned shift = bucket_shift(n);
         std::vector<Binner> bins = parse_edges(p, end, n, shift, threads);
         Packed raw = bins_to_csr(bins, n, shift, threads);
+        parallel(threads, [&](unsigned t) { bins[t].discard(); });
         bins.clear();
         g = reorder(raw, n, threads);
     }

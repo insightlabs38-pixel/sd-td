@@ -33,7 +33,7 @@ def main(seeds):
         n, arcs = lattice(rng, rng.randrange(2, 25), rng.randrange(2, 25))
         n += rng.randrange(0, 4)
         queries = [(rng.randrange(n), rng.randrange(n)) for _ in range(120)]
-        T.run_case(n, arcs, queries, threads=(1, 5))
+        T.run_case(n, arcs, queries, threads=(1, 4, 12))
     print('PASS stress', seeds)
 
 

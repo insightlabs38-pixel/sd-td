@@ -1,0 +1,68 @@
+name: Track D frontier2 matched qualification
+on:
+  push:
+    paths:
+      - .github/workflows/frontier2-match.yml
+  workflow_dispatch:
+
+jobs:
+  matched:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Obtain public organizer reference
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile pinned baseline and candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show 83d6bb5a62077aec1d10776619e8d7bdbfcf4a97:track-d/d_traverse.cpp > /tmp/baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/baseline /tmp/baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/candidate track-d/d_traverse.cpp
+          wc -l /tmp/baseline.cpp track-d/d_traverse.cpp
+      - name: Adversarial and randomized differential tests
+        run: |
+          SD_TEST_BINARY=/tmp/candidate python tests/test_d.py
+          SD_TEST_BINARY=/tmp/candidate python tests/stress_d.py 120
+      - name: Full seed 1 and interleaved exact-output matched timings
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d-data /tmp/d-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/d-data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/d-data/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/d-data/queries.txt' | sha256sum -c
+          : > /tmp/metrics
+          for pass in 1 2 3 4 5 6 7 8 9; do
+            if (( pass % 2 )); then order=(baseline candidate); else order=(candidate baseline); fi
+            for variant in "${order[@]}"; do
+              SD_DATA=/tmp/d-data SD_OUT=/tmp/d-out /usr/bin/time -f "$pass $variant %e %M %U" -o /tmp/one /tmp/"$variant"
+              echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-out/distances.txt' | sha256sum -c
+              cat /tmp/one | tee -a /tmp/metrics
+            done
+          done
+          python - <<'PY'
+          import collections, statistics
+          d=collections.defaultdict(lambda: [[], [], []])
+          for line in open('/tmp/metrics'):
+              p, name, t, m, cpu=line.split()
+              for a,v in zip(d[name], (float(t), int(m), float(cpu))): a.append(v)
+          for name, (times, rss, cpu) in d.items():
+              print('MATCHED', name, 'wall_median',statistics.median(times),'rss_median_KiB',statistics.median(rss),'cpu_median',statistics.median(cpu))
+          bt,bm,_=map(statistics.median,d['baseline'])
+          ct,cm,_=map(statistics.median,d['candidate'])
+          print('PROXY_K_T_M_ONLY_RATIO', (bt/ct)**0.5*(bm/cm)**0.2)
+          PY
+      - name: Full seed 2 independent official Python oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d2-data /tmp/d2-ref /tmp/d2-out
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale full --out /tmp/d2-data
+          python /tmp/official/reference/d_traverse.py --data /tmp/d2-data --out /tmp/d2-ref
+          SD_DATA=/tmp/d2-data SD_OUT=/tmp/d2-out SD_THREADS=12 /tmp/candidate
+          cmp /tmp/d2-ref/distances.txt /tmp/d2-out/distances.txt
+          sha256sum /tmp/d2-out/distances.txt

@@ -69,6 +69,18 @@ static inline uint32_t number(const char*& p, const char* end) {
     return x;
 }
 
+// Common one-to-four digit edge weights use direct decimal arithmetic; longer values use the exact uint32 parser.
+static inline uint32_t edge_weight(const char*& p, const char* end) {
+    if (end - p >= 5) {
+        uint32_t a = p[0] - '0', b = p[1] - '0', c = p[2] - '0';
+        if (p[3] == '\n') { p += 4; return 100 * a + 10 * b + c; }
+        if (p[2] == '\n') { p += 3; return 10 * a + b; }
+        if (p[1] == '\n') { p += 2; return a; }
+        if (p[4] == '\n') { uint32_t d = p[3] - '0'; p += 5; return 1000 * a + 100 * b + 10 * c + d; }
+    }
+    return number(p, end);
+}
+
 struct MappedFile {
     const char* data = nullptr;
     size_t size = 0;
@@ -210,7 +222,7 @@ static std::vector<Binner> parse_edges(const char* begin, const char* end, uint3
             const char* block = p;
             const char* stop = std::min(cut[t + 1], p + (size_t(2) << 20));
             while (p < stop) {
-                uint32_t u = number(p, end), v = number(p, end), w = number(p, end);
+                uint32_t u = number(p, end), v = number(p, end), w = edge_weight(p, end);
                 bin.add(u, v, w);
             }
             MappedFile::drop(block, p);

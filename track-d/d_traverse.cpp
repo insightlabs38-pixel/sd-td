@@ -17,6 +17,8 @@
 #include <unistd.h>
 
 // Real distances stay below 2^53, so INF plus any distance cannot wrap.
+// Bucket width 2^5 stays below the smallest common edge weight, so a bucket rarely needs re-draining.
+static constexpr unsigned SHIFT_MAX = 5;
 static constexpr uint64_t INF = uint64_t(1) << 62;
 
 // Uninitialized, lazily faulted storage, so memory is committed only where it is written.
@@ -392,16 +394,23 @@ static std::vector<Query> read_queries(const std::string& path, const Graph& g) 
 }
 
 struct HeapNode { uint64_t distance; uint32_t node; };
-// Monotone queue: keys within B of the minimum sit in exact-key buckets, larger jumps in a binary heap.
+// Bucketed monotone queue: width 2^shift buckets in a ring; larger jumps wait in a binary heap.
 struct Heap {
-    static constexpr unsigned B = 4096;
+    static constexpr unsigned B = 2048;
     std::array<std::vector<uint32_t>, B> bucket;
     std::array<uint64_t, B / 64> occupied{};
     std::vector<HeapNode> far;
     uint64_t cur = 0;
     size_t near = 0;
-    bool from_far = false;
+    unsigned shift = 0, node_bits = 32;
     static bool later(const HeapNode& a, const HeapNode& b) { return a.distance > b.distance; }
+    void configure(uint32_t n) {
+        unsigned bits = 1;
+        while (bits < 32 && (uint64_t(1) << bits) < n) ++bits;
+        shift = std::min(SHIFT_MAX, 32 - bits);
+        node_bits = 32 - shift;
+    }
+    uint32_t node_mask() const { return static_cast<uint32_t>((uint64_t(1) << node_bits) - 1); }
     void clear() {
         for (size_t w = 0; w < occupied.size(); ++w)
             for (uint64_t bits = occupied[w]; bits; bits &= bits - 1) bucket[w * 64 + __builtin_ctzll(bits)].clear();
@@ -410,38 +419,35 @@ struct Heap {
         cur = 0;
         near = 0;
     }
-    bool empty() const { return near == 0 && far.empty(); }
-    void push(uint64_t d, uint32_t v) {
-        if (d - cur >= B) { far.push_back({d, v}); std::push_heap(far.begin(), far.end(), later); return; }
-        unsigned b = d & (B - 1);
-        bucket[b].push_back(v);
+    void put(uint64_t d, uint32_t v) {
+        unsigned b = (d >> shift) & (B - 1);
+        bucket[b].push_back(v | static_cast<uint32_t>((d & ((uint64_t(1) << shift) - 1)) << node_bits));
         occupied[b >> 6] |= 1ull << (b & 63);
         ++near;
     }
-    HeapNode top() {
+    void push(uint64_t d, uint32_t v) {
+        if ((d >> shift) - cur >= B) { far.push_back({d, v}); std::push_heap(far.begin(), far.end(), later); return; }
+        put(d, v);
+    }
+    // Positions cur on the first nonempty bucket and returns its smallest possible key; INF if empty.
+    uint64_t lower_bound() {
         if (near) {
             unsigned b = cur & (B - 1), w = b >> 6;
             uint64_t bits = occupied[w] & (~0ull << (b & 63));
             while (!bits) { w = (w + 1) & (B / 64 - 1); bits = occupied[w]; }
-            unsigned idx = (w << 6) | __builtin_ctzll(bits);
-            uint64_t key = cur + ((idx - b) & (B - 1));
-            if (far.empty() || far.front().distance > key) { cur = key; from_far = false; return {key, bucket[idx].back()}; }
+            cur += (((w << 6) | __builtin_ctzll(bits)) - b) & (B - 1);
+        } else if (!far.empty()) {
+            cur = far.front().distance >> shift;
+        } else {
+            return INF;
         }
-        from_far = true;
-        return far.front();
-    }
-    // Removes the entry returned by the preceding top().
-    void drop(const HeapNode& t) {
-        if (from_far) {
+        while (!far.empty() && (far.front().distance >> shift) - cur < B) {
+            HeapNode x = far.front();
             std::pop_heap(far.begin(), far.end(), later);
             far.pop_back();
-            if (near == 0) cur = t.distance;
-            return;
+            put(x.distance, x.node);
         }
-        unsigned b = t.distance & (B - 1);
-        bucket[b].pop_back();
-        if (bucket[b].empty()) occupied[b >> 6] &= ~(1ull << (b & 63));
-        --near;
+        return cur << shift;
     }
 };
 
@@ -482,39 +488,35 @@ struct Side {
     const Packed& csr;
     Distances dist;
     Heap heap;
-    HeapNode top_{};
-    bool cached_ = false;
-    Side(const Packed& c, uint32_t n) : csr(c), dist(n) {}
-    void start(uint32_t s) { cached_ = false; dist.reset(); heap.clear(); dist.lower(s, 0); heap.push(0, s); }
-    // Returns the live minimum, discarding outdated entries; cached until this side next steps.
-    bool live_top(HeapNode& t) {
-        if (!cached_) {
-            for (;;) {
-                if (heap.empty()) return false;
-                top_ = heap.top();
-                if (dist.get(top_.node) == top_.distance) break;
-                heap.drop(top_);
-            }
-            cached_ = true;
-        }
-        t = top_;
-        return true;
-    }
-    // Settles the next vertex and relaxes its edges; `best` improves wherever the opposite search has a label.
-    void step(const Side& other, HeapNode top, uint64_t& best) {
-        uint32_t u = top.node;
-        uint64_t d = top.distance;
-        cached_ = false;
-        heap.drop(top);
-        for (uint32_t i = csr.off[u], last = csr.off[u + 1]; i < last; ++i) {
-            uint32_t e = csr.adj[i], v = csr.head(e), w = e & csr.mask;
-            if (w == csr.mask) w = csr.weight(i);
-            uint64_t nd = d + w;
-            if (dist.lower(v, nd)) {
-                heap.push(nd, v);
-                best = std::min(best, nd + other.dist.get(v));
+    Side(const Packed& c, uint32_t n) : csr(c), dist(n) { heap.configure(n); }
+    void start(uint32_t s) { dist.reset(); heap.clear(); dist.lower(s, 0); heap.push(0, s); }
+    // Settles every vertex of the current bucket (re-draining entries it adds) and returns how many were expanded.
+    size_t drain(const Side& other, uint64_t& best) {
+        std::vector<uint32_t>& bk = heap.bucket[heap.cur & (Heap::B - 1)];
+        uint64_t base = heap.cur << heap.shift;
+        uint32_t node_mask = heap.node_mask();
+        size_t count = 0;
+        while (!bk.empty()) {
+            uint32_t entry = bk.back();
+            bk.pop_back();
+            --heap.near;
+            uint32_t u = entry & node_mask;
+            uint64_t d = base | (uint64_t(entry) >> heap.node_bits);
+            if (dist.get(u) != d) continue;
+            ++count;
+            for (uint32_t i = csr.off[u], last = csr.off[u + 1]; i < last; ++i) {
+                uint32_t e = csr.adj[i], v = csr.head(e), w = e & csr.mask;
+                if (w == csr.mask) w = csr.weight(i);
+                uint64_t nd = d + w;
+                if (dist.lower(v, nd)) {
+                    heap.push(nd, v);
+                    best = std::min(best, nd + other.dist.get(v));
+                }
             }
         }
+        unsigned b = heap.cur & (Heap::B - 1);
+        heap.occupied[b >> 6] &= ~(1ull << (b & 63));
+        return count;
     }
 };
 
@@ -529,16 +531,19 @@ struct Worker {
         bwd.dist.reset();
         fwd.start(s);
         uint64_t best = INF;
-        HeapNode ft, bt;
-        for (uint32_t settled = 0; settled < probe; ++settled) {
-            if (!fwd.live_top(ft)) return -1;
-            if (ft.node == t) return static_cast<int64_t>(ft.distance);
-            fwd.step(bwd, ft, best);
+        for (size_t settled = 0; settled < probe;) {
+            uint64_t f = fwd.heap.lower_bound();
+            uint64_t known = fwd.dist.get(t);
+            if (known < f) return static_cast<int64_t>(known);
+            if (f == INF) return -1;
+            settled += fwd.drain(bwd, best);
         }
         bwd.start(t);
         best = std::min(best, fwd.dist.get(t));
-        while (fwd.live_top(ft) && bwd.live_top(bt) && ft.distance + bt.distance < best) {
-            if (ft.distance <= bt.distance) fwd.step(bwd, ft, best); else bwd.step(fwd, bt, best);
+        for (;;) {
+            uint64_t f = fwd.heap.lower_bound(), b = bwd.heap.lower_bound();
+            if (f == INF || b == INF || f + b >= best) break;
+            if (f <= b) fwd.drain(bwd, best); else bwd.drain(fwd, best);
         }
         return best == INF ? -1 : static_cast<int64_t>(best);
     }

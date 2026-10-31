@@ -44,6 +44,38 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Matched full-seed reverse CSR comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin main
+          git show FETCH_HEAD:track-d/d_traverse.cpp > /tmp/base-d.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/base-d /tmp/base-d.cpp
+          python3 - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          for threads in (1, 4, 12):
+              samples = {"base": [], "candidate": []}
+              rss = {"base": [], "candidate": []}
+              for rep in range(11):
+                  order = ("base", "candidate") if rep % 2 else ("candidate", "base")
+                  for name in order:
+                      env = dict(os.environ, SD_DATA="/tmp/full-data", SD_OUT="/tmp/full-out", SD_THREADS=str(threads))
+                      exe = "/tmp/base-d" if name == "base" else "/tmp/traverse"
+                      begin = time.perf_counter_ns()
+                      subprocess.run(["/usr/bin/time", "-f", "%M", "-o", "/tmp/d-rss", exe], env=env, check=True)
+                      elapsed = (time.perf_counter_ns() - begin) / 1e9
+                      with open("/tmp/full-out/distances.txt", "rb") as f:
+                          digest = hashlib.sha256(f.read()).hexdigest()
+                      if digest != expected:
+                          raise RuntimeError(f"{name} threads={threads} rep={rep} hash mismatch: {digest}")
+                      samples[name].append(elapsed)
+                      with open("/tmp/d-rss") as f:
+                          rss[name].append(int(f.read().strip()))
+              print(f"threads={threads} wall_base={statistics.median(samples['base']):.6f} wall_candidate={statistics.median(samples['candidate']):.6f} rss_base={statistics.median(rss['base'])} rss_candidate={statistics.median(rss['candidate'])}", flush=True)
+              print("base_times", samples["base"], flush=True)
+              print("candidate_times", samples["candidate"], flush=True)
+          PY
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

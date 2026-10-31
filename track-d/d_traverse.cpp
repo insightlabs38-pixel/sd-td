@@ -16,7 +16,7 @@
 #include <unistd.h>
 
 #ifndef SD_PREFETCH
-#define SD_PREFETCH 1
+#define SD_PREFETCH 2
 #endif
 
 // Real distances stay below 2^53, so INF plus any distance cannot wrap.

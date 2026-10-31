@@ -611,7 +611,8 @@ struct Worker {
         bwd.dist.reset();
         fwd.start(s);
         uint64_t best = INF;
-        for (size_t settled = 0; settled < probe;) {
+        size_t settled = 0;
+        for (; settled < probe;) {
             uint64_t f = fwd.heap.lower_bound();
             uint64_t known = fwd.dist.get(t);
             if (known < f) return static_cast<int64_t>(known);

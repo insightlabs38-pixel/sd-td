@@ -574,6 +574,7 @@ struct Side {
         const uint32_t* adj = csr.adj.p;
         size_t count = 0;
         while (!bk.empty()) {
+            if (bk.size() >= 3) __builtin_prefetch(off + (bk[bk.size() - 3] & node_mask), 0, 1);
             uint32_t entry = bk.back();
             bk.pop_back();
             --heap.near;

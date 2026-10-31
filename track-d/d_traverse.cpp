@@ -609,7 +609,8 @@ struct Worker {
         bwd.dist.reset();
         fwd.start(s);
         uint64_t best = INF;
-        for (size_t settled = 0; settled < probe;) {
+        size_t settled = 0;
+        for (; settled < probe;) {
             uint64_t f = fwd.heap.lower_bound();
             uint64_t known = fwd.dist.get(t);
             if (known < f) return static_cast<int64_t>(known);
@@ -618,10 +619,12 @@ struct Worker {
         }
         bwd.start(t);
         best = std::min(best, fwd.dist.get(t));
+        size_t fs = settled, bs = 0;
         for (;;) {
             uint64_t f = fwd.heap.lower_bound(), b = bwd.heap.lower_bound();
             if (f == INF || b == INF || f + b >= best) break;
-            if (f <= b) fwd.drain(bwd, best); else bwd.drain(fwd, best);
+            if (fs <= bs) fs += fwd.drain(bwd, best);
+            else bs += bwd.drain(fwd, best);
         }
         return best == INF ? -1 : static_cast<int64_t>(best);
     }

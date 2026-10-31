@@ -654,7 +654,24 @@ int main() {
     std::vector<int64_t> answers(queries.size(), -1);
     std::vector<uint32_t> schedule(queries.size());
     std::iota(schedule.begin(), schedule.end(), 0);
+#ifndef SD_SCHEDULE_MODE
+#define SD_SCHEDULE_MODE 1
+#endif
+#if SD_SCHEDULE_MODE == 0
     std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) { return queries[a].from < queries[b].from; });
+#elif SD_SCHEDULE_MODE == 1 || SD_SCHEDULE_MODE == 2
+    auto delta = [&](uint32_t i) {
+        uint32_t s = queries[i].from, t = queries[i].to;
+        return s > t ? s - t : t - s;
+    };
+    std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) {
+        return SD_SCHEDULE_MODE == 1 ? delta(a) > delta(b) : delta(a) < delta(b);
+    });
+#elif SD_SCHEDULE_MODE == 3
+    // Preserve input order as a control.
+#else
+#error Invalid schedule mode
+#endif
     std::atomic<size_t> next{0};
     parallel(std::min<size_t>(threads, std::max<size_t>(1, queries.size())), [&](unsigned) {
         Worker worker(g, probe);

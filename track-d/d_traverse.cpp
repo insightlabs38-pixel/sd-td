@@ -562,8 +562,9 @@ struct Side {
     const Packed& csr;
     Distances dist;
     Heap heap;
+    size_t work = 0;
     Side(const Packed& c, uint32_t n) : csr(c), dist(n) { heap.configure(n); }
-    void start(uint32_t s) { dist.reset(); heap.clear(); dist.lower(s, 0); heap.push(0, s); }
+    void start(uint32_t s) { work = 0; dist.reset(); heap.clear(); dist.lower(s, 0); heap.push(0, s); }
     // Settles every vertex of the current bucket (re-draining entries it adds) and returns how many were expanded.
     size_t drain(const Side& other, uint64_t& best) {
         std::vector<uint32_t>& bk = heap.bucket[heap.cur & (Heap::B - 1)];
@@ -572,7 +573,7 @@ struct Side {
         const uint32_t node_mask = static_cast<uint32_t>((uint64_t(1) << nbits) - 1), wmask = csr.mask;
         const uint32_t* off = csr.off.p;
         const uint32_t* adj = csr.adj.p;
-        size_t count = 0;
+        size_t count = 0, scanned = 0;
         while (!bk.empty()) {
             uint32_t entry = bk.back();
             bk.pop_back();
@@ -581,7 +582,9 @@ struct Side {
             uint64_t d = base | (uint64_t(entry) >> nbits);
             if (dist.get(u) != d) continue;
             ++count;
-            for (uint32_t i = off[u], last = off[u + 1]; i < last; ++i) {
+            uint32_t first = off[u], last = off[u + 1];
+            scanned += last - first + 1;
+            for (uint32_t i = first; i < last; ++i) {
                 uint32_t e = adj[i], v = e >> wbits;
                 uint64_t w = e & wmask;
                 if (w == wmask) w = csr.weight(i);
@@ -595,6 +598,7 @@ struct Side {
         }
         unsigned b = heap.cur & (Heap::B - 1);
         heap.occupied[b >> 6] &= ~(1ull << (b & 63));
+        work += scanned;
         return count;
     }
 };
@@ -619,12 +623,11 @@ struct Worker {
         }
         bwd.start(t);
         best = std::min(best, fwd.dist.get(t));
-        size_t fs = settled, bs = 0;
         for (;;) {
             uint64_t f = fwd.heap.lower_bound(), b = bwd.heap.lower_bound();
             if (f == INF || b == INF || f + b >= best) break;
-            if (fs <= bs) fs += fwd.drain(bwd, best);
-            else bs += bwd.drain(fwd, best);
+            if (fwd.work <= bwd.work) fwd.drain(bwd, best);
+            else bwd.drain(fwd, best);
         }
         return best == INF ? -1 : static_cast<int64_t>(best);
     }

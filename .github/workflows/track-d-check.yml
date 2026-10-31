@@ -65,3 +65,54 @@ jobs:
             docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
           done
+
+      - name: Exact zero-probe full and Docker
+        shell: bash
+        run: |
+          set -euo pipefail
+          for t in 1 4 12; do
+            SD_PROBE=0 SD_THREADS=$t SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /tmp/traverse
+            echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+          done
+          mkdir -p /tmp/docker-probe0
+          docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_PROBE=0 -v /tmp/full-data:/data:ro -v /tmp/docker-probe0:/out:rw sd-td-check
+          cmp /tmp/full-out/distances.txt /tmp/docker-probe0/distances.txt
+      - name: Settled-work probe-length tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, os, random, re, statistics, subprocess, time
+          probes = (0, 32, 128, 256)
+          expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          for workers in (4, 6, 12):
+              times = {p: [] for p in probes}
+              rss = {p: [] for p in probes}
+              def run(probe):
+                  env = dict(os.environ, SD_DATA="/tmp/full-data", SD_OUT="/tmp/full-out",
+                             SD_THREADS=str(workers), SD_PROBE=str(probe))
+                  start = time.perf_counter()
+                  p = subprocess.run(["/usr/bin/time", "-f", "PEAK_KIB=%M", "/tmp/traverse"],
+                                     env=env, capture_output=True, text=True)
+                  wall = time.perf_counter() - start
+                  if p.returncode: raise RuntimeError(p.stderr[-500:])
+                  m = re.search(r"PEAK_KIB=(\d+)", p.stderr)
+                  assert m, p.stderr[-500:]
+                  with open("/tmp/full-out/distances.txt", "rb") as f:
+                      assert hashlib.sha256(f.read()).hexdigest() == expected, probe
+                  return wall, int(m.group(1))
+              for probe in probes: run(probe)
+              rng = random.Random(301 + workers)
+              for i in range(31):
+                  order = list(probes)
+                  rng.shuffle(order)
+                  for probe in order:
+                      t, m = run(probe)
+                      times[probe].append(t)
+                      rss[probe].append(m)
+              for probe in probes:
+                  v = times[probe]
+                  wins = sum(x < y for x, y in zip(v, times[256])) if probe != 256 else 0
+                  print(f"WORKERS={workers} probe={probe}: median_wall={statistics.median(v):.6f}s "
+                        f"wins_vs_256={wins}/31 median_peak_kib={statistics.median(rss[probe]):.0f}", flush=True)
+          PY

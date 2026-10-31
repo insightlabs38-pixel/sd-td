@@ -412,10 +412,13 @@ class Distances {
 public:
     explicit Distances(uint32_t n) : dir_((n >> SHIFT) + 1) { blank_.fill(INF); std::fill(dir_.begin(), dir_.end(), blank_.data()); }
     uint64_t get(uint32_t v) const { return dir_[v >> SHIFT][v & (SIZE - 1)]; }
-    void set(uint32_t v, uint64_t d) {
+    // Lowers the label of v to d if that improves it.
+    bool lower(uint32_t v, uint64_t d) {
         uint64_t* p = dir_[v >> SHIFT];
+        if (d >= p[v & (SIZE - 1)]) return false;
         if (p == blank_.data()) p = acquire(v >> SHIFT);
         p[v & (SIZE - 1)] = d;
+        return true;
     }
     void reset() {
         for (uint32_t page : used_) { spare_.push_back(dir_[page]); dir_[page] = blank_.data(); }
@@ -427,27 +430,34 @@ struct Side {
     const Csr& csr;
     Distances dist;
     Heap heap;
+    HeapNode top_{};
+    bool cached_ = false;
     Side(const Csr& c, uint32_t n) : csr(c), dist(n) {}
-    void start(uint32_t s) { dist.reset(); heap.clear(); dist.set(s, 0); heap.push(0, s); }
-    // Drops outdated entries and returns the live minimum (heap must be nonempty on entry to the loop).
+    void start(uint32_t s) { cached_ = false; dist.reset(); heap.clear(); dist.lower(s, 0); heap.push(0, s); }
+    // Returns the live minimum, discarding outdated entries; cached until this side next steps.
     bool live_top(HeapNode& t) {
-        while (!heap.empty()) {
-            t = heap.top();
-            if (dist.get(t.node) == t.distance) return true;
-            heap.drop(t);
+        if (!cached_) {
+            for (;;) {
+                if (heap.empty()) return false;
+                top_ = heap.top();
+                if (dist.get(top_.node) == top_.distance) break;
+                heap.drop(top_);
+            }
+            cached_ = true;
         }
-        return false;
+        t = top_;
+        return true;
     }
     // Settles the next vertex and relaxes its edges; `best` improves wherever the opposite search has a label.
     void step(const Side& other, HeapNode top, uint64_t& best) {
         uint32_t u = top.node;
         uint64_t d = top.distance;
+        cached_ = false;
         heap.drop(top);
         for (uint32_t i = csr.off[u], e = csr.off[u + 1]; i < e; ++i) {
             uint32_t v = csr.adj[i].to;
             uint64_t nd = d + csr.adj[i].w;
-            if (nd < dist.get(v)) {
-                dist.set(v, nd);
+            if (dist.lower(v, nd)) {
                 heap.push(nd, v);
                 best = std::min(best, nd + other.dist.get(v));
             }

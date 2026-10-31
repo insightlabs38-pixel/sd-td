@@ -18,6 +18,9 @@
 // Real distances stay below 2^53, so INF plus any distance cannot wrap.
 // Width-128 buckets reduce far-heap traffic; re-draining preserves exactness for zero-weight edges.
 static constexpr unsigned SHIFT_MAX = 7;
+#ifndef SD_BYPASS_DEG
+#define SD_BYPASS_DEG 2
+#endif
 static constexpr uint64_t INF = uint64_t(1) << 62;
 
 // Uninitialized, lazily faulted storage, so memory is committed only where it is written.
@@ -354,7 +357,7 @@ static Graph reorder(Packed& raw, uint32_t n, const std::vector<uint8_t>& termin
     Bits bypass((size_t(n) + 63) / 64, 0);
     blocked(threads, bypass.size(), [&](size_t lo, size_t hi) {
         for (size_t x = lo * 64; x < std::min<size_t>(n, hi * 64); ++x)
-            if (!terminal[x] && raw.off[x + 1] - raw.off[x] <= 2) bypass[x >> 6] |= 1ull << (x & 63);
+            if (!terminal[x] && raw.off[x + 1] - raw.off[x] <= SD_BYPASS_DEG) bypass[x >> 6] |= 1ull << (x & 63);
     });
     bypass_edges(raw, n, bypass, threads);
     Bits claims((size_t(n) + 63) / 64, 0);

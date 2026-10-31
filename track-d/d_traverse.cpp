@@ -532,11 +532,13 @@ class Distances {
     static constexpr unsigned SHIFT = 7, SIZE = 1u << SHIFT;
     std::vector<uint64_t*> dir_;
     std::vector<uint32_t> used_;
-    std::vector<std::unique_ptr<uint64_t[]>> store_; // the first used_.size() pages are in use
+    static constexpr size_t SLAB = 64;
+    std::vector<std::unique_ptr<uint64_t[]>> store_; // slab-backed pages are reused across queries
     std::array<uint64_t, SIZE> blank_;
     uint64_t* acquire(uint32_t page) {
-        if (used_.size() == store_.size()) store_.emplace_back(new uint64_t[SIZE]);
-        uint64_t* p = store_[used_.size()].get();
+        size_t slot = used_.size();
+        if (slot % SLAB == 0 && slot / SLAB == store_.size()) store_.emplace_back(new uint64_t[SIZE * SLAB]);
+        uint64_t* p = store_[slot / SLAB].get() + (slot % SLAB) * SIZE;
         std::fill(p, p + SIZE, INF);
         used_.push_back(page);
         return dir_[page] = p;

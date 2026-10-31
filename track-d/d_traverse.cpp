@@ -234,6 +234,7 @@ struct Graph {
     uint32_t n = 0;
     Packed fwd, rev;
     Array<uint32_t> perm; // original id -> search id
+    std::vector<uint32_t> weak; // optional exact weak-component rejection
 };
 
 // A raw edge whose walk through bypassable vertices is still going.
@@ -440,6 +441,34 @@ static void add_reverse(Graph& g, unsigned threads) {
     g.rev.adopt(escapes);
 }
 
+// A weak component is a necessary (not sufficient) condition for directed reachability.
+static void label_weak(Graph& g) {
+    constexpr uint32_t unseen = UINT32_MAX;
+    g.weak.assign(g.n, unseen);
+    std::vector<uint32_t> queue(g.n);
+    uint32_t component = 0;
+    for (uint32_t root = 0; root < g.n; ++root) {
+        if (g.weak[root] != unseen) continue;
+        size_t front = 0, back = 0;
+        g.weak[root] = component;
+        queue[back++] = root;
+        while (front != back) {
+            uint32_t u = queue[front++];
+            for (unsigned side = 0; side < 2; ++side) {
+                const Packed& csr = side ? g.rev : g.fwd;
+                for (uint32_t i = csr.off[u]; i < csr.off[u + 1]; ++i) {
+                    uint32_t v = csr.head(csr.adj[i]);
+                    if (g.weak[v] == unseen) {
+                        g.weak[v] = component;
+                        queue[back++] = v;
+                    }
+                }
+            }
+        }
+        ++component;
+    }
+}
+
 struct Query { uint32_t from, to; };
 
 static Graph read_graph(const std::string& path, const std::vector<Query>& queries, unsigned threads) {
@@ -460,6 +489,7 @@ static Graph read_graph(const std::string& path, const std::vector<Query>& queri
         g = reorder(raw, n, terminal, threads);
     }
     add_reverse(g, threads);
+    if (getenv("SD_WCC")) label_weak(g);
     return g;
 }
 
@@ -601,10 +631,12 @@ struct Side {
 
 struct Worker {
     Side fwd, bwd;
+    const std::vector<uint32_t>& weak;
     uint32_t probe;
-    Worker(const Graph& g, uint32_t p) : fwd(g.fwd, g.n), bwd(g.rev, g.n), probe(p) {}
+    Worker(const Graph& g, uint32_t p) : fwd(g.fwd, g.n), bwd(g.rev, g.n), weak(g.weak), probe(p) {}
     int64_t solve(uint32_t s, uint32_t t) {
         if (s == t) return 0;
+        if (!weak.empty() && weak[s] != weak[t]) return -1;
         if (fwd.csr.off[s] == fwd.csr.off[s + 1] || bwd.csr.off[t] == bwd.csr.off[t + 1]) return -1;
         bwd.dist.reset();
         fwd.start(s);

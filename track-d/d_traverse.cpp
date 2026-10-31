@@ -546,11 +546,16 @@ int main() {
     Graph g = read_graph(data + "/graph.txt", threads);
     std::vector<Query> queries = read_queries(data + "/queries.txt", g);
     std::vector<int64_t> answers(queries.size(), -1);
+    std::vector<uint32_t> schedule(queries.size());
+    for (uint32_t i = 0; i < schedule.size(); ++i) schedule[i] = i;
+    std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) { return queries[a].from < queries[b].from; });
     std::atomic<size_t> next{0};
     parallel(std::min<size_t>(threads, std::max<size_t>(1, queries.size())), [&](unsigned) {
         Worker worker(g, probe);
-        for (size_t i; (i = next.fetch_add(1, std::memory_order_relaxed)) < queries.size();)
+        for (size_t k; (k = next.fetch_add(1, std::memory_order_relaxed)) < queries.size();) {
+            uint32_t i = schedule[k];
             answers[i] = worker.solve(queries[i].from, queries[i].to);
+        }
     });
     write_results(out + "/distances.txt", answers);
 }

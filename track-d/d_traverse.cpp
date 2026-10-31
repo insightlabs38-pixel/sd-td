@@ -565,7 +565,7 @@ struct Side {
     Side(const Packed& c, uint32_t n) : csr(c), dist(n) { heap.configure(n); }
     void start(uint32_t s) { dist.reset(); heap.clear(); dist.lower(s, 0); heap.push(0, s); }
     // Settles every vertex of the current bucket (re-draining entries it adds) and returns how many were expanded.
-    size_t drain(const Side& other, uint64_t& best) {
+    template <bool MEET = true> size_t drain(const Side& other, uint64_t& best) {
         std::vector<uint32_t>& bk = heap.bucket[heap.cur & (Heap::B - 1)];
         const uint64_t base = heap.cur << heap.shift;
         const unsigned nbits = heap.node_bits, wbits = csr.wbits;
@@ -588,8 +588,10 @@ struct Side {
                 uint64_t nd = d + w;
                 if (dist.lower(v, nd)) {
                     heap.push(nd, v);
-                    uint64_t meet = nd + other.dist.get(v);
-                    if (meet < best) best = meet;
+                    if constexpr (MEET) {
+                        uint64_t meet = nd + other.dist.get(v);
+                        if (meet < best) best = meet;
+                    }
                 }
             }
         }
@@ -606,7 +608,6 @@ struct Worker {
     int64_t solve(uint32_t s, uint32_t t) {
         if (s == t) return 0;
         if (fwd.csr.off[s] == fwd.csr.off[s + 1] || bwd.csr.off[t] == bwd.csr.off[t + 1]) return -1;
-        bwd.dist.reset();
         fwd.start(s);
         uint64_t best = INF;
         size_t settled = 0;
@@ -615,7 +616,7 @@ struct Worker {
             uint64_t known = fwd.dist.get(t);
             if (known < f) return static_cast<int64_t>(known);
             if (f == INF) return -1;
-            settled += fwd.drain(bwd, best);
+            settled += fwd.drain<false>(bwd, best);
         }
         bwd.start(t);
         best = std::min(best, fwd.dist.get(t));

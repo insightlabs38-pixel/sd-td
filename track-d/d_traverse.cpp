@@ -128,106 +128,51 @@ struct Packed {
     }
 };
 
-// A bin entry packs the tail's low bits with the head, so it takes 8 bytes instead of 12.
-struct Entry { uint32_t key, w; };
-
-using Run = std::pair<const Entry*, uint32_t>;
-
-// One thread's edges partitioned by u >> shift into short chunk runs, so each bucket can later become CSR in cache.
-class Binner {
-    static constexpr uint32_t CHUNK = 256;
-    Array<Entry> pool_;
-    size_t used_ = 0;
-    std::vector<Entry*> fill_, limit_;
-    std::vector<std::vector<Run>> runs_;
-    unsigned shift_, bits_;
-    void open_chunk(size_t b) {
-        close(b);
-        fill_[b] = pool_.p + used_;
-        limit_[b] = fill_[b] + CHUNK;
-        used_ += CHUNK;
-    }
-    void close(size_t b) {
-        if (!limit_[b]) return;
-        Entry* start = limit_[b] - CHUNK;
-        if (fill_[b] != start) runs_[b].push_back({start, static_cast<uint32_t>(fill_[b] - start)});
-    }
-public:
-    Binner(unsigned shift, unsigned bits, size_t buckets, size_t max_edges)
-        : pool_(max_edges + (buckets + 1) * CHUNK, true), fill_(buckets, nullptr), limit_(buckets, nullptr), runs_(buckets), shift_(shift), bits_(bits) {}
-    void add(uint32_t u, uint32_t v, uint32_t w) {
-        size_t b = u >> shift_;
-        if (fill_[b] == limit_[b]) open_chunk(b);
-        *fill_[b]++ = {static_cast<uint32_t>((uint64_t(u) & ((uint64_t(1) << shift_) - 1)) << bits_) | v, w};
-    }
-    void discard() { madvise(pool_.p, pool_.bytes, MADV_DONTNEED); }
-    void finish() { for (size_t b = 0; b < runs_.size(); ++b) { close(b); limit_[b] = nullptr; } }
-    const std::vector<Run>& runs(size_t b) const { return runs_[b]; }
-};
-
-static unsigned bucket_shift(uint32_t n) { return std::min(11u, 32 - id_bits(n)); }
-
-// Builds CSR from the per-thread bins, one bucket at a time.
-static Packed bins_to_csr(const std::vector<Binner>& bins, uint32_t n, unsigned shift, unsigned threads) {
-    size_t buckets = (static_cast<size_t>(n) + (size_t(1) << shift) - 1) >> shift;
-    std::vector<size_t> base(buckets + 1, 0);
-    for (size_t b = 0; b < buckets; ++b) {
-        base[b + 1] = base[b];
-        for (const Binner& bin : bins) for (auto& run : bin.runs(b)) base[b + 1] += run.second;
-    }
-    Packed g(n, base[buckets]);
-    std::vector<Escapes> escapes(threads);
-    g.off[n] = static_cast<uint32_t>(base[buckets]);
-    std::atomic<size_t> next{0};
-    const unsigned bits = id_bits(n);
-    const uint32_t head_mask = static_cast<uint32_t>((uint64_t(1) << bits) - 1);
-    parallel(threads, [&](unsigned t) {
-        std::vector<uint32_t> cursor(size_t(1) << shift);
-        for (size_t b; (b = next.fetch_add(1)) < buckets;) {
-            size_t lo = b << shift, hi = std::min<size_t>(n, lo + (size_t(1) << shift));
-            std::fill(cursor.begin(), cursor.begin() + (hi - lo), 0);
-            for (const Binner& bin : bins) for (auto& run : bin.runs(b)) for (uint32_t i = 0; i < run.second; ++i) ++cursor[uint64_t(run.first[i].key) >> bits];
-            uint32_t sum = static_cast<uint32_t>(base[b]);
-            for (size_t k = lo; k < hi; ++k) { uint32_t c = cursor[k - lo]; g.off[k] = cursor[k - lo] = sum; sum += c; }
-            for (const Binner& bin : bins)
-                for (auto& run : bin.runs(b))
-                    for (uint32_t i = 0; i < run.second; ++i) {
-                        const Entry& e = run.first[i];
-                        uint32_t pos = cursor[uint64_t(e.key) >> bits]++;
-                        g.put(pos, e.key & head_mask, e.w, escapes[t]);
-                    }
-        }
-    });
-    g.adopt(escapes);
-    return g;
-}
-
-static std::vector<Binner> parse_edges(const char* begin, const char* end, uint32_t n, unsigned shift, unsigned threads) {
+// Two text passes: count source degrees, then scatter directly into CSR.
+// Atomic cursors let disjoint parser chunks fill unique slots without intermediate edge bins.
+static Packed parse_direct(const char* begin, const char* end, uint32_t n, uint32_t m, unsigned threads) {
     std::vector<const char*> cut(threads + 1, end);
     cut[0] = begin;
-    for (unsigned i = 1; i < threads; ++i) {
-        const char* q = begin + static_cast<size_t>(end - begin) * i / threads;
+    for (unsigned t = 1; t < threads; ++t) {
+        const char* q = begin + size_t(end - begin) * t / threads;
         q = static_cast<const char*>(memchr(q, '\n', end - q));
-        cut[i] = q ? q + 1 : end;
+        cut[t] = q ? q + 1 : end;
     }
-    size_t buckets = (static_cast<size_t>(n) + (size_t(1) << shift) - 1) >> shift;
-    std::vector<Binner> bins;
-    for (unsigned t = 0; t < threads; ++t) bins.emplace_back(shift, id_bits(n), buckets, static_cast<size_t>(cut[t + 1] - cut[t]) / 6 + 1);
+    Array<uint32_t> cursor(n);
     parallel(threads, [&](unsigned t) {
-        Binner& bin = bins[t];
+        const char* p = cut[t];
+        while (p < cut[t + 1]) {
+            uint32_t u = number(p, end);
+            __atomic_fetch_add(&cursor[u], 1u, __ATOMIC_RELAXED);
+            const char* line = static_cast<const char*>(memchr(p, '\n', cut[t + 1] - p));
+            p = line + 1;
+        }
+    });
+    Packed raw(n, m);
+    uint32_t sum = 0;
+    for (uint32_t u = 0; u < n; ++u) {
+        uint32_t count = cursor[u];
+        raw.off[u] = cursor[u] = sum;
+        sum += count;
+    }
+    raw.off[n] = sum;
+    if (sum != m) { fputs("edge count mismatch\n", stderr); std::exit(2); }
+    std::vector<Escapes> escapes(threads);
+    parallel(threads, [&](unsigned t) {
         const char* p = cut[t];
         while (p < cut[t + 1]) {
             const char* block = p;
             const char* stop = std::min(cut[t + 1], p + (size_t(2) << 20));
             while (p < stop) {
                 uint32_t u = number(p, end), v = number(p, end), w = number(p, end);
-                bin.add(u, v, w);
+                uint32_t i = __atomic_fetch_add(&cursor[u], 1u, __ATOMIC_RELAXED);
+                raw.put(i, v, w, escapes[t]);
             }
             MappedFile::drop(block, p);
         }
-        bin.finish();
     });
-    return bins;
+    raw.adopt(escapes);
+    return raw;
 }
 
 struct Graph {
@@ -447,14 +392,10 @@ static Graph read_graph(const std::string& path, const std::vector<Query>& queri
     const char* p = file.data;
     const char* end = p + file.size;
     uint32_t n = number(p, end);
-    (void)number(p, end);
+    uint32_t m = number(p, end);
     Graph g;
     {
-        unsigned shift = bucket_shift(n);
-        std::vector<Binner> bins = parse_edges(p, end, n, shift, threads);
-        Packed raw = bins_to_csr(bins, n, shift, threads);
-        parallel(threads, [&](unsigned t) { bins[t].discard(); });
-        bins.clear();
+        Packed raw = parse_direct(p, end, n, m, threads);
         std::vector<uint8_t> terminal(n, 0);
         for (const Query& q : queries) terminal[q.from] = terminal[q.to] = 1;
         g = reorder(raw, n, terminal, threads);

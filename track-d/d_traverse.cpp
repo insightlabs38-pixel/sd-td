@@ -140,6 +140,7 @@ class Binner {
     size_t used_ = 0;
     std::vector<Entry*> fill_, limit_;
     std::vector<std::vector<Run>> runs_;
+    mutable std::vector<uint32_t> remaining_;
     unsigned shift_, bits_;
     void open_chunk(size_t b) {
         close(b);
@@ -160,8 +161,20 @@ public:
         if (fill_[b] == limit_[b]) open_chunk(b);
         *fill_[b]++ = {static_cast<uint32_t>((uint64_t(u) & ((uint64_t(1) << shift_) - 1)) << bits_) | v, w};
     }
-    void discard() { madvise(pool_.p, pool_.bytes, MADV_DONTNEED); }
-    void finish() { for (size_t b = 0; b < runs_.size(); ++b) { close(b); limit_[b] = nullptr; } }
+    void finish() {
+        for (size_t b = 0; b < runs_.size(); ++b) { close(b); limit_[b] = nullptr; }
+        size_t chunks = used_ / CHUNK;
+        remaining_.assign((chunks + 1) / 2, 2);
+        if (chunks & 1) remaining_.back() = 1;
+    }
+    // Each 4 KiB page holds two chunks; discard it after both runs have been read.
+    void reclaim(const Run& run) const {
+        size_t page = (run.first - pool_.p) / (2 * CHUNK);
+        if (__atomic_sub_fetch(&remaining_[page], 1u, __ATOMIC_ACQ_REL) == 0) {
+            static const bool pages4k = sysconf(_SC_PAGESIZE) == 4096;
+            if (pages4k) madvise(pool_.p + page * 2 * CHUNK, 4096, MADV_DONTNEED);
+        }
+    }
     const std::vector<Run>& runs(size_t b) const { return runs_[b]; }
 };
 
@@ -190,12 +203,14 @@ static Packed bins_to_csr(const std::vector<Binner>& bins, uint32_t n, unsigned 
             uint32_t sum = static_cast<uint32_t>(base[b]);
             for (size_t k = lo; k < hi; ++k) { uint32_t c = cursor[k - lo]; g.off[k] = cursor[k - lo] = sum; sum += c; }
             for (const Binner& bin : bins)
-                for (auto& run : bin.runs(b))
+                for (auto& run : bin.runs(b)) {
                     for (uint32_t i = 0; i < run.second; ++i) {
                         const Entry& e = run.first[i];
                         uint32_t pos = cursor[uint64_t(e.key) >> bits]++;
                         g.put(pos, e.key & head_mask, e.w, escapes[t]);
                     }
+                    bin.reclaim(run);
+                }
         }
     });
     g.adopt(escapes);
@@ -453,7 +468,6 @@ static Graph read_graph(const std::string& path, const std::vector<Query>& queri
         unsigned shift = bucket_shift(n);
         std::vector<Binner> bins = parse_edges(p, end, n, shift, threads);
         Packed raw = bins_to_csr(bins, n, shift, threads);
-        parallel(threads, [&](unsigned t) { bins[t].discard(); });
         bins.clear();
         std::vector<uint8_t> terminal(n, 0);
         for (const Query& q : queries) terminal[q.from] = terminal[q.to] = 1;

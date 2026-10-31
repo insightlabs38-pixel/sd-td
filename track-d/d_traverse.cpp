@@ -463,11 +463,14 @@ class Distances {
     std::vector<uint32_t> used_;
     std::vector<uint64_t*> spare_;
     std::vector<std::unique_ptr<uint64_t[]>> store_;
+    unsigned slab_used_ = 64;
     std::array<uint64_t, SIZE> blank_;
     uint64_t* acquire(uint32_t page) {
         uint64_t* p;
-        if (spare_.empty()) { store_.emplace_back(new uint64_t[SIZE]); p = store_.back().get(); }
-        else { p = spare_.back(); spare_.pop_back(); }
+        if (spare_.empty()) {
+            if (slab_used_ == 64) { store_.emplace_back(new uint64_t[SIZE * 64]); slab_used_ = 0; }
+            p = store_.back().get() + SIZE * slab_used_++;
+        } else { p = spare_.back(); spare_.pop_back(); }
         std::fill(p, p + SIZE, INF);
         used_.push_back(page);
         return dir_[page] = p;

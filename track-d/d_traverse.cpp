@@ -656,12 +656,14 @@ int main() {
     std::iota(schedule.begin(), schedule.end(), 0);
     std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) { return queries[a].from < queries[b].from; });
     std::atomic<size_t> next{0};
+    unsigned batch = std::max(1, std::min(64, std::atoi(option("SD_QUERY_BATCH", "1").c_str())));
     parallel(std::min<size_t>(threads, std::max<size_t>(1, queries.size())), [&](unsigned) {
         Worker worker(g, probe);
-        for (size_t k; (k = next.fetch_add(1, std::memory_order_relaxed)) < queries.size();) {
-            uint32_t i = schedule[k];
-            answers[i] = worker.solve(queries[i].from, queries[i].to);
-        }
+        for (size_t k; (k = next.fetch_add(batch, std::memory_order_relaxed)) < queries.size();)
+            for (size_t j = k, end = std::min<size_t>(k + batch, queries.size()); j < end; ++j) {
+                uint32_t i = schedule[j];
+                answers[i] = worker.solve(queries[i].from, queries[i].to);
+            }
     });
     write_results(out + "/distances.txt", answers);
 }

@@ -1,8 +1,9 @@
 name: Track D exactness and Docker
 on:
-  push:
+  pull_request:
     paths:
       - .github/workflows/track-d-check.yml
+      - track-d/Dockerfile
   workflow_dispatch:
 
 jobs:
@@ -17,7 +18,7 @@ jobs:
       - name: Obtain public organizer oracle
         run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
       - name: Build candidate
-        run: g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse track-d/d_traverse.cpp
+        run: g++ -O3 -march=x86-64-v3 -mtune=alderlake -std=c++17 -pthread -flto -static -s -o /tmp/traverse track-d/d_traverse.cpp
       - name: Differential random and adversarial cases
         run: SD_TEST_BINARY=/tmp/traverse python tests/test_d.py
       - name: Compare official generated cases
@@ -44,6 +45,37 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Matched baseline versus v3 tuned build, full official seed
+        shell: bash
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/main-d track-d/d_traverse.cpp
+          python3 - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          binaries = {"main": "/tmp/main-d", "v3": "/tmp/traverse"}
+          for workers in (4, 6, 12):
+              times = {name: [] for name in binaries}
+              rss = {name: [] for name in binaries}
+              wins = 0
+              for rep in range(21):
+                  pair = {}
+                  for name in (("main", "v3") if rep % 2 == 0 else ("v3", "main")):
+                      env = dict(os.environ, SD_DATA="/tmp/full-data", SD_OUT="/tmp/full-out", SD_THREADS=str(workers))
+                      begin = time.perf_counter()
+                      subprocess.run(["/usr/bin/time", "-f", "%M", "-o", "/tmp/d-rss", binaries[name]], env=env, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                      elapsed = time.perf_counter() - begin
+                      with open("/tmp/full-out/distances.txt", "rb") as f:
+                          digest = hashlib.sha256(f.read()).hexdigest()
+                      if digest != expected:
+                          raise RuntimeError(f"{name} {workers} {rep}: output hash {digest}")
+                      pair[name] = elapsed
+                      times[name].append(elapsed)
+                      with open("/tmp/d-rss") as f:
+                          rss[name].append(int(f.read().strip()))
+                  wins += pair["v3"] < pair["main"]
+              print(f"workers={workers} main={statistics.median(times['main']):.6f}s v3={statistics.median(times['v3']):.6f}s v3_wins={wins}/21 RSS_main={max(rss['main'])}KiB RSS_v3={max(rss['v3'])}KiB", flush=True)
+          PY
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

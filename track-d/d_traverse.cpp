@@ -601,8 +601,8 @@ struct Side {
 
 struct Worker {
     Side fwd, bwd;
-    uint32_t probe;
-    Worker(const Graph& g, uint32_t p) : fwd(g.fwd, g.n), bwd(g.rev, g.n), probe(p) {}
+    uint32_t probe, gap_limit;
+    Worker(const Graph& g, uint32_t p, uint32_t gap) : fwd(g.fwd, g.n), bwd(g.rev, g.n), probe(p), gap_limit(gap) {}
     int64_t solve(uint32_t s, uint32_t t) {
         if (s == t) return 0;
         if (fwd.csr.off[s] == fwd.csr.off[s + 1] || bwd.csr.off[t] == bwd.csr.off[t + 1]) return -1;
@@ -610,7 +610,8 @@ struct Worker {
         fwd.start(s);
         uint64_t best = INF;
         size_t settled = 0;
-        for (; settled < probe;) {
+        uint32_t active_probe = (gap_limit && (s > t ? s - t : t - s) >= gap_limit) ? 0 : probe;
+        for (; settled < active_probe;) {
             uint64_t f = fwd.heap.lower_bound();
             uint64_t known = fwd.dist.get(t);
             if (known < f) return static_cast<int64_t>(known);
@@ -648,6 +649,7 @@ int main() {
     unsigned threads = std::min(12u, std::max(1u, std::thread::hardware_concurrency()));
     if (getenv("SD_THREADS")) threads = std::max(1, std::min(64, atoi(getenv("SD_THREADS"))));
     uint32_t probe = std::max(0, atoi(option("SD_PROBE", "256").c_str()));
+    uint32_t gap_limit = std::max(0, atoi(option("SD_GAP", "0").c_str()));
     std::vector<Query> queries = read_queries(data + "/queries.txt");
     unsigned build_threads = std::min(threads, 4u);
     if (getenv("SD_BUILD_THREADS")) build_threads = std::min(threads, static_cast<unsigned>(std::max(1, atoi(getenv("SD_BUILD_THREADS")))));
@@ -660,7 +662,7 @@ int main() {
     std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) { return queries[a].from < queries[b].from; });
     std::atomic<size_t> next{0};
     parallel(std::min<size_t>(threads, std::max<size_t>(1, queries.size())), [&](unsigned) {
-        Worker worker(g, probe);
+        Worker worker(g, probe, gap_limit);
         for (size_t k; (k = next.fetch_add(1, std::memory_order_relaxed)) < queries.size();) {
             uint32_t i = schedule[k];
             answers[i] = worker.solve(queries[i].from, queries[i].to);

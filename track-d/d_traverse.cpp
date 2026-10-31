@@ -477,9 +477,28 @@ static std::vector<Query> read_queries(const std::string& path) {
 
 struct HeapNode { uint64_t distance; uint32_t node; };
 // Bucketed monotone queue: width 2^shift buckets in a ring; larger jumps wait in a binary heap.
+#ifndef SD_INLINE_BUCKET
+#define SD_INLINE_BUCKET 2
+#endif
+#if SD_INLINE_BUCKET
+struct SmallBucket {
+    std::array<uint32_t, SD_INLINE_BUCKET> local;
+    uint32_t count = 0;
+    std::vector<uint32_t> spill;
+    bool empty() const { return count == 0 && spill.empty(); }
+    uint32_t back() const { return spill.empty() ? local[count - 1] : spill.back(); }
+    void pop_back() { if (spill.empty()) --count; else spill.pop_back(); }
+    void push_back(uint32_t v) { if (count < SD_INLINE_BUCKET) local[count++] = v; else spill.push_back(v); }
+    void clear() { count = 0; spill.clear(); }
+};
+using Bucket = SmallBucket;
+#else
+using Bucket = std::vector<uint32_t>;
+#endif
+
 struct Heap {
     static constexpr unsigned B = 2048;
-    std::array<std::vector<uint32_t>, B> bucket;
+    std::array<Bucket, B> bucket;
     std::array<uint64_t, B / 64> occupied{};
     std::vector<HeapNode> far;
     uint64_t cur = 0;
@@ -566,7 +585,7 @@ struct Side {
     void start(uint32_t s) { dist.reset(); heap.clear(); dist.lower(s, 0); heap.push(0, s); }
     // Settles every vertex of the current bucket (re-draining entries it adds) and returns how many were expanded.
     size_t drain(const Side& other, uint64_t& best) {
-        std::vector<uint32_t>& bk = heap.bucket[heap.cur & (Heap::B - 1)];
+        Bucket& bk = heap.bucket[heap.cur & (Heap::B - 1)];
         const uint64_t base = heap.cur << heap.shift;
         const unsigned nbits = heap.node_bits, wbits = csr.wbits;
         const uint32_t node_mask = static_cast<uint32_t>((uint64_t(1) << nbits) - 1), wmask = csr.mask;

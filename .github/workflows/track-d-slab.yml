@@ -1,0 +1,72 @@
+name: Track D distance-page slab qualification
+on:
+  push:
+    branches: [d/paged-distance-slab]
+    paths: [.github/workflows/track-d-slab.yml]
+  workflow_dispatch:
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Official generator and reference
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build both exact source versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show dfea045333d2e7a91482ec6c73cda81eb4abbce6:track-d/d_traverse.cpp >/tmp/baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s /tmp/baseline.cpp -o /tmp/baseline
+          g++ -O3 -std=c++17 -pthread -flto -static -s track-d/d_traverse.cpp -o /tmp/candidate
+      - name: Differential and lattice correctness
+        shell: bash
+        run: |
+          set -euo pipefail
+          SD_TEST_BINARY=/tmp/candidate python tests/test_d.py
+          SD_TEST_BINARY=/tmp/candidate python tests/stress_d.py 120
+      - name: Official full-seed matched A/B and hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/data /tmp/out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/data/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/data/queries.txt' | sha256sum -c
+          python - <<'PY'
+          import os, subprocess, hashlib, statistics
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          results={'baseline': [], 'candidate': []}
+          env=dict(os.environ,SD_DATA='/tmp/data',SD_OUT='/tmp/out',SD_THREADS='4')
+          for i in range(9):
+              for name in (('baseline','candidate') if i%2==0 else ('candidate','baseline')):
+                  p=subprocess.run(['/usr/bin/time','-f','%e %M %U','-o','/tmp/time-'+name,'/tmp/'+name],env=env,check=True)
+                  h=hashlib.sha256(open('/tmp/out/distances.txt','rb').read()).hexdigest()
+                  assert h==expected,(i,name,h)
+                  secs,rss,user=map(float,open('/tmp/time-'+name).read().split())
+                  results[name].append((secs,rss,user))
+          for name,rows in results.items():
+              print(name,'median wall/RSS/user',*[statistics.median(x[k] for x in rows) for k in range(3)],'all',rows,flush=True)
+          b=results['baseline'];c=results['candidate']
+          for k in range(3):
+              mb=statistics.median(x[k] for x in b);mc=statistics.median(x[k] for x in c)
+              print(('wall','RSS','user')[k], 'candidate/baseline',round(mc/mb,5))
+          PY
+      - name: Official sample seed 2 and Docker
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sample /tmp/reference /tmp/native /tmp/docker
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample --out /tmp/reference
+          SD_DATA=/tmp/sample SD_OUT=/tmp/native SD_THREADS=4 /tmp/candidate
+          cmp /tmp/reference/distances.txt /tmp/native/distances.txt
+          docker build --pull -t sd-td-slab track-d
+          docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=4 -v /tmp/sample:/data:ro -v /tmp/docker:/out:rw sd-td-slab
+          cmp /tmp/reference/distances.txt /tmp/docker/distances.txt

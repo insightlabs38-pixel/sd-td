@@ -195,9 +195,32 @@ static std::vector<Binner> parse_edges(const char* begin, const char* end, uint3
     return bins;
 }
 
+// Search CSR with 4-byte edges: head in the high bits, weight in the low bits; weights that do not fit
+// store the all-ones marker and live in a sorted escape table keyed by edge index.
+struct Packed {
+    Array<uint32_t> off, adj;
+    std::vector<std::pair<uint32_t, uint32_t>> escapes;
+    unsigned wbits = 0;
+    uint32_t mask = 0;
+    Packed() = default;
+    Packed(uint32_t n, size_t m) : off(size_t(n) + 1), adj(m) {
+        unsigned node_bits = 1;
+        while (node_bits < 32 && (uint64_t(1) << node_bits) < n) ++node_bits;
+        wbits = 32 - node_bits;
+        mask = (uint32_t(1) << wbits) - 1;
+    }
+    uint32_t pack(uint32_t head, uint32_t w) const { return head << wbits | std::min(w, mask); }
+    uint32_t head(uint32_t e) const { return e >> wbits; }
+    uint32_t weight(uint32_t i) const {
+        uint32_t w = adj[i] & mask;
+        if (w != mask) return w;
+        return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint32_t(0)))->second;
+    }
+};
+
 struct Graph {
     uint32_t n = 0;
-    Csr fwd, rev;
+    Packed fwd, rev;
     Array<uint32_t> perm; // original id -> search id
 };
 
@@ -269,7 +292,7 @@ static Graph reorder(const Csr& raw, uint32_t n, unsigned threads) {
     for (unsigned t = 0; t <= threads; ++t) { base[t + 1] = base[t] + regions[t].len; ebase[t + 1] = ebase[t] + regions[t].edges; }
     Array<uint32_t> order(n), degree(n);
     g.perm = Array<uint32_t>(n);
-    g.fwd = Csr(n, ebase[threads + 1]);
+    g.fwd = Packed(n, ebase[threads + 1]);
     parallel(threads + 1, [&](unsigned t) {
         const Region& r = regions[t];
         uint64_t sum = ebase[t];
@@ -282,29 +305,44 @@ static Graph reorder(const Csr& raw, uint32_t n, unsigned threads) {
     });
     g.fwd.off[n] = static_cast<uint32_t>(ebase[threads + 1]);
     regions.clear();
-    blocked(threads, n, [&](size_t lo, size_t hi) {
-        for (size_t k = lo; k < hi; ++k) {
+    std::vector<std::vector<std::pair<uint32_t, uint32_t>>> escapes(threads);
+    parallel(threads, [&](unsigned t) {
+        for (size_t k = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; k < hi; ++k) {
             if (k + 8 < hi) __builtin_prefetch(&raw.adj[raw.off[order[k + 8]]]);
             uint32_t o = order[k], pos = g.fwd.off[k];
-            for (uint32_t i = raw.off[o]; i < raw.off[o + 1]; ++i) g.fwd.adj[pos++] = {g.perm[raw.adj[i].to], raw.adj[i].w};
+            for (uint32_t i = raw.off[o]; i < raw.off[o + 1]; ++i, ++pos) {
+                g.fwd.adj[pos] = g.fwd.pack(g.perm[raw.adj[i].to], raw.adj[i].w);
+                if (raw.adj[i].w >= g.fwd.mask) escapes[t].push_back({pos, raw.adj[i].w});
+            }
         }
     });
+    for (auto& e : escapes) g.fwd.escapes.insert(g.fwd.escapes.end(), e.begin(), e.end());
     return g;
 }
 
+static inline uint32_t bump(uint32_t& x) { return __atomic_fetch_add(&x, 1u, __ATOMIC_RELAXED); }
+
 static void add_reverse(Graph& g, unsigned threads) {
-    uint32_t n = g.n;
-    unsigned shift = bucket_shift(n);
-    size_t buckets = (static_cast<size_t>(n) + (size_t(1) << shift) - 1) >> shift;
-    auto first = [&](unsigned t) { return static_cast<uint32_t>(uint64_t(n) * t / threads); };
-    std::vector<Binner> bins;
-    for (unsigned t = 0; t < threads; ++t) bins.emplace_back(shift, buckets, g.fwd.off[first(t + 1)] - g.fwd.off[first(t)]);
+    uint32_t n = g.n, m = g.fwd.off[n];
+    g.rev = Packed(n, m);
+    memset(g.rev.off.p, 0, (size_t(n) + 1) * sizeof(uint32_t));
+    blocked(threads, m, [&](size_t lo, size_t hi) { for (size_t i = lo; i < hi; ++i) bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]); });
+    uint32_t sum = 0;
+    for (uint32_t k = 0; k < n; ++k) { uint32_t c = g.rev.off[k]; g.rev.off[k] = sum; sum += c; }
+    g.rev.off[n] = sum;
+    Array<uint32_t> cursor(n);
+    memcpy(cursor.p, g.rev.off.p, size_t(n) * sizeof(uint32_t));
+    std::vector<std::vector<std::pair<uint32_t, uint32_t>>> escapes(threads);
     parallel(threads, [&](unsigned t) {
-        for (uint32_t u = first(t); u < first(t + 1); ++u)
-            for (uint32_t i = g.fwd.off[u]; i < g.fwd.off[u + 1]; ++i) bins[t].add(g.fwd.adj[i].to, u, g.fwd.adj[i].w);
-        bins[t].finish();
+        for (size_t u = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; u < hi; ++u)
+            for (uint32_t i = g.fwd.off[u]; i < g.fwd.off[u + 1]; ++i) {
+                uint32_t w = g.fwd.weight(i), pos = bump(cursor[g.fwd.head(g.fwd.adj[i])]);
+                g.rev.adj[pos] = g.rev.pack(static_cast<uint32_t>(u), w);
+                if (w >= g.rev.mask) escapes[t].push_back({pos, w});
+            }
     });
-    g.rev = bins_to_csr(bins, n, shift, threads);
+    for (auto& e : escapes) g.rev.escapes.insert(g.rev.escapes.end(), e.begin(), e.end());
+    std::sort(g.rev.escapes.begin(), g.rev.escapes.end());
 }
 
 static Graph read_graph(const std::string& path, unsigned threads) {
@@ -427,12 +465,12 @@ public:
 };
 
 struct Side {
-    const Csr& csr;
+    const Packed& csr;
     Distances dist;
     Heap heap;
     HeapNode top_{};
     bool cached_ = false;
-    Side(const Csr& c, uint32_t n) : csr(c), dist(n) {}
+    Side(const Packed& c, uint32_t n) : csr(c), dist(n) {}
     void start(uint32_t s) { cached_ = false; dist.reset(); heap.clear(); dist.lower(s, 0); heap.push(0, s); }
     // Returns the live minimum, discarding outdated entries; cached until this side next steps.
     bool live_top(HeapNode& t) {
@@ -454,9 +492,10 @@ struct Side {
         uint64_t d = top.distance;
         cached_ = false;
         heap.drop(top);
-        for (uint32_t i = csr.off[u], e = csr.off[u + 1]; i < e; ++i) {
-            uint32_t v = csr.adj[i].to;
-            uint64_t nd = d + csr.adj[i].w;
+        for (uint32_t i = csr.off[u], last = csr.off[u + 1]; i < last; ++i) {
+            uint32_t e = csr.adj[i], v = csr.head(e), w = e & csr.mask;
+            if (w == csr.mask) w = csr.weight(i);
+            uint64_t nd = d + w;
             if (dist.lower(v, nd)) {
                 heap.push(nd, v);
                 best = std::min(best, nd + other.dist.get(v));

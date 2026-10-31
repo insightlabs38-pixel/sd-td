@@ -586,6 +586,7 @@ struct Side {
                 uint64_t w = e & wmask;
                 if (w == wmask) w = csr.weight(i);
                 uint64_t nd = d + w;
+                if (nd >= best) continue; // A nonnegative continuation cannot improve the known path.
                 if (dist.lower(v, nd)) {
                     heap.push(nd, v);
                     uint64_t meet = nd + other.dist.get(v);

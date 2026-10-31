@@ -18,6 +18,9 @@
 // Real distances stay below 2^53, so INF plus any distance cannot wrap.
 // Width-128 buckets reduce far-heap traffic; re-draining preserves exactness for zero-weight edges.
 static constexpr unsigned SHIFT_MAX = 7;
+#ifndef SD_SEED_MULT
+#define SD_SEED_MULT 1
+#endif
 static constexpr uint64_t INF = uint64_t(1) << 62;
 
 // Uninitialized, lazily faulted storage, so memory is committed only where it is written.
@@ -358,41 +361,44 @@ static Graph reorder(Packed& raw, uint32_t n, const std::vector<uint8_t>& termin
     });
     bypass_edges(raw, n, bypass, threads);
     Bits claims((size_t(n) + 63) / 64, 0);
-    std::vector<Region> regions(threads + 1);
-    for (unsigned t = 0; t <= threads; ++t) { regions[t].order = Array<uint32_t>(n, true); regions[t].degree = Array<uint32_t>(n, true); }
-    for (unsigned t = 0; t < threads; ++t) {
-        for (uint32_t i = 0, r = static_cast<uint32_t>(uint64_t(n) * t / threads); i < n; ++i, r = r + 1 == n ? 0 : r + 1)
+    const unsigned seeds = threads * SD_SEED_MULT;
+    std::vector<Region> regions(seeds + 1);
+    for (unsigned t = 0; t <= seeds; ++t) { regions[t].order = Array<uint32_t>(n, true); regions[t].degree = Array<uint32_t>(n, true); }
+    for (unsigned t = 0; t < seeds; ++t) {
+        for (uint32_t i = 0, r = static_cast<uint32_t>(uint64_t(n) * t / seeds); i < n; ++i, r = r + 1 == n ? 0 : r + 1)
             if (!test(bypass, r) && raw.off[r + 1] - raw.off[r] >= 2) {
                 if (take(claims, r)) regions[t].order[regions[t].len++] = r;
                 break;
             }
     }
-    parallel(threads, [&](unsigned t) { grow(raw, claims, regions[t]); });
-    Region& rest = regions[threads];
+    parallel(threads, [&](unsigned t) { for (unsigned k = t; k < seeds; k += threads) grow(raw, claims, regions[k]); });
+    Region& rest = regions[seeds];
     for (size_t w = 0; w < claims.size(); ++w)
         for (uint64_t free = ~claims[w]; free; free &= free - 1) {
             uint32_t v = static_cast<uint32_t>(w * 64 + __builtin_ctzll(free));
             if (v < n && !test(bypass, v) && take(claims, v)) { rest.order[rest.len++] = v; grow(raw, claims, rest); }
         }
 
-    std::vector<uint32_t> base(threads + 2, 0);
-    std::vector<uint64_t> ebase(threads + 2, 0);
-    for (unsigned t = 0; t <= threads; ++t) { base[t + 1] = base[t] + regions[t].len; ebase[t + 1] = ebase[t] + regions[t].edges; }
-    g.n = base[threads + 1];
+    std::vector<uint32_t> base(seeds + 2, 0);
+    std::vector<uint64_t> ebase(seeds + 2, 0);
+    for (unsigned t = 0; t <= seeds; ++t) { base[t + 1] = base[t] + regions[t].len; ebase[t + 1] = ebase[t] + regions[t].edges; }
+    g.n = base[seeds + 1];
     Array<uint32_t> order(g.n);
     g.perm = Array<uint32_t>(n);
-    g.fwd = Packed(g.n, ebase[threads + 1]);
-    parallel(threads + 1, [&](unsigned t) {
-        const Region& r = regions[t];
-        uint64_t sum = ebase[t];
-        for (uint32_t i = 0; i < r.len; ++i) {
-            order[base[t] + i] = r.order[i];
-            g.perm[r.order[i]] = base[t] + i;
-            g.fwd.off[base[t] + i] = static_cast<uint32_t>(sum);
-            sum += r.degree[i];
+    g.fwd = Packed(g.n, ebase[seeds + 1]);
+    parallel(threads, [&](unsigned t) {
+        for (unsigned k = t; k <= seeds; k += threads) {
+            const Region& r = regions[k];
+            uint64_t sum = ebase[k];
+            for (uint32_t i = 0; i < r.len; ++i) {
+                order[base[k] + i] = r.order[i];
+                g.perm[r.order[i]] = base[k] + i;
+                g.fwd.off[base[k] + i] = static_cast<uint32_t>(sum);
+                sum += r.degree[i];
+            }
         }
     });
-    g.fwd.off[g.n] = static_cast<uint32_t>(ebase[threads + 1]);
+    g.fwd.off[g.n] = static_cast<uint32_t>(ebase[seeds + 1]);
     regions.clear();
     std::vector<Escapes> escapes(threads);
     parallel(threads, [&](unsigned t) {

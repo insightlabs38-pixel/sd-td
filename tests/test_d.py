@@ -40,7 +40,7 @@ def oracle(n, arcs, queries):
     return answers
 
 
-def run_case(n, arcs, queries, expected=None, threads=(1, 3, 12)):
+def run_case(n, arcs, queries, expected=None, threads=(1, 4, 12)):
     with tempfile.TemporaryDirectory() as temp:
         p = pathlib.Path(temp)
         (p / 'graph.txt').write_text(f'{n} {len(arcs)}\n' + ''.join(f'{u} {v} {w}\n' for u, v, w in arcs))
@@ -91,7 +91,7 @@ def main():
         arcs, queries = random_case(seed, n, m, 60)
         run_case(n, arcs, queries)
 
-    print('PASS 83 differential cases; 3 thread counts x 6 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
+    print('PASS 83 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
 
 if __name__ == '__main__':
     main()

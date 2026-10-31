@@ -27,6 +27,28 @@ def lattice(rng, w, h):
     return n, [(perm[u], perm[v], c) for u, v, c in arcs]
 
 
+def chains(rng):
+    # Long two-way paths, one-way rings with an entrance, diamonds, hubs and heavy edges: all contraction shapes.
+    arcs, n = [], 0
+    def w():
+        return rng.choice([0, 1, 7, 100, 2046, 2047, 5000, U, U - 1, rng.randrange(1000)])
+    for length in (3, 70, 150):
+        for k in range(length - 1):
+            a, b = n + k, n + k + 1
+            arcs += [(a, b, w()), (b, a, w())]
+        n += length
+    ring = list(range(n, n + 6)); n += 6
+    arcs += [(ring[i], ring[(i + 1) % 6], w()) for i in range(6)] + [(0, ring[0], w()), (ring[3], 1, w())]
+    top = n; n += 7
+    arcs += [(top, top + 1, w()), (top, top + 2, w()), (top + 1, top + 3, w()), (top + 2, top + 3, w()), (top + 3, top + 4, w()), (top + 4, top + 5, w()), (top + 4, top + 6, w()), (top + 5, top, w()), (top + 6, 2, w())]
+    arcs += [(top + 1, top + 1, 3), (top, top + 1, w()), (5, 5, 2)]
+    for hub in range(n, n + 3):
+        arcs += [(hub, rng.randrange(n), w()) for _ in range(4)] + [(rng.randrange(n), hub, w()) for _ in range(4)]
+    n += 3
+    rng.shuffle(arcs)
+    return n + 2, arcs
+
+
 def main(seeds):
     for seed in range(seeds):
         rng = random.Random(1000 + seed)
@@ -34,6 +56,14 @@ def main(seeds):
         n += rng.randrange(0, 4)
         queries = [(rng.randrange(n), rng.randrange(n)) for _ in range(120)]
         T.run_case(n, arcs, queries, threads=(1, 5))
+    for seed in range(seeds):
+        rng = random.Random(5000 + seed)
+        n, arcs = chains(rng)
+        perm = list(range(n))
+        rng.shuffle(perm)
+        arcs = [(perm[u], perm[v], c) for u, v, c in arcs]
+        queries = [(rng.randrange(n), rng.randrange(n)) for _ in range(150)]
+        T.run_case(n, arcs, queries, threads=(1, 4, 12))
     print('PASS stress', seeds)
 
 

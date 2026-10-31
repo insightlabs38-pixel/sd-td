@@ -65,3 +65,37 @@ jobs:
             docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
           done
+
+      - name: Query priority matched tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin 6dfdd68b60f5d50abe23efc411541473d90e908f
+          git show 6dfdd68b60f5d50abe23efc411541473d90e908f:track-d/d_traverse.cpp > /tmp/d-base.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base /tmp/d-base.cpp
+          for n in 1 2 3; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_SCHEDULE_MODE=$n -o /tmp/d-mode-$n track-d/d_traverse.cpp
+          done
+          python3 - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          variants=['base','mode-1','mode-2','mode-3']
+          for workers in (4,6,12):
+              results={v:[] for v in variants}
+              for repeat in range(11):
+                  order=variants[repeat%4:]+variants[:repeat%4]
+                  for variant in order:
+                      env=os.environ.copy()
+                      env.update(SD_DATA='/tmp/full-data',SD_OUT='/tmp/full-out',SD_THREADS=str(workers))
+                      start=time.perf_counter()
+                      subprocess.run(['/tmp/d-'+variant],env=env,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE)
+                      duration=time.perf_counter()-start
+                      with open('/tmp/full-out/distances.txt','rb') as f: digest=hashlib.file_digest(f,'sha256').hexdigest()
+                      assert digest==expected,(workers,repeat,variant,digest)
+                      results[variant].append(duration)
+              print('THREADS',workers,flush=True)
+              for variant in variants:
+                  times=results[variant]
+                  wins=sum(x<y for x,y in zip(times,results['base'])) if variant!='base' else 0
+                  print(variant,'median',round(statistics.median(times),6),'paired-wins',wins,'of 11',flush=True)
+          PY

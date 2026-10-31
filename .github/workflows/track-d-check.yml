@@ -1,6 +1,8 @@
 name: Track D exactness and Docker
 on:
   push:
+    branches:
+      - d/escape-rank64
     paths:
       - .github/workflows/track-d-check.yml
   workflow_dispatch:
@@ -44,6 +46,36 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Differential exact rank and binary fallback
+        run: SD_ESCAPE_RANK=0 SD_TEST_BINARY=/tmp/traverse python tests/test_d.py
+      - name: Matched exact rank-64 tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for workers in (4, 6, 12):
+              times = {0: [], 1: []}
+              for run in range(21):
+                  for mode in (run % 2, 1 - run % 2):
+                      env = dict(os.environ, SD_DATA='/tmp/full-data', SD_OUT='/tmp/full-out',
+                                 SD_THREADS=str(workers), SD_ESCAPE_RANK=str(mode))
+                      start = time.perf_counter_ns()
+                      subprocess.run(['/tmp/traverse'], env=env, check=True)
+                      elapsed = (time.perf_counter_ns() - start) / 1e9
+                      with open('/tmp/full-out/distances.txt', 'rb') as f:
+                          assert hashlib.sha256(f.read()).hexdigest() == expected
+                      times[mode].append(elapsed)
+                      print(f'RANK_AB workers={workers} run={run} mode={mode} wall={elapsed:.6f}', flush=True)
+              print(f'RANK_SUM workers={workers} baseline={statistics.median(times[0]):.6f} rank={statistics.median(times[1]):.6f}', flush=True)
+          PY
+          for workers in 4 12; do
+            for mode in 0 1; do
+              SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out SD_THREADS=$workers SD_ESCAPE_RANK=$mode \
+                /usr/bin/time -f "RANK_RSS workers=$workers mode=$mode rss_kib=%M" /tmp/traverse
+            done
+          done
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

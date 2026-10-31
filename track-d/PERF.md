@@ -1,5 +1,13 @@
 # Track D evidence
 
+- **Current candidate (branch `frontier/d-claude-architecture`):** parallel bucketed parse and CSR build, BFS-region renumbering for locality, 4-byte packed edges with exact escape table, exact-key bucket queue, paged per-worker labels, queries scheduled by source id. Local 4-core VM, full seed 1, interleaved A/B against the previous champion: median wall **0.33 s vs 1.10 s (3.3x)**, peak RSS **91 MB vs 227 MB**, exact output SHA `a23dbdf0...` every run. Not scoring-box data; the scoring box has 12 threads, so parallel phases should scale further.
+- **Gates:** 83 differential cases x 3 thread counts x 6 probe limits; tiny seed 2 and sample seed 2 byte-identical to the Python reference; sample seed 1 and full seed 1 SHA match the published values; ASan/UBSan clean; pinned Docker build and run match ([CI run](https://github.com/insightlabs38-pixel/sd-td/actions/runs/41148327539)).
+- **Measured by phase (4 threads, ms):** parse+bin 30, raw CSR 15, BFS regions 35, assemble 8, gather 22, reverse 23, queries ~150. Single-thread query CPU ~0.6 s for 7.4M settles.
+- **Findings:** random relabeling made every label access a cache miss; BFS renumbering alone cut query CPU 2.4x. A shared claim bitmap was fine, but adjacent per-region counters false-shared and cost 2x until moved to locals. Atomic CSR scatter cost 85 ms vs 15 ms for bucketed no-atomic build. Packed/Dial-style queues helped only once the bucket array was lean. Transparent huge pages gave a small median gain but a bad tail on this VM, so they were removed. A forward probe of 256 settles is required: pure bidirectional search floods the 1.7M-node main component for island-source queries.
+
+Previous champion history follows.
+
+
 - **Current champion:** in-place radix redistribution with forward-probe reuse, 8-bit epochs and early parser scratch release; in-place redistribution 64-bit radix heap, exact forward-CSR probe (256 settled vertices) followed by directed bidirectional Dijkstra with dual CSR; four independent workers, no third-party runtime dependencies.
 - **Official full seed 1:** graph/queries SHA-256 match organizer-published hashes; output `a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e` matches exactly. Native GitHub-hosted runner: **1.35 s elapsed, 263,840 KiB peak RSS**. These are not scoring-box measurements.
 - **Official sample seeds 1 and 2, tiny seed 2:** output byte-for-byte matches the organizer's Python reference. The official worked example matches SHA-256 `2e9871bba1d5013144ceff48d806a28da0e3f203b29118a89d98d8f654c3f6a0`.

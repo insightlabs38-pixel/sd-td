@@ -646,7 +646,9 @@ int main() {
     if (getenv("SD_THREADS")) threads = std::max(1, std::min(64, atoi(getenv("SD_THREADS"))));
     uint32_t probe = std::max(0, atoi(option("SD_PROBE", "256").c_str()));
     std::vector<Query> queries = read_queries(data + "/queries.txt");
-    Graph g = read_graph(data + "/graph.txt", queries, threads);
+    unsigned build_threads = threads;
+    if (getenv("SD_BUILD_THREADS")) build_threads = std::min(threads, static_cast<unsigned>(std::max(1, atoi(getenv("SD_BUILD_THREADS")))));
+    Graph g = read_graph(data + "/graph.txt", queries, build_threads);
     for (Query& q : queries) { q.from = g.perm[q.from]; q.to = g.perm[q.to]; }
     g.perm.release();
     std::vector<int64_t> answers(queries.size(), -1);

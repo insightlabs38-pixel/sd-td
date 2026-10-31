@@ -1,0 +1,72 @@
+name: Track D BFS seed multiplicity tournament
+on:
+  push:
+    branches:
+      - d/bfs-seed-multiplicity-20261031-11
+    paths:
+      - .github/workflows/d-bfs-seed-tournament.yml
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile exact BFS seed variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          for m in 1 2 4; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_SEED_MULT=$m -o /tmp/traverse-m$m track-d/d_traverse.cpp
+          done
+      - name: Differential correctness for each seed multiplicity
+        shell: bash
+        run: |
+          set -euo pipefail
+          for m in 1 2 4; do
+            echo "Checking BFS multiplicity $m"
+            SD_TEST_BINARY=/tmp/traverse-m$m python tests/test_d.py
+          done
+      - name: Official full input and exact hash
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          mkdir -p /tmp/full-data /tmp/full-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/full-data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/full-data/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
+      - name: Interleaved exact-output full-seed tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for threads in (4, 12):
+              results={m: [] for m in (1, 2, 4)}
+              for rnd in range(13):
+                  for m in ([1,2,4][(rnd+i)%3] for i in range(3)):
+                      env=os.environ.copy()
+                      env.update(SD_DATA='/tmp/full-data',SD_OUT='/tmp/full-out',SD_THREADS=str(threads),SD_BUILD_THREADS='4')
+                      t0=time.perf_counter_ns()
+                      subprocess.run(['/usr/bin/time','-f','%M %U','-o','/tmp/usage.txt',f'/tmp/traverse-m{m}'],env=env,check=True)
+                      wall=(time.perf_counter_ns()-t0)*1e-9
+                      with open('/tmp/full-out/distances.txt','rb') as f:
+                          digest=hashlib.sha256(f.read()).hexdigest()
+                      assert digest==expected,(threads,rnd,m,digest)
+                      mem,user=map(float,open('/tmp/usage.txt').read().split())
+                      results[m].append((wall,mem,user))
+              print('THREADS',threads,flush=True)
+              for m in (1,2,4):
+                  rows=results[m]
+                  print('MULTIPLICITY',m,'N',len(rows),'WALL_MEDIAN',round(statistics.median(x[0] for x in rows),6),'RSS_MAX_KIB',max(x[1] for x in rows),'RSS_MEDIAN_KIB',statistics.median(x[1] for x in rows),'USER_MEDIAN',round(statistics.median(x[2] for x in rows),5),flush=True)
+              for m in (2,4):
+                  ratios=[results[m][i][0]/results[1][i][0] for i in range(13)]
+                  print('VS_BASELINE',m,'MEDIAN_WALL_RATIO',round(statistics.median(ratios),5),'WINS',sum(r<1 for r in ratios),flush=True)
+          print('PASS 78 exact official full-seed hashes',flush=True)
+          PY

@@ -415,7 +415,6 @@ static void add_reverse(Graph& g, unsigned threads) {
     uint32_t n = g.n, m = g.fwd.off[n];
     g.rev = Packed(n, m);
     blocked(threads, m, [&](size_t lo, size_t hi) { for (size_t i = lo; i < hi; ++i) bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]); });
-    Array<uint32_t> cursor(n);
     std::vector<uint32_t> start(threads + 1, 0);
     parallel(threads, [&](unsigned t) {
         for (size_t k = size_t(n) * t / threads, hi = size_t(n) * (t + 1) / threads; k < hi; ++k) start[t + 1] += g.rev.off[k];
@@ -426,7 +425,7 @@ static void add_reverse(Graph& g, unsigned threads) {
         uint32_t sum = start[t];
         for (size_t k = size_t(n) * t / threads, hi = size_t(n) * (t + 1) / threads; k < hi; ++k) {
             uint32_t c = g.rev.off[k];
-            g.rev.off[k] = cursor[k] = sum;
+            g.rev.off[k] = sum;
             sum += c;
         }
     });
@@ -434,9 +433,12 @@ static void add_reverse(Graph& g, unsigned threads) {
     parallel(threads, [&](unsigned t) {
         for (size_t u = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; u < hi; ++u)
             for (uint32_t i = g.fwd.off[u]; i < g.fwd.off[u + 1]; ++i) {
-                g.rev.put(bump(cursor[g.fwd.head(g.fwd.adj[i])]), static_cast<uint32_t>(u), g.fwd.weight(i), escapes[t]);
+                g.rev.put(bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]), static_cast<uint32_t>(u), g.fwd.weight(i), escapes[t]);
             }
     });
+    // Scatter advanced each start to its end; shift the ends back into CSR offsets.
+    for (uint32_t k = n; k > 0; --k) g.rev.off[k] = g.rev.off[k - 1];
+    g.rev.off[0] = 0;
     g.rev.adopt(escapes);
 }
 

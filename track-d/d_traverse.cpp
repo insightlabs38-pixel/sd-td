@@ -379,32 +379,37 @@ static Graph reorder(Packed& raw, uint32_t n, const std::vector<uint8_t>& termin
     std::vector<uint64_t> ebase(threads + 2, 0);
     for (unsigned t = 0; t <= threads; ++t) { base[t + 1] = base[t] + regions[t].len; ebase[t + 1] = ebase[t] + regions[t].edges; }
     g.n = base[threads + 1];
-    Array<uint32_t> order(g.n);
     g.perm = Array<uint32_t>(n);
     g.fwd = Packed(g.n, ebase[threads + 1]);
     parallel(threads + 1, [&](unsigned t) {
         const Region& r = regions[t];
         uint64_t sum = ebase[t];
         for (uint32_t i = 0; i < r.len; ++i) {
-            order[base[t] + i] = r.order[i];
             g.perm[r.order[i]] = base[t] + i;
             g.fwd.off[base[t] + i] = static_cast<uint32_t>(sum);
             sum += r.degree[i];
         }
     });
     g.fwd.off[g.n] = static_cast<uint32_t>(ebase[threads + 1]);
-    regions.clear();
+    for (Region& r : regions) r.degree.release();
     std::vector<Escapes> escapes(threads);
     parallel(threads, [&](unsigned t) {
-        for (size_t k = size_t(g.n) * t / threads, hi = size_t(g.n) * (t + 1) / threads; k < hi; ++k) {
-            if (k + 8 < hi) __builtin_prefetch(&raw.adj[raw.off[order[k + 8]]]);
-            uint32_t o = order[k], pos = g.fwd.off[k];
-            for (uint32_t i = raw.off[o]; i < raw.off[o + 1]; ++i) {
-                if (raw.adj[i] == raw.dead) continue;
-                g.fwd.put(pos++, g.perm[raw.head(raw.adj[i])], raw.weight(i), escapes[t]);
+        size_t begin = size_t(g.n) * t / threads, end = size_t(g.n) * (t + 1) / threads;
+        for (size_t r = 0; r < regions.size(); ++r) {
+            size_t lo = std::max(begin, size_t(base[r])), hi = std::min(end, size_t(base[r + 1]));
+            if (lo >= hi) continue;
+            const uint32_t* order = regions[r].order.p;
+            for (size_t k = lo; k < hi; ++k) {
+                if (k + 8 < hi) __builtin_prefetch(&raw.adj[raw.off[order[k + 8 - base[r]]]]);
+                uint32_t o = order[k - base[r]], pos = g.fwd.off[k];
+                for (uint32_t i = raw.off[o]; i < raw.off[o + 1]; ++i) {
+                    if (raw.adj[i] == raw.dead) continue;
+                    g.fwd.put(pos++, g.perm[raw.head(raw.adj[i])], raw.weight(i), escapes[t]);
+                }
             }
         }
     });
+    regions.clear();
     g.fwd.adopt(escapes);
     return g;
 }

@@ -103,6 +103,7 @@ using Escapes = std::vector<std::pair<uint32_t, uint64_t>>;
 struct Packed {
     Array<uint32_t> off, adj;
     Escapes escapes;
+    std::vector<uint32_t> escape_start;
     unsigned wbits = 0;
     uint32_t mask = 0, dead = 0; // `dead` is a head one past the last id: an edge that leads nowhere
     Packed() = default;
@@ -119,9 +120,27 @@ struct Packed {
     void adopt(const std::vector<Escapes>& parts) {
         for (auto& e : parts) escapes.insert(escapes.end(), e.begin(), e.end());
         std::sort(escapes.begin(), escapes.end());
+        // Restrict escape lookups to the 256-edge page containing the edge.
+        const char* opt = std::getenv("SD_ESCAPE_INDEX");
+        if (opt && opt[0] == '0') { escape_start.clear(); return; }
+        size_t blocks = (adj.bytes / sizeof(uint32_t) + 255) / 256;
+        escape_start.resize(blocks + 1);
+        size_t pos = 0;
+        for (size_t k = 0; k <= blocks; ++k) {
+            while (pos < escapes.size() && escapes[pos].first < k * 256) ++pos;
+            escape_start[k] = static_cast<uint32_t>(pos);
+        }
     }
     uint32_t head(uint32_t e) const { return e >> wbits; }
-    uint64_t escape(uint32_t i) const { return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint64_t(0)))->second; }
+    uint64_t escape(uint32_t i) const {
+        auto first = escapes.begin(), last = escapes.end();
+        if (!escape_start.empty()) {
+            size_t k = i >> 8;
+            first += escape_start[k];
+            last = escapes.begin() + escape_start[k + 1];
+        }
+        return std::lower_bound(first, last, std::make_pair(i, uint64_t(0)))->second;
+    }
     uint64_t weight(uint32_t i) const {
         uint32_t w = adj[i] & mask;
         return w != mask ? w : escape(i);

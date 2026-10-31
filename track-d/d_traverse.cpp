@@ -237,8 +237,12 @@ static bool test(const Bits& bits, uint32_t v) { return bits[v >> 6] >> (v & 63)
 // Rewrites raw edges in place. A vertex with out-degree <= 2 that is not a query endpoint is skipped while exactly one
 // way leads on, so only surviving heads remain; `dead` edges lead nowhere. Walks of a block advance one hop per round,
 // so their cache misses overlap, and read only a snapshot of the bypassable vertices' edges.
-static void bypass_edges(Packed& raw, uint32_t n, const Bits& bypass, unsigned threads) {
+static void bypass_edges(Packed& raw, uint32_t n, Bits& bypass, unsigned threads) {
     Array<uint64_t> ways(n);
+    Bits keep(bypass.size(), 0);
+    auto retain = [&](uint32_t v) {
+        __atomic_fetch_or(&keep[v >> 6], 1ull << (v & 63), __ATOMIC_RELAXED);
+    };
     blocked(threads, n, [&](size_t lo, size_t hi) {
         for (size_t x = lo; x < hi; ++x)
             if (test(bypass, x)) {
@@ -285,18 +289,21 @@ static void bypass_edges(Packed& raw, uint32_t n, const Bits& bypass, unsigned t
                         uint32_t y = raw.head(e);
                         if (y != w.prev && y != w.at) { ++ahead; next = y; word = e; which = k; }
                     }
-                    if (ahead > 1) { finish(w.edge, w.at, w.weight); continue; }
+                    if (ahead > 1) { retain(w.at); finish(w.edge, w.at, w.weight); continue; }
                     if (ahead == 0 || next == w.root) { raw.adj[w.edge] = raw.dead; continue; }
                     w.weight += (word & raw.mask) == raw.mask ? raw.escape(raw.off[w.at] + which) : (word & raw.mask);
                     w.prev = w.at;
                     w.at = next;
-                    if (!test(bypass, next) || ++w.steps == 64) finish(w.edge, next, w.weight);
+                    if (!test(bypass, next)) finish(w.edge, next, w.weight);
+                    else if (++w.steps == 64) { retain(next); finish(w.edge, next, w.weight); }
                     else onward.push_back(w);
                 }
                 walks.swap(onward);
             }
         }
     });
+    // Every shortcut endpoint must survive renumbering, including branches and capped walks.
+    for (size_t i = 0; i < bypass.size(); ++i) bypass[i] &= ~keep[i];
     std::vector<uint32_t> gone;
     for (auto& v : stale) gone.insert(gone.end(), v.begin(), v.end());
     std::sort(gone.begin(), gone.end());

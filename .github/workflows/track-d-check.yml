@@ -1,11 +1,5 @@
 name: Track D exactness and Docker
 on:
-  push:
-    paths:
-      - .github/workflows/track-d-check.yml
-      - track-d/d_traverse.cpp
-      - tests/test_d.py
-      - tests/stress_d.py
   pull_request:
     paths:
       - .github/workflows/track-d-check.yml
@@ -55,6 +49,52 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Matched baseline comparison and contraction regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin 708739017c667e52c7ab69a0244edd9c3f875bee
+          git show 708739017c667e52c7ab69a0244edd9c3f875bee:track-d/d_traverse.cpp > /tmp/champion.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/champion /tmp/champion.cpp
+          python - <<'PY'
+          import hashlib, os, pathlib, statistics, subprocess, tempfile, time
+          with tempfile.TemporaryDirectory() as d:
+              p=pathlib.Path(d)
+              (p/'graph.txt').write_text('6 6\\n0 1 2\\n1 2 3\\n1 3 1\\n2 4 2\\n3 4 100\\n4 5 1\\n')
+              (p/'queries.txt').write_text('0 5\\n')
+              env={**os.environ,'SD_DATA':d,'SD_OUT':d,'SD_THREADS':'1'}
+              subprocess.run(['/tmp/champion'],env=env,check=True)
+              got=(p/'distances.txt').read_text().strip()
+              print('Old champion branching counterexample:',got,'expected 8')
+              assert got!='8', 'expected original contraction bug not reproduced'
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for workers in (4,12):
+              timings={'champion':[],'candidate':[]}
+              memory={'champion':[],'candidate':[]}
+              for i in range(15):
+                  for label in (('champion','candidate') if i%2==0 else ('candidate','champion')):
+                      out=pathlib.Path('/tmp/ab-'+label);out.mkdir(exist_ok=True)
+                      rss=pathlib.Path('/tmp/rss-'+label)
+                      env={**os.environ,'SD_DATA':'/tmp/full-data','SD_OUT':str(out),'SD_THREADS':str(workers)}
+                      begin=time.perf_counter()
+                      subprocess.run(['/usr/bin/time','-f','%M','-o',str(rss),'/tmp/'+('champion' if label=='champion' else 'traverse')],env=env,check=True,stdout=subprocess.DEVNULL)
+                      timings[label].append(time.perf_counter()-begin)
+                      memory[label].append(int(rss.read_text().strip()))
+                      assert hashlib.sha256((out/'distances.txt').read_bytes()).hexdigest()==expected
+              for label in ('champion','candidate'):
+                  print('AB',workers,label,'median_s',round(statistics.median(timings[label]),6),'maxrss_KiB',max(memory[label]))
+          PY
+      - name: Additional holdout sample seeds
+        shell: bash
+        run: |
+          set -euo pipefail
+          for seed in 3 7; do
+            mkdir -p "/tmp/sample-$seed" "/tmp/ref-$seed" "/tmp/candidate-$seed"
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale sample --out "/tmp/sample-$seed"
+            python /tmp/official/reference/d_traverse.py --data "/tmp/sample-$seed" --out "/tmp/ref-$seed"
+            SD_DATA="/tmp/sample-$seed" SD_OUT="/tmp/candidate-$seed" /tmp/traverse
+            cmp "/tmp/ref-$seed/distances.txt" "/tmp/candidate-$seed/distances.txt"
+          done
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

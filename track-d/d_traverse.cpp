@@ -657,7 +657,28 @@ int main() {
     std::vector<int64_t> answers(queries.size(), -1);
     std::vector<uint32_t> schedule(queries.size());
     std::iota(schedule.begin(), schedule.end(), 0);
+#if SD_SCHED_MODE == 1 || SD_SCHED_MODE == 2 || SD_SCHED_MODE == 3
+    auto separation = [&](uint32_t i) {
+        uint32_t s = queries[i].from, t = queries[i].to;
+        return s > t ? s - t : t - s;
+    };
+    std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) {
+        uint32_t da = separation(a), db = separation(b);
+#if SD_SCHED_MODE == 2
+        da >>= 14; db >>= 14; // Preserve source locality within coarse cost bands.
+#endif
+        if (da != db) {
+#if SD_SCHED_MODE == 3
+            return da < db;
+#else
+            return da > db;
+#endif
+        }
+        return queries[a].from < queries[b].from;
+    });
+#else
     std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) { return queries[a].from < queries[b].from; });
+#endif
     std::atomic<size_t> next{0};
     parallel(std::min<size_t>(threads, std::max<size_t>(1, queries.size())), [&](unsigned) {
         Worker worker(g, probe);

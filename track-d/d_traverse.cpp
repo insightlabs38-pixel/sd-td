@@ -331,6 +331,10 @@ static void grow(const Packed& raw, Bits& claims, Region& r) {
     uint32_t* degree = r.degree.p;
     uint32_t head = r.expanded;
     for (; head < len; ++head) {
+#ifndef SD_FIFO_GROW
+        // A LIFO frontier retains a contiguous settled prefix while visiting recent neighbours first.
+        if (head + 1 < len) std::swap(order[head], order[len - 1]);
+#endif
         if (head + 16 < len) __builtin_prefetch(&raw.off[order[head + 16]]);
         if (head + 8 < len) __builtin_prefetch(&raw.adj[raw.off[order[head + 8]]]);
         uint32_t u = order[head], live = 0;

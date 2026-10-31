@@ -1,6 +1,8 @@
 name: Track D exactness and Docker
 on:
   push:
+    branches:
+      - d/escape-page-index
     paths:
       - .github/workflows/track-d-check.yml
   workflow_dispatch:
@@ -44,6 +46,20 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Matched exact escape-index tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          for workers in 4 12; do
+            for pass in $(seq 1 15); do
+              if ((pass % 2)); then modes="0 1"; else modes="1 0"; fi
+              for mode in $modes; do
+                SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out SD_THREADS=$workers SD_ESCAPE_INDEX=$mode \
+                  /usr/bin/time -f "ESCAPE_AB workers=$workers pass=$pass indexed=$mode wall=%e rss_kib=%M" /tmp/traverse
+                echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c >/dev/null
+              done
+            done
+          done
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

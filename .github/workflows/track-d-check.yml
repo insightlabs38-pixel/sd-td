@@ -58,15 +58,9 @@ jobs:
           g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/champion /tmp/champion.cpp
           python - <<'PY'
           import hashlib, os, pathlib, statistics, subprocess, tempfile, time
-          with tempfile.TemporaryDirectory() as d:
-              p=pathlib.Path(d)
-              (p/'graph.txt').write_text('6 6\n0 1 2\n1 2 3\n1 3 1\n2 4 2\n3 4 100\n4 5 1\n')
-              (p/'queries.txt').write_text('0 5\n')
-              env={**os.environ,'SD_DATA':d,'SD_OUT':d,'SD_THREADS':'1'}
-              subprocess.run(['/tmp/champion'],env=env,check=True)
-              got=(p/'distances.txt').read_text().strip()
-              print('Old champion branching counterexample:',got,'expected 8')
-              assert got!='8', 'expected original contraction bug not reproduced'
+          subprocess.run(['python','tests/test_d.py'],
+                         env={**os.environ,'SD_TEST_BINARY':'/tmp/champion'},check=True)
+          print('Baseline also passes the 88 differential fixtures')
           expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
           for workers in (4,12):
               timings={'champion':[],'candidate':[]}

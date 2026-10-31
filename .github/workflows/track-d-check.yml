@@ -66,28 +66,28 @@ jobs:
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
           done
 
-      - name: Distance-page slab allocation tournament
+
+      - name: Confirm distance-slab layouts with 31 matched passes
         shell: bash
         run: |
           set -euo pipefail
           git fetch --depth 1 origin main
           git show FETCH_HEAD:track-d/d_traverse.cpp > /tmp/dist-base.cpp
           g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/dist-base /tmp/dist-base.cpp
-          for slab in 16 64 256; do
-            sed "s/static constexpr size_t SLAB = 256;/static constexpr size_t SLAB = $slab;/" track-d/d_traverse.cpp > "/tmp/dist-$slab.cpp"
-            grep -q "static constexpr size_t SLAB = $slab;" "/tmp/dist-$slab.cpp"
-            g++ -O3 -std=c++17 -pthread -flto -static -s -o "/tmp/dist-$slab" "/tmp/dist-$slab.cpp"
-          done
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/dist-64 track-d/d_traverse.cpp
+          sed 's/static constexpr size_t SLAB = 64;/static constexpr size_t SLAB = 256;/' track-d/d_traverse.cpp > /tmp/dist-256.cpp
+          grep -q 'static constexpr size_t SLAB = 256;' /tmp/dist-256.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/dist-256 /tmp/dist-256.cpp
           python3 - <<'PY'
           import hashlib, os, pathlib, random, statistics, subprocess, time
           expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
-          output = pathlib.Path("/tmp/slab-output")
+          output = pathlib.Path("/tmp/slab-confirm-output")
           output.mkdir(exist_ok=True)
           records = {}
           for workers in (4, 6, 12):
-              for trial in range(11):
-                  order = ["base", "16", "64", "256"]
-                  random.Random(321 + workers * 37 + trial).shuffle(order)
+              for trial in range(31):
+                  order = ["base", "64", "256"]
+                  random.Random(1021 + workers * 37 + trial).shuffle(order)
                   for slab in order:
                       env = dict(os.environ, SD_DATA="/tmp/full-data", SD_OUT=str(output),
                                  SD_THREADS=str(workers), SD_BUILD_THREADS="4")
@@ -100,13 +100,17 @@ jobs:
                       rss = int(pathlib.Path("/tmp/slab-rss").read_text().strip())
                       records.setdefault((workers, slab), []).append((seconds, rss))
           for workers in (4, 6, 12):
-              baseline = statistics.median(x[0] for x in records[(workers, "base")])
-              for slab in ("base", "16", "64", "256"):
+              baseline = records[(workers, "base")]
+              bmedian = statistics.median(x[0] for x in baseline)
+              for slab in ("base", "64", "256"):
                   samples = records[(workers, slab)]
                   median = statistics.median(x[0] for x in samples)
                   peak = statistics.median(x[1] for x in samples)
-                  print(f"DIST_SLAB workers={workers} slab={slab} passes=11 "
+                  ratios = [x[0] / y[0] for x, y in zip(samples, baseline)]
+                  print(f"SLAB_CONFIRM workers={workers} slab={slab} passes=31 "
                         f"median_s={median:.6f} median_rss_kib={peak:.0f} "
-                        f"delta_vs_base_pct={(median / baseline - 1) * 100:+.3f}", flush=True)
-          print("PASS 132 official full-seed hashes across distance allocation layouts", flush=True)
+                        f"delta_vs_base_pct={(median / bmedian - 1) * 100:+.3f} "
+                        f"paired_ratio={statistics.median(ratios):.6f} "
+                        f"paired_wins={sum(r < 1 for r in ratios)}/31", flush=True)
+          print("PASS 279 official full-seed hashes in distance-slab confirmation", flush=True)
           PY

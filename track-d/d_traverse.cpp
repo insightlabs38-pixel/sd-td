@@ -16,8 +16,8 @@
 #include <unistd.h>
 
 // Real distances stay below 2^53, so INF plus any distance cannot wrap.
-// Bucket width 2^5 stays below the smallest common edge weight, so a bucket rarely needs re-draining.
-static constexpr unsigned SHIFT_MAX = 5;
+// Width-128 buckets reduce far-heap traffic; re-draining preserves exactness for zero-weight edges.
+static constexpr unsigned SHIFT_MAX = 7;
 static constexpr uint64_t INF = uint64_t(1) << 62;
 
 // Uninitialized, lazily faulted storage, so memory is committed only where it is written.

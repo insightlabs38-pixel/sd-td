@@ -24,10 +24,11 @@ template <class T> struct Array {
     T* p = nullptr;
     size_t bytes = 0;
     Array() = default;
-    explicit Array(size_t n) : bytes(n * sizeof(T) + 1) {
+    explicit Array(size_t n, bool sparse = false) : bytes(n * sizeof(T) + 1) {
         void* q = mmap(nullptr, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         if (q == MAP_FAILED) { perror("mmap"); std::exit(2); }
         p = static_cast<T*>(q);
+        if (sparse) madvise(q, bytes, MADV_NOHUGEPAGE); // prefix-filled arrays would round up to whole huge pages
     }
     Array(Array&& o) noexcept : p(o.p), bytes(o.bytes) { o.p = nullptr; }
     Array& operator=(Array&& o) noexcept { release(); p = o.p; bytes = o.bytes; o.p = nullptr; return *this; }
@@ -134,7 +135,7 @@ class Binner {
     }
 public:
     Binner(unsigned shift, size_t buckets, size_t max_edges)
-        : pool_(max_edges + (buckets + 1) * CHUNK), fill_(buckets, nullptr), limit_(buckets, nullptr), runs_(buckets), shift_(shift) {}
+        : pool_(max_edges + (buckets + 1) * CHUNK, true), fill_(buckets, nullptr), limit_(buckets, nullptr), runs_(buckets), shift_(shift) {}
     void add(uint32_t u, uint32_t v, uint32_t w) {
         size_t b = u >> shift_;
         if (fill_[b] == limit_[b]) open_chunk(b);
@@ -266,7 +267,7 @@ static Graph reorder(const Packed& raw, uint32_t n, unsigned threads) {
     g.n = n;
     Claims claims(n);
     std::vector<Region> regions(threads + 1);
-    for (unsigned t = 0; t <= threads; ++t) { regions[t].order = Array<uint32_t>(n); regions[t].degree = Array<uint32_t>(n); }
+    for (unsigned t = 0; t <= threads; ++t) { regions[t].order = Array<uint32_t>(n, true); regions[t].degree = Array<uint32_t>(n, true); }
     for (unsigned t = 0; t < threads; ++t) {
         for (uint32_t i = 0, r = static_cast<uint32_t>(uint64_t(n) * t / threads); i < n; ++i, r = r + 1 == n ? 0 : r + 1)
             if (raw.off[r + 1] - raw.off[r] >= 2) {
@@ -316,30 +317,35 @@ static Graph reorder(const Packed& raw, uint32_t n, unsigned threads) {
     return g;
 }
 
-static inline uint32_t bump(uint32_t& x) { return __atomic_fetch_add(&x, 1u, __ATOMIC_RELAXED); }
-
-static void add_reverse(Graph& g, unsigned threads) {
-    uint32_t n = g.n, m = g.fwd.off[n];
-    g.rev = Packed(n, m);
-    memset(g.rev.off.p, 0, (size_t(n) + 1) * sizeof(uint32_t));
-    blocked(threads, m, [&](size_t lo, size_t hi) { for (size_t i = lo; i < hi; ++i) bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]); });
-    Array<uint32_t> cursor(n);
+// dst[k] = sum of src[0..k); returns the total. src may equal dst; copy, if given, also receives dst.
+static uint32_t scan(const uint32_t* src, uint32_t* dst, size_t n, unsigned threads, uint32_t* copy = nullptr) {
     std::vector<uint32_t> start(threads + 1, 0);
     parallel(threads, [&](unsigned t) {
         uint32_t sum = 0;
-        for (size_t k = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; k < hi; ++k) sum += g.rev.off[k];
+        for (size_t k = n * t / threads, hi = n * (t + 1) / threads; k < hi; ++k) sum += src[k];
         start[t + 1] = sum;
     });
     for (unsigned t = 0; t < threads; ++t) start[t + 1] += start[t];
     parallel(threads, [&](unsigned t) {
         uint32_t sum = start[t];
-        for (size_t k = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; k < hi; ++k) {
-            uint32_t c = g.rev.off[k];
-            g.rev.off[k] = cursor[k] = sum;
+        for (size_t k = n * t / threads, hi = n * (t + 1) / threads; k < hi; ++k) {
+            uint32_t c = src[k];
+            dst[k] = sum;
+            if (copy) copy[k] = sum;
             sum += c;
         }
     });
-    g.rev.off[n] = start[threads];
+    return start[threads];
+}
+
+static inline uint32_t bump(uint32_t& x) { return __atomic_fetch_add(&x, 1u, __ATOMIC_RELAXED); }
+
+static void add_reverse(Graph& g, unsigned threads) {
+    uint32_t n = g.n, m = g.fwd.off[n];
+    g.rev = Packed(n, m);
+    blocked(threads, m, [&](size_t lo, size_t hi) { for (size_t i = lo; i < hi; ++i) bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]); });
+    Array<uint32_t> cursor(n);
+    g.rev.off[n] = scan(g.rev.off.p, g.rev.off.p, n, threads, cursor.p);
     std::vector<std::vector<std::pair<uint32_t, uint32_t>>> escapes(threads);
     parallel(threads, [&](unsigned t) {
         for (size_t u = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; u < hi; ++u)
@@ -441,7 +447,7 @@ struct Heap {
 
 // Distances live in fixed pages materialized on first write and recycled per query, so memory tracks the search, not n.
 class Distances {
-    static constexpr unsigned SHIFT = 9, SIZE = 1u << SHIFT;
+    static constexpr unsigned SHIFT = 7, SIZE = 1u << SHIFT;
     std::vector<uint64_t*> dir_;
     std::vector<uint32_t> used_;
     std::vector<uint64_t*> spare_;

@@ -1,0 +1,89 @@
+name: Track D four-way exact allocation and probe tournament
+on:
+  push:
+    branches: [d/slab-probe-combined]
+    paths: [.github/workflows/track-d-fourway.yml]
+  workflow_dispatch:
+
+jobs:
+  tournament:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Official generator and oracle
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build all four candidates from immutable source SHAs
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show dfea045333d2e7a91482ec6c73cda81eb4abbce6:track-d/d_traverse.cpp >/tmp/base.cpp
+          git show 6ab51d34e2f661df3f61bda505cc3b1771406585:track-d/d_traverse.cpp >/tmp/slab.cpp
+          git show edd695bc1075df48fad35b1e7d42ce76e9de6315:track-d/d_traverse.cpp >/tmp/probe.cpp
+          cp track-d/d_traverse.cpp /tmp/both.cpp
+          for name in base slab probe both; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s "/tmp/$name.cpp" -o "/tmp/$name"
+            printf '%s lines: ' "$name"
+            grep -Ev '^[[:space:]]*(//|$)' "/tmp/$name.cpp" | wc -l
+          done
+      - name: Differential and adversarial correctness
+        shell: bash
+        run: |
+          set -euo pipefail
+          SD_TEST_BINARY=/tmp/both python tests/test_d.py
+          SD_TEST_BINARY=/tmp/both python tests/stress_d.py 120
+      - name: Full-seed official exact four-way matched tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/data /tmp/out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/data/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/data/queries.txt' | sha256sum -c
+          python - <<'PY'
+          import os, subprocess, hashlib, statistics, time, random
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          names=['base','slab','probe','both']
+          for workers,passes in [(4,25),(12,9)]:
+              env=dict(os.environ,SD_DATA='/tmp/data',SD_OUT='/tmp/out',SD_THREADS=str(workers))
+              results={name:[] for name in names}
+              rng=random.Random(100+workers)
+              for name in names:
+                  subprocess.run(['/tmp/'+name],env=env,check=True)
+              for i in range(passes):
+                  order=names[:]
+                  rng.shuffle(order)
+                  for name in order:
+                      t0=time.perf_counter_ns()
+                      subprocess.run(['/usr/bin/time','-f','%M %U','-o','/tmp/time-'+name,'/tmp/'+name],env=env,check=True)
+                      elapsed=(time.perf_counter_ns()-t0)*1e-9
+                      h=hashlib.sha256(open('/tmp/out/distances.txt','rb').read()).hexdigest()
+                      assert h==expected,(workers,i,name,h)
+                      rss,user=map(float,open('/tmp/time-'+name).read().split())
+                      results[name].append((elapsed,rss,user))
+              print('WORKERS',workers,'PASSES',passes,flush=True)
+              for name,rows in results.items():
+                  med=[statistics.median(x[k] for x in rows) for k in range(3)]
+                  print(name,'median elapsed/RSS/user',*[round(x,5) for x in med],'min/max elapsed',round(min(x[0] for x in rows),5),round(max(x[0] for x in rows),5),flush=True)
+              base=statistics.median(x[0] for x in results['base'])
+              for name in names[1:]:
+                  val=statistics.median(x[0] for x in results[name])
+                  print(name,'wall ratio',round(val/base,5),flush=True)
+          PY
+      - name: Holdout seed and offline Docker exactness
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sample /tmp/reference /tmp/native /tmp/docker
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample --out /tmp/reference
+          SD_DATA=/tmp/sample SD_OUT=/tmp/native SD_THREADS=4 /tmp/both
+          cmp /tmp/reference/distances.txt /tmp/native/distances.txt
+          docker build --pull -t sd-td-fourway track-d
+          docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=4 -v /tmp/sample:/data:ro -v /tmp/docker:/out:rw sd-td-fourway
+          cmp /tmp/reference/distances.txt /tmp/docker/distances.txt

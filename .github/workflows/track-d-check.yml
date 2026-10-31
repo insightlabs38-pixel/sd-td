@@ -55,16 +55,17 @@ jobs:
           docker create --name pgo-export sd-td-check
           docker cp pgo-export:/traverse /tmp/pgo-traverse
           docker rm pgo-export
+          docker run --rm --network none -v "$PWD/track-d:/src:ro" -v /tmp:/out:rw gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce sh -c 'g++ -O3 -std=c++17 -pthread -flto -static -s -o /out/gcc15-baseline /src/d_traverse.cpp'
           SD_TEST_BINARY=/tmp/pgo-traverse python tests/test_d.py
           python3 - <<'PY'
           import hashlib, os, statistics, subprocess, time
           expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
-          binaries = {"main": "/tmp/traverse", "pgo": "/tmp/pgo-traverse"}
+          binaries = {"main": "/tmp/gcc15-baseline", "pgo": "/tmp/pgo-traverse"}
           for workers in (4, 6, 12):
               times = {name: [] for name in binaries}
               rss = {name: [] for name in binaries}
               wins = 0
-              for rep in range(11):
+              for rep in range(21):
                   pair = {}
                   for name in (("main", "pgo") if rep % 2 == 0 else ("pgo", "main")):
                       env = dict(os.environ, SD_DATA="/tmp/full-data", SD_OUT="/tmp/full-out", SD_THREADS=str(workers))
@@ -80,7 +81,7 @@ jobs:
                       with open("/tmp/d-rss") as f:
                           rss[name].append(int(f.read().strip()))
                   wins += pair["pgo"] < pair["main"]
-              print(f"workers={workers} main={statistics.median(times['main']):.6f}s pgo={statistics.median(times['pgo']):.6f}s pgo_wins={wins}/11 RSS_main={max(rss['main'])}KiB RSS_pgo={max(rss['pgo'])}KiB", flush=True)
+              print(f"workers={workers} main={statistics.median(times['main']):.6f}s pgo={statistics.median(times['pgo']):.6f}s pgo_wins={wins}/21 RSS_main={max(rss['main'])}KiB RSS_pgo={max(rss['pgo'])}KiB", flush=True)
           PY
       - name: Docker runtime and output byte comparison
         shell: bash

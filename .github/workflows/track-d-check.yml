@@ -60,8 +60,8 @@ jobs:
           import hashlib, os, pathlib, statistics, subprocess, tempfile, time
           with tempfile.TemporaryDirectory() as d:
               p=pathlib.Path(d)
-              (p/'graph.txt').write_text('6 6\\n0 1 2\\n1 2 3\\n1 3 1\\n2 4 2\\n3 4 100\\n4 5 1\\n')
-              (p/'queries.txt').write_text('0 5\\n')
+              (p/'graph.txt').write_text('6 6\n0 1 2\n1 2 3\n1 3 1\n2 4 2\n3 4 100\n4 5 1\n')
+              (p/'queries.txt').write_text('0 5\n')
               env={**os.environ,'SD_DATA':d,'SD_OUT':d,'SD_THREADS':'1'}
               subprocess.run(['/tmp/champion'],env=env,check=True)
               got=(p/'distances.txt').read_text().strip()

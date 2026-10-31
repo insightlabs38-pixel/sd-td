@@ -532,7 +532,7 @@ class Distances {
     static constexpr unsigned SHIFT = 7, SIZE = 1u << SHIFT;
     std::vector<uint64_t*> dir_;
     std::vector<uint32_t> used_;
-    static constexpr size_t SLAB = 64;
+    static constexpr size_t SLAB = 256;
     std::vector<std::unique_ptr<uint64_t[]>> store_; // slab-backed pages are reused across queries
     std::array<uint64_t, SIZE> blank_;
     uint64_t* acquire(uint32_t page) {

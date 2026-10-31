@@ -18,7 +18,6 @@
 
 // Real distances stay below 2^53, so INF plus any distance cannot wrap.
 static constexpr uint64_t INF = uint64_t(1) << 62;
-struct Edge { uint32_t to, w; };
 
 // Uninitialized, lazily faulted storage, so memory is committed only where it is written.
 template <class T> struct Array {
@@ -89,11 +88,27 @@ struct MappedFile {
     }
 };
 
-struct Csr {
-    Array<uint32_t> off;
-    Array<Edge> adj;
-    Csr() = default;
-    Csr(size_t n, size_t m) : off(n + 1), adj(m) {}
+// Search CSR with 4-byte edges: head in the high bits, weight in the low bits; weights that do not fit
+// store the all-ones marker and live in a sorted escape table keyed by edge index.
+struct Packed {
+    Array<uint32_t> off, adj;
+    std::vector<std::pair<uint32_t, uint32_t>> escapes;
+    unsigned wbits = 0;
+    uint32_t mask = 0;
+    Packed() = default;
+    Packed(uint32_t n, size_t m) : off(size_t(n) + 1), adj(m) {
+        unsigned node_bits = 1;
+        while (node_bits < 32 && (uint64_t(1) << node_bits) < n) ++node_bits;
+        wbits = 32 - node_bits;
+        mask = (uint32_t(1) << wbits) - 1;
+    }
+    uint32_t pack(uint32_t head, uint32_t w) const { return head << wbits | std::min(w, mask); }
+    uint32_t head(uint32_t e) const { return e >> wbits; }
+    uint32_t weight(uint32_t i) const {
+        uint32_t w = adj[i] & mask;
+        if (w != mask) return w;
+        return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint32_t(0)))->second;
+    }
 };
 
 struct Triple { uint32_t u, v, w; };
@@ -136,17 +151,18 @@ static unsigned bucket_shift(uint32_t n) {
 }
 
 // Builds CSR keyed by Triple::u (head Triple::v) from the per-thread bins, one bucket at a time.
-static Csr bins_to_csr(const std::vector<Binner>& bins, uint32_t n, unsigned shift, unsigned threads) {
+static Packed bins_to_csr(const std::vector<Binner>& bins, uint32_t n, unsigned shift, unsigned threads) {
     size_t buckets = (static_cast<size_t>(n) + (size_t(1) << shift) - 1) >> shift;
     std::vector<size_t> base(buckets + 1, 0);
     for (size_t b = 0; b < buckets; ++b) {
         base[b + 1] = base[b];
         for (const Binner& bin : bins) for (auto& run : bin.runs(b)) base[b + 1] += run.second;
     }
-    Csr g(n, base[buckets]);
+    Packed g(n, base[buckets]);
+    std::vector<std::vector<std::pair<uint32_t, uint32_t>>> escapes(threads);
     g.off[n] = static_cast<uint32_t>(base[buckets]);
     std::atomic<size_t> next{0};
-    parallel(threads, [&](unsigned) {
+    parallel(threads, [&](unsigned t) {
         std::vector<uint32_t> cursor(size_t(1) << shift);
         for (size_t b; (b = next.fetch_add(1)) < buckets;) {
             size_t lo = b << shift, hi = std::min<size_t>(n, lo + (size_t(1) << shift));
@@ -156,9 +172,16 @@ static Csr bins_to_csr(const std::vector<Binner>& bins, uint32_t n, unsigned shi
             for (size_t k = lo; k < hi; ++k) { uint32_t c = cursor[k - lo]; g.off[k] = cursor[k - lo] = sum; sum += c; }
             for (const Binner& bin : bins)
                 for (auto& run : bin.runs(b))
-                    for (uint32_t i = 0; i < run.second; ++i) g.adj[cursor[run.first[i].u - lo]++] = {run.first[i].v, run.first[i].w};
+                    for (uint32_t i = 0; i < run.second; ++i) {
+                        const Triple& e = run.first[i];
+                        uint32_t pos = cursor[e.u - lo]++;
+                        g.adj[pos] = g.pack(e.v, e.w);
+                        if (e.w >= g.mask) escapes[t].push_back({pos, e.w});
+                    }
         }
     });
+    for (auto& e : escapes) g.escapes.insert(g.escapes.end(), e.begin(), e.end());
+    std::sort(g.escapes.begin(), g.escapes.end());
     return g;
 }
 
@@ -190,29 +213,6 @@ static std::vector<Binner> parse_edges(const char* begin, const char* end, uint3
     return bins;
 }
 
-// Search CSR with 4-byte edges: head in the high bits, weight in the low bits; weights that do not fit
-// store the all-ones marker and live in a sorted escape table keyed by edge index.
-struct Packed {
-    Array<uint32_t> off, adj;
-    std::vector<std::pair<uint32_t, uint32_t>> escapes;
-    unsigned wbits = 0;
-    uint32_t mask = 0;
-    Packed() = default;
-    Packed(uint32_t n, size_t m) : off(size_t(n) + 1), adj(m) {
-        unsigned node_bits = 1;
-        while (node_bits < 32 && (uint64_t(1) << node_bits) < n) ++node_bits;
-        wbits = 32 - node_bits;
-        mask = (uint32_t(1) << wbits) - 1;
-    }
-    uint32_t pack(uint32_t head, uint32_t w) const { return head << wbits | std::min(w, mask); }
-    uint32_t head(uint32_t e) const { return e >> wbits; }
-    uint32_t weight(uint32_t i) const {
-        uint32_t w = adj[i] & mask;
-        if (w != mask) return w;
-        return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint32_t(0)))->second;
-    }
-};
-
 struct Graph {
     uint32_t n = 0;
     Packed fwd, rev;
@@ -240,7 +240,7 @@ public:
     size_t words() const { return bits_.size(); }
 };
 
-static void grow(const Csr& raw, Claims& claims, Region& r) {
+static void grow(const Packed& raw, Claims& claims, Region& r) {
     uint32_t len = r.len;
     uint64_t edges = r.edges;
     uint32_t* order = r.order.p;
@@ -253,7 +253,7 @@ static void grow(const Csr& raw, Claims& claims, Region& r) {
         degree[head] = e - b;
         edges += e - b;
         for (uint32_t i = b; i < e; ++i)
-            if (claims.take(raw.adj[i].to)) order[len++] = raw.adj[i].to;
+            if (claims.take(raw.head(raw.adj[i]))) order[len++] = raw.head(raw.adj[i]);
     }
     r.len = len;
     r.expanded = head;
@@ -261,7 +261,7 @@ static void grow(const Csr& raw, Claims& claims, Region& r) {
 }
 
 // Search ids follow concurrent BFS regions grown from scattered seeds, so graph neighbours stay close in memory.
-static Graph reorder(const Csr& raw, uint32_t n, unsigned threads) {
+static Graph reorder(const Packed& raw, uint32_t n, unsigned threads) {
     Graph g;
     g.n = n;
     Claims claims(n);
@@ -306,8 +306,9 @@ static Graph reorder(const Csr& raw, uint32_t n, unsigned threads) {
             if (k + 8 < hi) __builtin_prefetch(&raw.adj[raw.off[order[k + 8]]]);
             uint32_t o = order[k], pos = g.fwd.off[k];
             for (uint32_t i = raw.off[o]; i < raw.off[o + 1]; ++i, ++pos) {
-                g.fwd.adj[pos] = g.fwd.pack(g.perm[raw.adj[i].to], raw.adj[i].w);
-                if (raw.adj[i].w >= g.fwd.mask) escapes[t].push_back({pos, raw.adj[i].w});
+                uint32_t w = raw.weight(i);
+                g.fwd.adj[pos] = g.fwd.pack(g.perm[raw.head(raw.adj[i])], w);
+                if (w >= g.fwd.mask) escapes[t].push_back({pos, w});
             }
         }
     });
@@ -350,7 +351,7 @@ static Graph read_graph(const std::string& path, unsigned threads) {
     {
         unsigned shift = bucket_shift(n);
         std::vector<Binner> bins = parse_edges(p, end, n, shift, threads);
-        Csr raw = bins_to_csr(bins, n, shift, threads);
+        Packed raw = bins_to_csr(bins, n, shift, threads);
         bins.clear();
         g = reorder(raw, n, threads);
     }

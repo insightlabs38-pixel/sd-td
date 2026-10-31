@@ -498,24 +498,28 @@ struct Side {
     // Settles every vertex of the current bucket (re-draining entries it adds) and returns how many were expanded.
     size_t drain(const Side& other, uint64_t& best) {
         std::vector<uint32_t>& bk = heap.bucket[heap.cur & (Heap::B - 1)];
-        uint64_t base = heap.cur << heap.shift;
-        uint32_t node_mask = heap.node_mask();
+        const uint64_t base = heap.cur << heap.shift;
+        const unsigned nbits = heap.node_bits, wbits = csr.wbits;
+        const uint32_t node_mask = heap.node_mask(), wmask = csr.mask;
+        const uint32_t* off = csr.off.p;
+        const uint32_t* adj = csr.adj.p;
         size_t count = 0;
         while (!bk.empty()) {
             uint32_t entry = bk.back();
             bk.pop_back();
             --heap.near;
             uint32_t u = entry & node_mask;
-            uint64_t d = base | (uint64_t(entry) >> heap.node_bits);
+            uint64_t d = base | (uint64_t(entry) >> nbits);
             if (dist.get(u) != d) continue;
             ++count;
-            for (uint32_t i = csr.off[u], last = csr.off[u + 1]; i < last; ++i) {
-                uint32_t e = csr.adj[i], v = csr.head(e), w = e & csr.mask;
-                if (w == csr.mask) w = csr.weight(i);
+            for (uint32_t i = off[u], last = off[u + 1]; i < last; ++i) {
+                uint32_t e = adj[i], v = e >> wbits, w = e & wmask;
+                if (w == wmask) w = csr.weight(i);
                 uint64_t nd = d + w;
                 if (dist.lower(v, nd)) {
                     heap.push(nd, v);
-                    best = std::min(best, nd + other.dist.get(v));
+                    uint64_t meet = nd + other.dist.get(v);
+                    if (meet < best) best = meet;
                 }
             }
         }

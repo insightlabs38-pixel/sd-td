@@ -65,3 +65,39 @@ jobs:
             docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
           done
+
+      - name: Paired full-seed vertex-bound tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show e8f6285fcee1f7817ac9b569f1f3ac932c922bba:track-d/d_traverse.cpp > /tmp/d-baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-baseline /tmp/d-baseline.cpp
+          python3 - <<'PY'
+          import hashlib, os, pathlib, random, statistics, subprocess, time
+          truth = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          bins = {"base": "/tmp/d-baseline", "bound": "/tmp/traverse"}
+          out = pathlib.Path("/tmp/d-ab-out")
+          out.mkdir(exist_ok=True)
+          rng = random.Random(314159)
+          for workers in (4, 6, 12):
+              times = {x: [] for x in bins}
+              rss = {x: [] for x in bins}
+              wins = 0
+              for i in range(13):
+                  pair = {}
+                  for label in rng.sample(list(bins), len(bins)):
+                      env = dict(os.environ, SD_THREADS=str(workers), SD_DATA="/tmp/full-data", SD_OUT=str(out))
+                      started = time.perf_counter()
+                      subprocess.run(["/usr/bin/time", "-f", "%M", "-o", "/tmp/d-rss", bins[label]], env=env, check=True)
+                      elapsed = time.perf_counter() - started
+                      peak = int(pathlib.Path("/tmp/d-rss").read_text().strip())
+                      actual = hashlib.sha256((out / "distances.txt").read_bytes()).hexdigest()
+                      assert actual == truth, (label, workers, i, actual)
+                      times[label].append(elapsed)
+                      rss[label].append(peak)
+                      pair[label] = elapsed
+                  wins += pair["bound"] < pair["base"]
+              print("workers", workers, "baseline", statistics.median(times["base"]),
+                    "bound", statistics.median(times["bound"]), "wins", wins, "/13",
+                    "peak-KiB", statistics.median(rss["base"]), statistics.median(rss["bound"]), flush=True)
+          PY

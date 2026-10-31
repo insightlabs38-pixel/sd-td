@@ -3,6 +3,9 @@ on:
   push:
     paths:
       - .github/workflows/track-d-check.yml
+      - track-d/d_traverse.cpp
+      - tests/test_d.py
+      - tests/stress_d.py
   workflow_dispatch:
 
 jobs:
@@ -20,6 +23,8 @@ jobs:
         run: g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse track-d/d_traverse.cpp
       - name: Differential random and adversarial cases
         run: SD_TEST_BINARY=/tmp/traverse python tests/test_d.py
+      - name: Contraction stress oracle
+        run: SD_TEST_BINARY=/tmp/traverse python tests/stress_d.py 60
       - name: Compare official generated cases
         shell: bash
         run: |

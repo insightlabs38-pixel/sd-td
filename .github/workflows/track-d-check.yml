@@ -1,6 +1,8 @@
 name: Track D exactness and Docker
 on:
   push:
+    branches:
+      - d/direction-policy-tournament
     paths:
       - .github/workflows/track-d-check.yml
   workflow_dispatch:
@@ -44,6 +46,34 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Differential alternative directions
+        run: |
+          for policy in 1 2 3; do
+            SD_DIRECTION=$policy SD_TEST_BINARY=/tmp/traverse python tests/test_d.py
+          done
+      - name: Matched exact bidirectional direction tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for workers in (4, 12):
+              times = {p: [] for p in range(4)}
+              for run in range(15):
+                  for policy in [(run + j) % 4 for j in range(4)]:
+                      env = dict(os.environ, SD_DATA='/tmp/full-data', SD_OUT='/tmp/full-out',
+                                 SD_THREADS=str(workers), SD_DIRECTION=str(policy))
+                      start = time.perf_counter_ns()
+                      subprocess.run(['/tmp/traverse'], env=env, check=True)
+                      elapsed = (time.perf_counter_ns() - start) / 1e9
+                      with open('/tmp/full-out/distances.txt', 'rb') as f:
+                          assert hashlib.sha256(f.read()).hexdigest() == expected
+                      times[policy].append(elapsed)
+                      print(f'DIRECTION_AB workers={workers} run={run} policy={policy} wall={elapsed:.6f}', flush=True)
+              for policy, values in times.items():
+                  print(f'DIRECTION_SUM workers={workers} policy={policy} median={statistics.median(values):.6f}', flush=True)
+          PY
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

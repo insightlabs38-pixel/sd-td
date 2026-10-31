@@ -19,6 +19,12 @@
 // Width-128 buckets reduce far-heap traffic; re-draining preserves exactness for zero-weight edges.
 static constexpr unsigned SHIFT_MAX = 7;
 static constexpr uint64_t INF = uint64_t(1) << 62;
+#ifndef SD_FWD_REVERSE
+#define SD_FWD_REVERSE 0
+#endif
+#ifndef SD_REV_REVERSE
+#define SD_REV_REVERSE 0
+#endif
 
 // Uninitialized, lazily faulted storage, so memory is committed only where it is written.
 template <class T> struct Array {
@@ -399,7 +405,9 @@ static Graph reorder(Packed& raw, uint32_t n, const std::vector<uint8_t>& termin
         for (size_t k = size_t(g.n) * t / threads, hi = size_t(g.n) * (t + 1) / threads; k < hi; ++k) {
             if (k + 8 < hi) __builtin_prefetch(&raw.adj[raw.off[order[k + 8]]]);
             uint32_t o = order[k], pos = g.fwd.off[k];
-            for (uint32_t i = raw.off[o]; i < raw.off[o + 1]; ++i) {
+            uint32_t first = raw.off[o], last = raw.off[o + 1];
+            for (uint32_t j = first; j < last; ++j) {
+                uint32_t i = SD_FWD_REVERSE ? last - 1 - (j - first) : j;
                 if (raw.adj[i] == raw.dead) continue;
                 g.fwd.put(pos++, g.perm[raw.head(raw.adj[i])], raw.weight(i), escapes[t]);
             }
@@ -432,10 +440,13 @@ static void add_reverse(Graph& g, unsigned threads) {
     });
     std::vector<Escapes> escapes(threads);
     parallel(threads, [&](unsigned t) {
-        for (size_t u = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; u < hi; ++u)
-            for (uint32_t i = g.fwd.off[u]; i < g.fwd.off[u + 1]; ++i) {
+        for (size_t u = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; u < hi; ++u) {
+            uint32_t first = g.fwd.off[u], last = g.fwd.off[u + 1];
+            for (uint32_t j = first; j < last; ++j) {
+                uint32_t i = SD_REV_REVERSE ? last - 1 - (j - first) : j;
                 g.rev.put(bump(cursor[g.fwd.head(g.fwd.adj[i])]), static_cast<uint32_t>(u), g.fwd.weight(i), escapes[t]);
             }
+        }
     });
     g.rev.adopt(escapes);
 }

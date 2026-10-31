@@ -7,7 +7,8 @@ RUN python3 generator.py --seed 17 --scale full --out /train/data17 && \
 FROM gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce AS build
 WORKDIR /src
 COPY d_traverse.cpp .
-COPY --from=training /train/data /train/data
+COPY --from=training /train/data17 /train/data17
+COPY --from=training /train/data23 /train/data23
 RUN mkdir -p /tmp/pgo /tmp/train-out && \
     g++ -O3 -std=c++17 -pthread -flto -fprofile-generate=/tmp/pgo -fprofile-update=atomic -o /traverse d_traverse.cpp && \
     SD_DATA=/train/data17 SD_OUT=/tmp/train-out SD_THREADS=4 /traverse && \

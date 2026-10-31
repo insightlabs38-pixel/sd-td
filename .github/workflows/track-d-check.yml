@@ -65,3 +65,55 @@ jobs:
             docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
           done
+
+      - name: Adjacency-order exactness and matched tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin main
+          git show FETCH_HEAD:track-d/d_traverse.cpp > /tmp/d_baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d_baseline /tmp/d_baseline.cpp
+          for variant in 00 10 01 11; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s \
+              -DSD_FWD_REVERSE=${variant:0:1} -DSD_REV_REVERSE=${variant:1:1} \
+              -o "/tmp/d_$variant" track-d/d_traverse.cpp
+          done
+          for variant in 10 01 11; do
+            SD_TEST_BINARY="/tmp/d_$variant" python tests/test_d.py
+          done
+          python - <<'PY'
+          import hashlib
+          import os
+          import random
+          import statistics
+          import subprocess
+          import time
+          expected = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          variants = ['base', '00', '10', '01', '11']
+          paths = {v: ('/tmp/d_baseline' if v == 'base' else '/tmp/d_' + v) for v in variants}
+          for workers in (4, 6, 12):
+              records = {v: [] for v in variants}
+              for rnd in range(13):
+                  order = variants.copy()
+                  random.Random(20261031 + rnd * 31 + workers).shuffle(order)
+                  for variant in order:
+                      env = dict(os.environ, SD_DATA='/tmp/full-data', SD_OUT='/tmp/full-out', SD_THREADS=str(workers))
+                      start = time.perf_counter()
+                      proc = subprocess.run(['/usr/bin/time', '-f', '%U %M', '-o', '/tmp/d_time.txt', paths[variant]],
+                                            env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                      elapsed = time.perf_counter() - start
+                      if proc.returncode:
+                          raise RuntimeError((variant, workers, proc.stderr.decode()[-2000:]))
+                      with open('/tmp/full-out/distances.txt', 'rb') as f:
+                          digest = hashlib.sha256(f.read()).hexdigest()
+                      if digest != expected:
+                          raise RuntimeError(('OUTPUT MISMATCH', variant, workers, rnd, digest))
+                      cpu, rss = open('/tmp/d_time.txt').read().split()
+                      records[variant].append((elapsed, float(cpu), int(rss)))
+              for variant in variants:
+                  vals = records[variant]
+                  wins = sum(vals[i][0] < records['base'][i][0] for i in range(13)) if variant != 'base' else 0
+                  print('RESULT workers=%d variant=%s wall=%.6f user=%.4f rss_kib=%d wins_vs_base=%d/13' %
+                        (workers, variant, statistics.median(x[0] for x in vals),
+                         statistics.median(x[1] for x in vals), statistics.median(x[2] for x in vals), wins), flush=True)
+          PY

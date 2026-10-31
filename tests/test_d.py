@@ -85,13 +85,24 @@ def main():
     run_case(8, arcs, queries, [7, 2, 0, 0, 0, 2 * U + 4, U, -1, -1, 8, 2])
     run_case(1, [], [(0, 0)])
     run_case(4, [(0, 1, U), (1, 2, U), (2, 3, U)], [(0, 3), (3, 0), (1, 3), (0, 0)], [3 * U, -1, 2 * U, 0])
+    # Branching and capped contraction walks must terminate at retained vertices.
+    run_case(6, [(0, 1, 2), (1, 2, 3), (1, 3, 1), (2, 4, 2),
+                 (3, 4, 100), (4, 5, 1)], [(0, 5), (0, 4), (5, 0)], [8, 7, -1])
+    run_case(4, [(0, 1, 5), (1, 2, 7), (1, 2, 3), (2, 3, 1)],
+             [(0, 3), (3, 0)], [9, -1])
+    run_case(140, [(i, i + 1, 1) for i in range(139)],
+             [(0, 139), (139, 0)], [139, -1])
+    run_case(7, [(0, 1, 1), (1, 2, 1), (2, 3, 1), (3, 1, 1),
+                 (2, 4, 1), (4, 5, 1), (5, 6, 1)], [(0, 6)], [5])
+    run_case(6, [(0, 1, 1), (1, 2, 1), (2, 3, 1), (3, 1, 1),
+                 (4, 5, 1)], [(0, 5)], [-1])
     for seed in range(80):
         n = 1 + (seed * 37) % 191
         m = (seed * 119) % (n * 7 + 1)
         arcs, queries = random_case(seed, n, m, 60)
         run_case(n, arcs, queries)
 
-    print('PASS 83 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
+    print('PASS 88 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed %.2fs' % (time.monotonic() - t0))
 
 if __name__ == '__main__':
     main()

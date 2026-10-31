@@ -103,6 +103,8 @@ using Escapes = std::vector<std::pair<uint32_t, uint64_t>>;
 struct Packed {
     Array<uint32_t> off, adj;
     Escapes escapes;
+    std::vector<uint64_t> escape_bits;
+    std::vector<uint32_t> escape_rank;
     unsigned wbits = 0;
     uint32_t mask = 0, dead = 0; // `dead` is a head one past the last id: an edge that leads nowhere
     Packed() = default;
@@ -119,9 +121,28 @@ struct Packed {
     void adopt(const std::vector<Escapes>& parts) {
         for (auto& e : parts) escapes.insert(escapes.end(), e.begin(), e.end());
         std::sort(escapes.begin(), escapes.end());
+        const char* mode = std::getenv("SD_ESCAPE_RANK");
+        if (mode && mode[0] == '0') { escape_bits.clear(); escape_rank.clear(); return; }
+        size_t blocks = (adj.bytes / sizeof(uint32_t) + 63) / 64;
+        escape_bits.assign(blocks, 0);
+        escape_rank.resize(blocks);
+        for (auto& e : escapes) escape_bits[e.first >> 6] |= 1ull << (e.first & 63);
+        uint32_t count = 0;
+        for (size_t k = 0; k < blocks; ++k) {
+            escape_rank[k] = count;
+            count += __builtin_popcountll(escape_bits[k]);
+        }
+        if (count != escapes.size()) { std::fputs("duplicate escape index\n", stderr); std::exit(2); }
     }
     uint32_t head(uint32_t e) const { return e >> wbits; }
-    uint64_t escape(uint32_t i) const { return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint64_t(0)))->second; }
+    uint64_t escape(uint32_t i) const {
+        if (!escape_bits.empty()) {
+            uint32_t block = i >> 6;
+            uint64_t prior = escape_bits[block] & ((1ull << (i & 63)) - 1);
+            return escapes[escape_rank[block] + __builtin_popcountll(prior)].second;
+        }
+        return std::lower_bound(escapes.begin(), escapes.end(), std::make_pair(i, uint64_t(0)))->second;
+    }
     uint64_t weight(uint32_t i) const {
         uint32_t w = adj[i] & mask;
         return w != mask ? w : escape(i);

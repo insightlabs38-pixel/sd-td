@@ -6,6 +6,12 @@ on:
       - track-d/d_traverse.cpp
       - tests/test_d.py
       - tests/stress_d.py
+  pull_request:
+    paths:
+      - .github/workflows/track-d-check.yml
+      - track-d/d_traverse.cpp
+      - tests/test_d.py
+      - tests/stress_d.py
   workflow_dispatch:
 
 jobs:

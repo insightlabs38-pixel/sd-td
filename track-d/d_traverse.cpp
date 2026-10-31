@@ -349,12 +349,12 @@ static void grow(const Packed& raw, Bits& claims, Region& r) {
 
 // Search ids follow concurrent BFS regions grown from scattered seeds over the surviving vertices, so neighbours stay
 // close in memory. Query endpoints survive; other low-degree vertices are replaced by shortcut edges.
-static Graph reorder(Packed& raw, uint32_t n, const std::vector<uint8_t>& terminal, unsigned threads) {
+static Graph reorder(Packed& raw, uint32_t n, const Bits& terminal, unsigned threads) {
     Graph g;
     Bits bypass((size_t(n) + 63) / 64, 0);
     blocked(threads, bypass.size(), [&](size_t lo, size_t hi) {
         for (size_t x = lo * 64; x < std::min<size_t>(n, hi * 64); ++x)
-            if (!terminal[x] && raw.off[x + 1] - raw.off[x] <= 2) bypass[x >> 6] |= 1ull << (x & 63);
+            if (!test(terminal, x) && raw.off[x + 1] - raw.off[x] <= 2) bypass[x >> 6] |= 1ull << (x & 63);
     });
     bypass_edges(raw, n, bypass, threads);
     Bits claims((size_t(n) + 63) / 64, 0);
@@ -455,8 +455,11 @@ static Graph read_graph(const std::string& path, const std::vector<Query>& queri
         Packed raw = bins_to_csr(bins, n, shift, threads);
         parallel(threads, [&](unsigned t) { bins[t].discard(); });
         bins.clear();
-        std::vector<uint8_t> terminal(n, 0);
-        for (const Query& q : queries) terminal[q.from] = terminal[q.to] = 1;
+        Bits terminal((size_t(n) + 63) / 64, 0);
+        for (const Query& q : queries) {
+            terminal[q.from >> 6] |= 1ull << (q.from & 63);
+            terminal[q.to >> 6] |= 1ull << (q.to & 63);
+        }
         g = reorder(raw, n, terminal, threads);
     }
     add_reverse(g, threads);
@@ -652,14 +655,25 @@ int main() {
     std::vector<int64_t> answers(queries.size(), -1);
     std::vector<uint32_t> schedule(queries.size());
     std::iota(schedule.begin(), schedule.end(), 0);
-    std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) { return queries[a].from < queries[b].from; });
+    std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) {
+        return queries[a].from != queries[b].from ? queries[a].from < queries[b].from : queries[a].to < queries[b].to;
+    });
+    std::vector<uint32_t> todo;
+    todo.reserve(schedule.size());
+    for (uint32_t i : schedule)
+        if (todo.empty() || queries[i].from != queries[todo.back()].from || queries[i].to != queries[todo.back()].to)
+            todo.push_back(i);
     std::atomic<size_t> next{0};
-    parallel(std::min<size_t>(threads, std::max<size_t>(1, queries.size())), [&](unsigned) {
+    parallel(std::min<size_t>(threads, std::max<size_t>(1, todo.size())), [&](unsigned) {
         Worker worker(g, probe);
-        for (size_t k; (k = next.fetch_add(1, std::memory_order_relaxed)) < queries.size();) {
-            uint32_t i = schedule[k];
+        for (size_t k; (k = next.fetch_add(1, std::memory_order_relaxed)) < todo.size();) {
+            uint32_t i = todo[k];
             answers[i] = worker.solve(queries[i].from, queries[i].to);
         }
     });
+    for (size_t k = 1; k < schedule.size(); ++k) {
+        uint32_t a = schedule[k - 1], b = schedule[k];
+        if (queries[a].from == queries[b].from && queries[a].to == queries[b].to) answers[b] = answers[a];
+    }
     write_results(out + "/distances.txt", answers);
 }

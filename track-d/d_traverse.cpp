@@ -15,6 +15,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifndef SD_PREFETCH
+#define SD_PREFETCH 1
+#endif
+
 // Real distances stay below 2^53, so INF plus any distance cannot wrap.
 // Width-128 buckets reduce far-heap traffic; re-draining preserves exactness for zero-weight edges.
 static constexpr unsigned SHIFT_MAX = 7;
@@ -574,6 +578,9 @@ struct Side {
         const uint32_t* adj = csr.adj.p;
         size_t count = 0;
         while (!bk.empty()) {
+#if SD_PREFETCH == 2
+            if (bk.size() >= 3) __builtin_prefetch(off + (bk[bk.size() - 3] & node_mask), 0, 1);
+#endif
             uint32_t entry = bk.back();
             bk.pop_back();
             --heap.near;
@@ -592,6 +599,9 @@ struct Side {
                     if (meet < best) best = meet;
                 }
             }
+#if SD_PREFETCH == 1
+            if (!bk.empty()) __builtin_prefetch(off + (bk.back() & node_mask), 0, 1);
+#endif
         }
         unsigned b = heap.cur & (Heap::B - 1);
         heap.occupied[b >> 6] &= ~(1ull << (b & 63));

@@ -1,6 +1,6 @@
 name: Track D exactness and Docker
 on:
-  push:
+  pull_request:
     paths:
       - .github/workflows/track-d-check.yml
       - track-d/d_traverse.cpp

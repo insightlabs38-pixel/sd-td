@@ -529,7 +529,10 @@ struct Heap {
 
 // Distances live in fixed pages materialized on first write and recycled per query, so memory tracks the search, not n.
 class Distances {
-    static constexpr unsigned SHIFT = 7, SIZE = 1u << SHIFT;
+    #ifndef SD_PAGE_SHIFT
+#define SD_PAGE_SHIFT 7
+#endif
+    static constexpr unsigned SHIFT = SD_PAGE_SHIFT, SIZE = 1u << SHIFT;
     std::vector<uint64_t*> dir_;
     std::vector<uint32_t> used_;
     std::vector<std::unique_ptr<uint64_t[]>> store_; // the first used_.size() pages are in use

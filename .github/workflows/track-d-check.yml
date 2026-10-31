@@ -44,6 +44,47 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Matched paged-label granularity tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          for p in 5 6 7 8; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_PAGE_SHIFT=$p -o /tmp/traverse-page-$p track-d/d_traverse.cpp
+            SD_TEST_BINARY=/tmp/traverse-page-$p python tests/test_d.py >/tmp/page-test-$p.log
+            tail -n 2 /tmp/page-test-$p.log
+          done
+          python - <<'PY'
+          import hashlib, os, pathlib, statistics, subprocess, time
+          expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          pages = [5, 6, 7, 8]
+          out = pathlib.Path("/tmp/page-granularity-out")
+          out.mkdir(exist_ok=True)
+          for workers in (1, 4, 12):
+              data = {p: [] for p in pages}
+              for rep in range(9):
+                  order = pages[rep % 4:] + pages[:rep % 4]
+                  if rep % 2: order.reverse()
+                  for p in order:
+                      env = dict(os.environ, SD_DATA="/tmp/full-data", SD_OUT=str(out), SD_THREADS=str(workers))
+                      start = time.perf_counter()
+                      subprocess.run(["/usr/bin/time", "-f", "%M %U", "-o", "/tmp/page-metrics",
+                                      f"/tmp/traverse-page-{p}"], env=env, check=True)
+                      elapsed = time.perf_counter() - start
+                      result = hashlib.sha256((out / "distances.txt").read_bytes()).hexdigest()
+                      if result != expected:
+                          raise RuntimeError(f"wrong official hash page={p} threads={workers}: {result}")
+                      rss, cpu = (float(x) for x in pathlib.Path("/tmp/page-metrics").read_text().split())
+                      data[p].append((elapsed, rss, cpu))
+              print(f"PAGE_TOURNAMENT workers={workers}", flush=True)
+              for p in pages:
+                  print(f"  shift={p} wall={statistics.median(x[0] for x in data[p]):.6f}s"
+                        f" rss={statistics.median(x[1] for x in data[p]):.0f}KiB"
+                        f" cpu={statistics.median(x[2] for x in data[p]):.3f}s", flush=True)
+              for p in pages:
+                  if p == 7: continue
+                  ratios = [data[p][i][0] / data[7][i][0] for i in range(9)]
+                  print(f"  vs_shift7 shift={p} median_paired_wall_ratio={statistics.median(ratios):.5f}", flush=True)
+          PY
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

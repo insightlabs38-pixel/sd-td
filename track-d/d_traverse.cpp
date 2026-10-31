@@ -657,14 +657,28 @@ int main() {
     std::vector<int64_t> answers(queries.size(), -1);
     std::vector<uint32_t> schedule(queries.size());
     std::iota(schedule.begin(), schedule.end(), 0);
-    std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) { return queries[a].from < queries[b].from; });
+    std::sort(schedule.begin(), schedule.end(), [&](uint32_t a, uint32_t b) {
+        if (queries[a].from != queries[b].from) return queries[a].from < queries[b].from;
+        return queries[a].to < queries[b].to;
+    });
+    std::vector<std::pair<uint32_t, uint32_t>> duplicates;
+    size_t unique = 0;
+    for (size_t k = 0; k < schedule.size(); ++k) {
+        uint32_t i = schedule[k];
+        if (unique && queries[schedule[unique - 1]].from == queries[i].from &&
+                      queries[schedule[unique - 1]].to == queries[i].to)
+            duplicates.emplace_back(i, schedule[unique - 1]);
+        else schedule[unique++] = i;
+    }
+    schedule.resize(unique);
     std::atomic<size_t> next{0};
-    parallel(std::min<size_t>(threads, std::max<size_t>(1, queries.size())), [&](unsigned) {
+    parallel(std::min<size_t>(threads, std::max<size_t>(1, schedule.size())), [&](unsigned) {
         Worker worker(g, probe);
-        for (size_t k; (k = next.fetch_add(1, std::memory_order_relaxed)) < queries.size();) {
+        for (size_t k; (k = next.fetch_add(1, std::memory_order_relaxed)) < schedule.size();) {
             uint32_t i = schedule[k];
             answers[i] = worker.solve(queries[i].from, queries[i].to);
         }
     });
+    for (auto [i, original] : duplicates) answers[i] = answers[original];
     write_results(out + "/distances.txt", answers);
 }

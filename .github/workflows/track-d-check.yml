@@ -44,44 +44,53 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
-      - name: Paired bucket-prefetch experiment
+      - name: Build official-style pinned Docker image
+        run: docker build --pull -t sd-td-check track-d
+      - name: PGO matched champion comparison
         shell: bash
         run: |
           set -euo pipefail
           git fetch --depth 1 origin 3d4383f237b0708c26d528db08b2b4edf6100fc2
-          git show FETCH_HEAD:track-d/d_traverse.cpp > /tmp/baseline.cpp
-          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse-base /tmp/baseline.cpp
-          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_PREFETCH=2 -o /tmp/traverse-prefetch2 track-d/d_traverse.cpp
-          SD_TEST_BINARY=/tmp/traverse-prefetch2 python tests/test_d.py
+          mkdir -p /tmp/pgo-baseline
+          for file in Dockerfile d_traverse.cpp d_traverse_generator.py; do
+            git show "FETCH_HEAD:track-d/$file" > "/tmp/pgo-baseline/$file"
+          done
+          docker build --pull -t sd-td-base-pgo /tmp/pgo-baseline
+          for entry in 'sd-td-base-pgo base' 'sd-td-check ahead'; do
+            read -r tag name <<< "$entry"
+            id=$(docker create "$tag")
+            docker cp "$id:/traverse" "/tmp/pgo-$name"
+            docker rm "$id"
+          done
           python3 - <<'PY'
-          import hashlib, os, random, statistics, subprocess, time
+          import hashlib, os, random, resource, statistics, subprocess, time
           expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
-          binaries={'base':'/tmp/traverse-base','next':'/tmp/traverse','ahead':'/tmp/traverse-prefetch2'}
-          rng=random.Random(131)
+          bins={'base':'/tmp/pgo-base','ahead':'/tmp/pgo-ahead'}
+          rng=random.Random(947)
           for workers in (4,6,12):
-              elapsed={k:[] for k in binaries}
-              for rep in range(17):
-                  names=list(binaries)
+              wall={k:[] for k in bins}
+              cpu={k:[] for k in bins}
+              for rep in range(25):
+                  names=list(bins)
                   rng.shuffle(names)
                   for name in names:
                       env=os.environ.copy()
                       env.update(SD_DATA='/tmp/full-data',SD_OUT='/tmp/full-out',SD_THREADS=str(workers))
+                      before=resource.getrusage(resource.RUSAGE_CHILDREN).ru_utime
                       start=time.perf_counter_ns()
-                      subprocess.run([binaries[name]],env=env,check=True,stdout=subprocess.DEVNULL)
-                      delta=(time.perf_counter_ns()-start)/1e9
+                      subprocess.run([bins[name]],env=env,check=True,stdout=subprocess.DEVNULL)
+                      wall[name].append((time.perf_counter_ns()-start)/1e9)
+                      cpu[name].append(resource.getrusage(resource.RUSAGE_CHILDREN).ru_utime-before)
                       with open('/tmp/full-out/distances.txt','rb') as f:
                           digest=hashlib.file_digest(f,'sha256').hexdigest()
                       if digest!=expected: raise RuntimeError((workers,name,rep,digest))
-                      elapsed[name].append(delta)
-              base=elapsed['base']
-              for name in binaries:
-                  x=elapsed[name]
-                  print(f'workers={workers} variant={name} median={statistics.median(x):.6f}s '
-                        f'wins_vs_base={sum(a<b for a,b in zip(x,base))}/17 '
-                        f'ratio={statistics.median(x)/statistics.median(base):.5f}',flush=True)
+              for name in bins:
+                  print(f'PGO workers={workers} variant={name} '
+                        f'median_wall={statistics.median(wall[name]):.6f}s '
+                        f'median_cpu={statistics.median(cpu[name]):.6f}s '
+                        f'wins_vs_base={sum(a<b for a,b in zip(wall[name],wall["base"]))}/25 '
+                        f'ratio={statistics.median(wall[name])/statistics.median(wall["base"]):.5f}',flush=True)
           PY
-      - name: Build official-style pinned Docker image
-        run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison
         shell: bash
         run: |

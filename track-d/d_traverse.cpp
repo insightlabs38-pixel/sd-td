@@ -411,10 +411,19 @@ static Graph reorder(Packed& raw, uint32_t n, const std::vector<uint8_t>& termin
 
 static inline uint32_t bump(uint32_t& x) { return __atomic_fetch_add(&x, 1u, __ATOMIC_RELAXED); }
 
+// Each destination belongs to exactly one builder: count and scatter need no atomics.
+// Multiple sequential edge scans trade bandwidth for fewer random read-modify-writes.
 static void add_reverse(Graph& g, unsigned threads) {
     uint32_t n = g.n, m = g.fwd.off[n];
     g.rev = Packed(n, m);
-    blocked(threads, m, [&](size_t lo, size_t hi) { for (size_t i = lo; i < hi; ++i) bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]); });
+    const unsigned builders = std::min(threads, 4u);
+    parallel(builders, [&](unsigned t) {
+        uint32_t lo = uint64_t(n) * t / builders, hi = uint64_t(n) * (t + 1) / builders;
+        for (size_t i = 0; i < m; ++i) {
+            uint32_t v = g.fwd.head(g.fwd.adj[i]);
+            if (v >= lo && v < hi) ++g.rev.off[v];
+        }
+    });
     Array<uint32_t> cursor(n);
     std::vector<uint32_t> start(threads + 1, 0);
     parallel(threads, [&](unsigned t) {
@@ -430,11 +439,14 @@ static void add_reverse(Graph& g, unsigned threads) {
             sum += c;
         }
     });
-    std::vector<Escapes> escapes(threads);
-    parallel(threads, [&](unsigned t) {
-        for (size_t u = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; u < hi; ++u)
+    std::vector<Escapes> escapes(builders);
+    parallel(builders, [&](unsigned t) {
+        uint32_t lo = uint64_t(n) * t / builders, hi = uint64_t(n) * (t + 1) / builders;
+        for (uint32_t u = 0; u < n; ++u)
             for (uint32_t i = g.fwd.off[u]; i < g.fwd.off[u + 1]; ++i) {
-                g.rev.put(bump(cursor[g.fwd.head(g.fwd.adj[i])]), static_cast<uint32_t>(u), g.fwd.weight(i), escapes[t]);
+                uint32_t v = g.fwd.head(g.fwd.adj[i]);
+                if (v >= lo && v < hi)
+                    g.rev.put(cursor[v]++, u, g.fwd.weight(i), escapes[t]);
             }
     });
     g.rev.adopt(escapes);

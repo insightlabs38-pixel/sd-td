@@ -18,7 +18,7 @@
 // Real distances stay below 2^53, so INF plus any distance cannot wrap.
 // Bucket width 2^5 stays below the smallest common edge weight, so a bucket rarely needs re-draining.
 #ifndef SD_BUCKET_SHIFT
-#define SD_BUCKET_SHIFT 5
+#define SD_BUCKET_SHIFT 7
 #endif
 static constexpr unsigned SHIFT_MAX = SD_BUCKET_SHIFT;
 static constexpr uint64_t INF = uint64_t(1) << 62;

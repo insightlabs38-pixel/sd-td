@@ -579,7 +579,7 @@ struct Side {
             --heap.near;
             uint32_t u = entry & node_mask;
             uint64_t d = base | (uint64_t(entry) >> nbits);
-            if (dist.get(u) != d) continue;
+            if (dist.get(u) != d || d >= best) continue;
             ++count;
             for (uint32_t i = off[u], last = off[u + 1]; i < last; ++i) {
                 uint32_t e = adj[i], v = e >> wbits;

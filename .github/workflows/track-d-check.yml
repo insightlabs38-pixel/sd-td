@@ -5,6 +5,7 @@ on:
       - d/direction-policy-tournament
     paths:
       - .github/workflows/track-d-check.yml
+      - track-d/d_traverse.cpp
   workflow_dispatch:
 
 jobs:

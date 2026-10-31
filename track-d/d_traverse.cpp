@@ -20,25 +20,20 @@
 static constexpr uint64_t INF = uint64_t(1) << 62;
 struct Edge { uint32_t to, w; };
 
-// Uninitialized, lazily faulted, 2 MiB-aligned storage that asks for transparent huge pages.
+// Uninitialized, lazily faulted storage, so memory is committed only where it is written.
 template <class T> struct Array {
-    static constexpr size_t HUGE = size_t(1) << 21;
     T* p = nullptr;
-    void* base = nullptr;
-    size_t span = 0;
+    size_t bytes = 0;
     Array() = default;
-    explicit Array(size_t n) {
-        size_t bytes = n * sizeof(T);
-        span = bytes + HUGE;
-        base = mmap(nullptr, span, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        if (base == MAP_FAILED) { perror("mmap"); std::exit(2); }
-        p = reinterpret_cast<T*>((reinterpret_cast<uintptr_t>(base) + HUGE - 1) & ~(HUGE - 1));
-        if (bytes >= HUGE) madvise(p, bytes, MADV_HUGEPAGE);
+    explicit Array(size_t n) : bytes(n * sizeof(T) + 1) {
+        void* q = mmap(nullptr, bytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        if (q == MAP_FAILED) { perror("mmap"); std::exit(2); }
+        p = static_cast<T*>(q);
     }
-    Array(Array&& o) noexcept : p(o.p), base(o.base), span(o.span) { o.base = nullptr; }
-    Array& operator=(Array&& o) noexcept { release(); p = o.p; base = o.base; span = o.span; o.base = nullptr; return *this; }
+    Array(Array&& o) noexcept : p(o.p), bytes(o.bytes) { o.p = nullptr; }
+    Array& operator=(Array&& o) noexcept { release(); p = o.p; bytes = o.bytes; o.p = nullptr; return *this; }
     ~Array() { release(); }
-    void release() { if (base) munmap(base, span); base = nullptr; }
+    void release() { if (p) munmap(p, bytes); p = nullptr; }
     T& operator[](size_t i) { return p[i]; }
     const T& operator[](size_t i) const { return p[i]; }
 };

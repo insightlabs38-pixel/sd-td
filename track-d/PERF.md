@@ -1,5 +1,13 @@
 # Track D evidence
 
+- **Candidate `frontier/d-claude-architecture-6`: size-only simplification of the contraction champion (`be15ac2e`).** Formatted lines 855 to 811 (-44; `clang-format --style=LLVM`, non-comment non-blank). Changes: one `Packed::put`/`adopt` pair replaces four copies of the pack-and-escape and escape-merge code, `Claims` is a plain bitmap plus `take`, `scan` is folded into `add_reverse`, `Heap::put`, `node_mask`, `Worker::graph`, `Distances` spare list and the `HeapNode` helpers are gone, env parsing shares one helper. No algorithmic change.
+- **Evidence:** full seed-1 output byte-identical to the reference at 1/4/12 threads; 83 differential cases and 60 stress cases pass natively, under ASan/UBSan and under TSan; 15 interleaved rounds vs the champion build, median 0.240 vs 0.243 s (tie); 12-thread fresh-cgroup peak 74.83 vs 74.74 MB. Expected K gain is S only: about 0.15*ln(862/~818), +0.8%.
+- **Most promising next architecture (not attempted here):** an overlay or hierarchy whose construction fits the ~130 ms build budget; a non-atomic reverse CSR (block-local scatter plus mailboxes for the ~3% cross-block edges) to remove most of the 77 ms of atomics; and repeated board runs of the champion, since board noise is +-4% in T.
+- **Rollback:** `be15ac2e` (K=24.163880, S=862).
+
+Previous history follows.
+
+
 - **Candidate `frontier/d-claude-architecture-5`: exact degree-2 contraction, in place.** Vertices with out-degree <= 2 that are not query endpoints are bypassed while exactly one way leads on (dead ends dropped, branching vertices stay survivors, 64-step cap, exact 64-bit shortcut weights). The pass rewrites raw edges in place from a snapshot table of the bypassable vertices' edge words, so there is no second edge array; the escape table is merged afterwards. Base: PR 2 champion (`0c455ef` source).
 - **What made contraction profitable (vs the neutral `-4` experiment):** the pass fell from 84-91 ms to 58.7 ms CPU at one thread (18.4 ms wall at four) by dropping the 20 MB `res` copy and its stores (in place), reading walk starts from a flat edge loop with branchless start recording and deferred root recovery, and using larger blocks. Measured attribution: the old scan was dominated by per-vertex loop-exit mispredicts and by 40-byte walk records written for every edge; the walks themselves were only 37 ms.
 - **Paired local result (4 cores, 41 interleaved rounds vs PR 2):** median 0.245 vs 0.271 s (-9.6%), min 0.216 vs 0.245 s; fresh-cgroup peak at 12 threads with THP=always 74.8 vs 81.5 MB (-8%); formatted lines 855 vs 721. Local K estimate x1.052 (T) x1.017 (M) x0.975 (S) = about +4.3%. Not scoring-box data; the 4-core factors may not transfer.

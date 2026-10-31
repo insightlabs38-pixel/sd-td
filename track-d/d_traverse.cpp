@@ -602,7 +602,9 @@ struct Side {
 struct Worker {
     Side fwd, bwd;
     uint32_t probe;
-    Worker(const Graph& g, uint32_t p) : fwd(g.fwd, g.n), bwd(g.rev, g.n), probe(p) {}
+    unsigned direction;
+    Worker(const Graph& g, uint32_t p) : fwd(g.fwd, g.n), bwd(g.rev, g.n), probe(p),
+        direction(static_cast<unsigned>(std::max(0, std::atoi(std::getenv("SD_DIRECTION") ? std::getenv("SD_DIRECTION") : "0")))) {}
     int64_t solve(uint32_t s, uint32_t t) {
         if (s == t) return 0;
         if (fwd.csr.off[s] == fwd.csr.off[s + 1] || bwd.csr.off[t] == bwd.csr.off[t + 1]) return -1;
@@ -618,10 +620,17 @@ struct Worker {
         }
         bwd.start(t);
         best = std::min(best, fwd.dist.get(t));
+        size_t fs = settled, bs = 0;
+        unsigned turn = 0;
         for (;;) {
             uint64_t f = fwd.heap.lower_bound(), b = bwd.heap.lower_bound();
             if (f == INF || b == INF || f + b >= best) break;
-            if (f <= b) fwd.drain(bwd, best); else bwd.drain(fwd, best);
+            bool forward = f <= b;
+            if (direction == 1) forward = (turn++ & 1) == 0;
+            else if (direction == 2) forward = fwd.heap.near + fwd.heap.far.size() <= bwd.heap.near + bwd.heap.far.size();
+            else if (direction == 3) forward = fs <= bs;
+            if (forward) fs += fwd.drain(bwd, best);
+            else bs += bwd.drain(fwd, best);
         }
         return best == INF ? -1 : static_cast<int64_t>(best);
     }

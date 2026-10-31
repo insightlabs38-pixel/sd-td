@@ -1,6 +1,8 @@
 name: Track D exactness and Docker
 on:
   push:
+    branches:
+      - d/decouple-build-query-workers
     paths:
       - .github/workflows/track-d-check.yml
   workflow_dispatch:
@@ -65,3 +67,36 @@ jobs:
             docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
           done
+
+      - name: Matched full-scale construction-worker tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          matrix = {4: (2, 3, 4), 6: (3, 4, 6), 12: (3, 4, 6, 8, 12)}
+          for workers, builds in matrix.items():
+              times = {b: [] for b in builds}
+              rss = {b: [] for b in builds}
+              cpu = {b: [] for b in builds}
+              for round_no in range(11):
+                  order = list(builds[round_no % len(builds):] + builds[:round_no % len(builds)])
+                  if round_no % 2: order.reverse()
+                  for build in order:
+                      env = dict(os.environ, SD_DATA="/tmp/full-data", SD_OUT="/tmp/full-out", SD_THREADS=str(workers), SD_BUILD_THREADS=str(build))
+                      start = time.perf_counter()
+                      subprocess.run(["/usr/bin/time", "-f", "%M %U %S", "-o", "/tmp/peak-d", "/tmp/traverse"], env=env, check=True)
+                      elapsed = time.perf_counter() - start
+                      with open("/tmp/full-out/distances.txt", "rb") as stream:
+                          digest = hashlib.sha256(stream.read()).hexdigest()
+                      if digest != expected:
+                          raise RuntimeError(f"{workers} query / {build} build, round {round_no}: incorrect {digest}")
+                      times[build].append(elapsed)
+                      with open("/tmp/peak-d") as stream:
+                          m, u, sy = map(float, stream.read().split())
+                      rss[build].append(m)
+                      cpu[build].append(u + sy)
+              for build in builds:
+                  print(f"query={workers} build={build} wall_median={statistics.median(times[build]):.6f}s wall_min={min(times[build]):.6f}s wall_max={max(times[build]):.6f}s RSS_median={statistics.median(rss[build]):.0f}KiB CPU_median={statistics.median(cpu[build]):.3f}s", flush=True)
+          PY

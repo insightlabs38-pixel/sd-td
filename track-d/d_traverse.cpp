@@ -323,11 +323,23 @@ static void add_reverse(Graph& g, unsigned threads) {
     g.rev = Packed(n, m);
     memset(g.rev.off.p, 0, (size_t(n) + 1) * sizeof(uint32_t));
     blocked(threads, m, [&](size_t lo, size_t hi) { for (size_t i = lo; i < hi; ++i) bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]); });
-    uint32_t sum = 0;
-    for (uint32_t k = 0; k < n; ++k) { uint32_t c = g.rev.off[k]; g.rev.off[k] = sum; sum += c; }
-    g.rev.off[n] = sum;
     Array<uint32_t> cursor(n);
-    memcpy(cursor.p, g.rev.off.p, size_t(n) * sizeof(uint32_t));
+    std::vector<uint32_t> start(threads + 1, 0);
+    parallel(threads, [&](unsigned t) {
+        uint32_t sum = 0;
+        for (size_t k = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; k < hi; ++k) sum += g.rev.off[k];
+        start[t + 1] = sum;
+    });
+    for (unsigned t = 0; t < threads; ++t) start[t + 1] += start[t];
+    parallel(threads, [&](unsigned t) {
+        uint32_t sum = start[t];
+        for (size_t k = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; k < hi; ++k) {
+            uint32_t c = g.rev.off[k];
+            g.rev.off[k] = cursor[k] = sum;
+            sum += c;
+        }
+    });
+    g.rev.off[n] = start[threads];
     std::vector<std::vector<std::pair<uint32_t, uint32_t>>> escapes(threads);
     parallel(threads, [&](unsigned t) {
         for (size_t u = n * size_t(t) / threads, hi = n * size_t(t + 1) / threads; u < hi; ++u)

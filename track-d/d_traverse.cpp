@@ -501,7 +501,9 @@ struct Heap {
     void push(uint64_t d, uint32_t v) {
         if ((d >> shift) - cur >= B) { far.push_back({d, v}); std::push_heap(far.begin(), far.end(), later); return; }
         unsigned b = (d >> shift) & (B - 1);
-        bucket[b].push_back(v | static_cast<uint32_t>((d & ((uint64_t(1) << shift) - 1)) << node_bits));
+        auto& q = bucket[b];
+        q.push_back(v | static_cast<uint32_t>((d & ((uint64_t(1) << shift) - 1)) << node_bits));
+        std::push_heap(q.begin(), q.end(), [bits = node_bits](uint32_t a, uint32_t b) { return (a >> bits) > (b >> bits); });
         occupied[b >> 6] |= 1ull << (b & 63);
         ++near;
     }
@@ -574,6 +576,7 @@ struct Side {
         const uint32_t* adj = csr.adj.p;
         size_t count = 0;
         while (!bk.empty()) {
+            std::pop_heap(bk.begin(), bk.end(), [nbits](uint32_t a, uint32_t b) { return (a >> nbits) > (b >> nbits); });
             uint32_t entry = bk.back();
             bk.pop_back();
             --heap.near;

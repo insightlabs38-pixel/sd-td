@@ -1,0 +1,72 @@
+name: Track D bypass-degree tournament
+on:
+  push:
+    branches:
+      - d/bypass-threshold-20261031-11
+    paths:
+      - .github/workflows/d-bypass-tournament.yml
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build three degree thresholds
+        shell: bash
+        run: |
+          set -euo pipefail
+          for d in 0 1 2; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_BYPASS_DEG=$d -o /tmp/traverse-d$d track-d/d_traverse.cpp
+          done
+      - name: Differential correctness, every threshold
+        shell: bash
+        run: |
+          set -euo pipefail
+          for d in 0 1 2; do
+            echo "Checking degree threshold $d"
+            SD_TEST_BINARY=/tmp/traverse-d$d python tests/test_d.py
+          done
+      - name: Generate and hash official seed one
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          mkdir -p /tmp/full-data /tmp/full-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/full-data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/full-data/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
+      - name: Matched exact-output tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for threads in (4, 12):
+              results={d: [] for d in (0, 1, 2)}
+              for rnd in range(15):
+                  for d in ((rnd+i)%3 for i in range(3)):
+                      env=os.environ.copy()
+                      env.update(SD_DATA='/tmp/full-data',SD_OUT='/tmp/full-out',SD_THREADS=str(threads),SD_BUILD_THREADS='4')
+                      t0=time.perf_counter_ns()
+                      subprocess.run(['/usr/bin/time','-f','%M %U','-o','/tmp/usage.txt',f'/tmp/traverse-d{d}'],env=env,check=True)
+                      wall=(time.perf_counter_ns()-t0)*1e-9
+                      with open('/tmp/full-out/distances.txt','rb') as f:
+                          digest=hashlib.sha256(f.read()).hexdigest()
+                      assert digest==expected,(threads,rnd,d,digest)
+                      mem,user=map(float,open('/tmp/usage.txt').read().split())
+                      results[d].append((wall,mem,user))
+              print('THREADS',threads,flush=True)
+              for d in (0,1,2):
+                  rows=results[d]
+                  print('DEGREE',d,'N',len(rows),'WALL_MEDIAN',round(statistics.median(x[0] for x in rows),6),'RSS_MAX_KIB',max(x[1] for x in rows),'RSS_MEDIAN_KIB',statistics.median(x[1] for x in rows),'USER_MEDIAN',round(statistics.median(x[2] for x in rows),5),flush=True)
+              for d in (0,1):
+                  ratios=[results[d][i][0]/results[2][i][0] for i in range(15)]
+                  print('VS_BASELINE',d,'MEDIAN_WALL_RATIO',round(statistics.median(ratios),5),'WINS',sum(r<1 for r in ratios),flush=True)
+          print('PASS 90 full-seed exact output checks',flush=True)
+          PY

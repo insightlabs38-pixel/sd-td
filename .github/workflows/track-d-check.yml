@@ -1,6 +1,8 @@
 name: Track D exactness and Docker
 on:
   push:
+    branches:
+      - d/balanced-settles-confirm
     paths:
       - .github/workflows/track-d-check.yml
   workflow_dispatch:
@@ -11,6 +13,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
@@ -44,6 +48,42 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Build prior verified champion
+        run: |
+          git show a78664ef5d8ce7b3986f54328430df793664d697:track-d/d_traverse.cpp > /tmp/prev.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/prev /tmp/prev.cpp
+      - name: Matched balanced-search confirmation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for workers in (4, 6, 12):
+              times = {0: [], 1: []}
+              for run in range(31):
+                  for mode in (run % 2, 1 - run % 2):
+                      env = dict(os.environ, SD_DATA='/tmp/full-data', SD_OUT='/tmp/full-out', SD_THREADS=str(workers))
+                      start = time.perf_counter_ns()
+                      subprocess.run(['/tmp/prev' if mode == 0 else '/tmp/traverse'], env=env, check=True)
+                      elapsed = (time.perf_counter_ns() - start) / 1e9
+                      with open('/tmp/full-out/distances.txt', 'rb') as f:
+                          assert hashlib.sha256(f.read()).hexdigest() == expected
+                      times[mode].append(elapsed)
+                      print(f'BALANCED_AB workers={workers} run={run} mode={mode} wall={elapsed:.6f}', flush=True)
+              print(f'BALANCED_SUM workers={workers} baseline={statistics.median(times[0]):.6f} balanced={statistics.median(times[1]):.6f}', flush=True)
+          PY
+      - name: Holdout sample seeds 3 and 7
+        shell: bash
+        run: |
+          set -euo pipefail
+          for seed in 3 7; do
+            mkdir -p "/tmp/hold-$seed" "/tmp/hold-ref-$seed" "/tmp/hold-out-$seed"
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale sample --out "/tmp/hold-$seed"
+            python /tmp/official/reference/d_traverse.py --data "/tmp/hold-$seed" --out "/tmp/hold-ref-$seed"
+            SD_DATA="/tmp/hold-$seed" SD_OUT="/tmp/hold-out-$seed" /tmp/traverse
+            cmp "/tmp/hold-ref-$seed/distances.txt" "/tmp/hold-out-$seed/distances.txt"
+          done
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

@@ -1,0 +1,41 @@
+name: D fused directed degree-three and four shortcuts
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-fused-degree34']
+    paths: ['research/d-breakthrough/**', '.github/workflows/d-fused-degree34.yml']
+  workflow_dispatch:
+jobs:
+  exact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Official deterministic generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile baseline plus fused degree-three/four architectures
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_EXTRA_DEG=3 -o /tmp/d-deg3 research/d-breakthrough/fused_degree34.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_EXTRA_DEG=4 -o /tmp/d-deg4 research/d-breakthrough/fused_degree34.cpp
+          wc -l -c track-d/d_traverse.cpp research/d-breakthrough/fused_degree34.cpp
+      - name: Full adversarial 88-case independent exact Dijkstra differential
+        run: |
+          set -euo pipefail
+          for mode in deg3 deg4; do SD_TEST_BINARY=/tmp/d-$mode python tests/test_d.py; done
+      - name: Two full graph seeds each with 2000 complete queries 9 paired iterations
+        run: python research/d-breakthrough/bench_fused34.py
+      - name: Sanitizers on native degree-four
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -DSD_EXTRA_DEG=4 -o /tmp/d-deg4-san research/d-breakthrough/fused_degree34.cpp
+          SD_TEST_BINARY=/tmp/d-deg4-san python tests/test_d.py
+      - name: Archive raw receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-fused-degree34-full-tournament
+          path: /tmp/d-fused34-results.json
+          if-no-files-found: ignore

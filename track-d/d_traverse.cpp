@@ -508,18 +508,21 @@ struct Queue {
 // Labels in pages of 128, materialized on first write and recycled by the
 // next search, so memory follows the searches rather than the graph. Pages
 // are handed out in order: only the deepest search's pages are ever touched.
-struct Labels {
-  std::vector<u64 *> dir;
+// A blank label holds NONE: INF, or all ones when L is narrower.
+template <class L> struct Labels {
+  static constexpr L NONE = std::min<u64>(INF, L(-1));
+  std::vector<L *> dir;
   std::vector<u32> used;
-  u64 *store, blank[128];
-  explicit Labels(u32 n) : dir(n / 128 + 1, blank), store(alloc<u64>(n + 128)) {
-    std::fill(blank, blank + 128, INF);
+  L *store, blank[128];
+  explicit Labels(u32 n) : dir(n / 128 + 1, blank), store(alloc<L>(n + 128)) {
+    std::fill(blank, blank + 128, NONE);
   }
-  u64 *at(u32 v) const { return dir[v / 128] + v % 128; }
+  L *at(u32 v) const { return dir[v / 128] + v % 128; }
+  u64 get(u32 v) const { return *at(v); }
   // Any finite distance improves a blank label, so writes go to real pages.
-  u64 *slot(u32 v) {
+  L *slot(u32 v) {
     if (dir[v / 128] == blank) {
-      dir[v / 128] = std::fill_n(store + used.size() * 128, 128, INF) - 128;
+      dir[v / 128] = std::fill_n(store + used.size() * 128, 128, NONE) - 128;
       used.push_back(v / 128);
     }
     return at(v);
@@ -531,10 +534,14 @@ struct Labels {
   }
 };
 
-struct Side {
+// One direction of a search with labels of type L. A distance that does not
+// fit L sets `wide`, which voids the search. With narrow labels a blank one
+// reads as 2^32 - 1, so nd + other(v) stays a path length or at least that.
+template <class L> struct Side {
   const Graph &g;
-  Labels dist;
+  Labels<L> dist;
   Queue queue;
+  bool wide = false;
   explicit Side(const Graph &g) : g(g), dist(g.n), queue(g.n) {}
   void start(u32 s) {
     dist.reset(), queue.clear();
@@ -546,6 +553,7 @@ struct Side {
   size_t drain(const Side &other, u64 &best) {
     Queue::Bucket &bk = queue.bucket[queue.cur % Queue::B];
     u32 mask = (1u << queue.node_bits) - 1, settled = 0;
+    bool overflow = false;
     for (u32 k = 0; k < bk.size; ++k) {
       u32 ahead = bk.data[std::min(k + 8, bk.size - 1)] & mask;
       __builtin_prefetch(&g.off[ahead]), __builtin_prefetch(dist.at(ahead));
@@ -553,47 +561,52 @@ struct Side {
       __builtin_prefetch(&g.adj[g.off[ahead]]);
       u32 u = bk.data[k] & mask;
       u64 d = queue.cur << queue.shift | bk.data[k] >> queue.node_bits;
-      if (*dist.at(u) != d)
+      if (dist.get(u) != d)
         continue;
       ++settled;
       for (u32 i = g.off[u]; i < g.off[u + 1]; ++i) {
         u32 v = g.head(g.adj[i]);
-        u64 nd = d + g.weight(i), *x = dist.slot(v), old = *x;
-        *x = std::min(nd, old);
+        L *x = dist.slot(v);
+        u64 nd = d + g.weight(i), old = *x;
+        *x = L(std::min(nd, old));
+        overflow |= nd >= Labels<L>::NONE;
         queue.push(nd, v, nd < old);
-        best = std::min(best, nd + *other.dist.at(v));
+        best = std::min(best, nd + other.dist.get(v));
       }
     }
     queue.near -= bk.size, bk.size = 0;
     queue.occupied[queue.cur % Queue::B / 64] &= ~(u64(1) << queue.cur % 64);
+    wide |= overflow;
     return settled;
   }
 };
 
 // An exact forward probe settles up to 256 vertices; then bidirectional
 // Dijkstra balances settled counts until the two queue fronts sum to at least
-// the best meeting.
-struct Worker {
-  Side fwd, bwd;
-  int64_t solve(u32 s, u32 t) {
+// the best meeting. Returns the distance, or NONE or more if t is unreached
+// as far as L can tell.
+template <class L> struct Worker {
+  Side<L> fwd, bwd;
+  u64 solve(u32 s, u32 t) {
+    fwd.wide = bwd.wide = false;
     if (s == t)
       return 0;
     if (fwd.g.off[s] == fwd.g.off[s + 1] || bwd.g.off[t] == bwd.g.off[t + 1])
-      return -1;
+      return INF;
     bwd.dist.reset(), fwd.start(s);
     u64 best = INF, fs = 0, bs = 0;
     while (fs < 256) {
-      u64 f = fwd.queue.lower_bound(), known = *fwd.dist.at(t);
+      u64 f = fwd.queue.lower_bound(), known = fwd.dist.get(t);
       if (known < f || f == INF)
-        return known < INF ? int64_t(known) : -1;
+        return known;
       fs += fwd.drain(bwd, best);
     }
     bwd.start(t);
-    best = *fwd.dist.at(t);
+    best = fwd.dist.get(t);
     for (;;) {
       u64 f = fwd.queue.lower_bound(), b = bwd.queue.lower_bound();
       if (f == INF || b == INF || f + b >= best)
-        return best == INF ? -1 : int64_t(best);
+        return best;
       if (fs <= bs)
         fs += fwd.drain(bwd, best);
       else
@@ -629,9 +642,19 @@ int main() {
             [&](u32 a, u32 b) { return ends[2 * a] < ends[2 * b]; });
   std::atomic<size_t> next{0};
   parallel(std::min<size_t>(threads, queries + 1), [&](unsigned) {
-    Worker w{Side(*fwd), Side(*rev)};
-    for (size_t k, i; (k = next++) < queries;)
-      i = by_source[k], answers[i] = w.solve(ends[2 * i], ends[2 * i + 1]);
+    // 32-bit labels, unless a query's distances need all 64 bits.
+    Worker<u32> narrow{Side<u32>(*fwd), Side<u32>(*rev)};
+    Worker<u64> *wide = nullptr;
+    for (size_t k; (k = next++) < queries;) {
+      u32 i = by_source[k], s = ends[2 * i], t = ends[2 * i + 1];
+      u64 d = narrow.solve(s, t);
+      if (narrow.fwd.wide || narrow.bwd.wide || d >= Labels<u32>::NONE) {
+        if (!wide)
+          wide = new Worker<u64>{Side<u64>(*fwd), Side<u64>(*rev)};
+        d = wide->solve(s, t);
+      }
+      answers[i] = d < INF ? int64_t(d) : -1;
+    }
   });
   std::string text;
   for (int64_t x : answers)

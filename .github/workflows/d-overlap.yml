@@ -1,0 +1,41 @@
+name: D query-reverse pipeline overlap architecture
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-overlap-query-reverse']
+    paths: ['research/d-breakthrough/**','.github/workflows/d-overlap.yml']
+  workflow_dispatch:
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Retrieve frozen exact organizer generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build baseline and three exact pipeline configurations
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_EARLY_LIMIT=32 -DSD_EARLY_THREADS=2 -o /tmp/d-ov32 research/d-breakthrough/overlap_query_reverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_EARLY_LIMIT=128 -DSD_EARLY_THREADS=2 -o /tmp/d-ov128 research/d-breakthrough/overlap_query_reverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_EARLY_LIMIT=512 -DSD_EARLY_THREADS=2 -o /tmp/d-ov512 research/d-breakthrough/overlap_query_reverse.cpp
+          wc -l -c research/d-breakthrough/overlap_query_reverse.cpp
+      - name: Independent oracle across 88 directed adversarial fixtures per candidate
+        run: |
+          for mode in ov32 ov128 ov512; do SD_TEST_BINARY=/tmp/d-$mode python tests/test_d.py; done
+      - name: Two complete full graph seeds times 2 worker counts times 9 matched rounds
+        run: python research/d-breakthrough/bench_overlap.py
+      - name: Address and undefined behavior sanitizer
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -DSD_EARLY_LIMIT=128 -DSD_EARLY_THREADS=2 -o /tmp/d-overlap-san research/d-breakthrough/overlap_query_reverse.cpp
+          SD_TEST_BINARY=/tmp/d-overlap-san python tests/test_d.py
+      - name: Preserve full timing receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-overlap-exact-full
+          path: /tmp/d-overlap-results.json
+          if-no-files-found: ignore

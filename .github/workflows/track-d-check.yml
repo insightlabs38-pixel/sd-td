@@ -65,3 +65,24 @@ jobs:
             docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
           done
+
+      - name: Fused reverse-owner and forward-probe tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          for variant in base div p0 p128 p512 div128 div512; do
+            flags=()
+            case "$variant" in
+              div) flags=(-DSD_OWNER_DIV) ;;
+              p0) flags=(-DSD_PROBE=0) ;;
+              p128) flags=(-DSD_PROBE=128) ;;
+              p512) flags=(-DSD_PROBE=512) ;;
+              div128) flags=(-DSD_OWNER_DIV -DSD_PROBE=128) ;;
+              div512) flags=(-DSD_OWNER_DIV -DSD_PROBE=512) ;;
+            esac
+            g++ -O3 -std=c++17 -pthread -flto -static -s "${flags[@]}" -o "/tmp/fused-$variant" track-d/d_traverse.cpp
+          done
+          for variant in div p0 div128; do
+            SD_TEST_BINARY="/tmp/fused-$variant" python tests/test_d.py
+          done
+          python tests/fused_tournament.py

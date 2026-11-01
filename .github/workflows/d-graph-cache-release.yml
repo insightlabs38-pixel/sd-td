@@ -1,0 +1,93 @@
+name: D graph input cache release tournament
+on:
+  push:
+    branches: ['d/graph-cache-release-20261101']
+    paths: ['track-d/d_traverse.cpp', '.github/workflows/d-graph-cache-release.yml']
+  workflow_dispatch:
+
+jobs:
+  tournament:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Obtain official frozen generator and oracle
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build identical source with three input-lifetime policies
+        shell: bash
+        run: |
+          set -euo pipefail
+          for pair in 'base 0' 'unmap 1' 'fadvise 2'; do
+            read -r mode policy <<< "$pair"
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_INPUT_RELEASE="$policy" -o "/tmp/d-$mode" track-d/d_traverse.cpp
+          done
+      - name: Independent 88-case differential and official sample oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sample-data /tmp/sample-ref
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample-data
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample-data --out /tmp/sample-ref
+          for mode in base unmap fadvise; do
+            SD_TEST_BINARY="/tmp/d-$mode" python tests/test_d.py
+            mkdir -p "/tmp/sample-$mode"
+            SD_THREADS=4 SD_DATA=/tmp/sample-data SD_OUT="/tmp/sample-$mode" "/tmp/d-$mode"
+            cmp /tmp/sample-ref/distances.txt "/tmp/sample-$mode/distances.txt"
+          done
+      - name: Generate two independent full graphs
+        shell: bash
+        run: |
+          set -euo pipefail
+          for seed in 1 7; do
+            mkdir -p "/tmp/graph-seed$seed"
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out "/tmp/graph-seed$seed"
+          done
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/graph-seed1/graph.txt' | sha256sum -c
+      - name: Paired full-seed tournament, exact hashes, 4/6/12 workers
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, os, pathlib, statistics, subprocess, time
+          modes=('base','unmap','fadvise')
+          out=pathlib.Path('/tmp/d-cache-out'); out.mkdir(exist_ok=True)
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for seed,rounds in ((1,9),(7,3)):
+              for workers in (4,6,12):
+                  vals={m:[] for m in modes}
+                  checks={}
+                  for i in range(rounds):
+                      for mode in modes[i%3:]+modes[:i%3]:
+                          env=dict(os.environ,SD_THREADS=str(workers),SD_DATA=f'/tmp/graph-seed{seed}',SD_OUT=str(out))
+                          t=time.perf_counter()
+                          subprocess.run([f'/tmp/d-{mode}'],env=env,check=True,stdout=subprocess.DEVNULL)
+                          vals[mode].append(time.perf_counter()-t)
+                          sha=hashlib.sha256((out/'distances.txt').read_bytes()).hexdigest()
+                          if seed==1 and sha!=expected: raise RuntimeError(f'official hash mismatch {mode} {workers}')
+                          if checks and sha!=next(iter(checks.values())): raise RuntimeError(f'seed {seed} mismatch {mode}')
+                          checks[mode]=sha
+                  b=statistics.median(vals['base'])
+                  print('D_CACHE_TOURNAMENT',seed,workers,{'base':round(b,6),'unmap':round(statistics.median(vals['unmap']),6),'fadvise':round(statistics.median(vals['fadvise']),6),'wins_unmap':sum(x<y for x,y in zip(vals['unmap'],vals['base'])),'wins_fadvise':sum(x<y for x,y in zip(vals['fadvise'],vals['base'])),'rounds':rounds,'hash':checks['base']},flush=True)
+          print('D_CACHE_EXACT_ALL_PASS',flush=True)
+          PY
+      - name: Native RSS and pinned offline container cgroup memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          for mode in base unmap fadvise; do
+            echo "D_NATIVE_RSS mode=$mode"
+            SD_THREADS=4 SD_DATA=/tmp/graph-seed1 SD_OUT=/tmp/d-cache-out /usr/bin/time -f 'D_RSS_KB %M WALL_S %e' "/tmp/d-$mode"
+          done
+          docker pull debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+          for mode in base unmap fadvise; do
+            echo "D_CONTAINER mode=$mode"
+            docker run --rm --network none --read-only --memory=1g --cpus=4 \
+              -e SD_THREADS=4 -v "/tmp/d-$mode:/traverse:ro" \
+              -v /tmp/graph-seed1:/data:ro -v /tmp/d-cache-out:/out:rw \
+              --entrypoint /bin/sh debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad \
+              -c '/traverse && echo D_CGROUP_PEAK_BYTES $(cat /sys/fs/cgroup/memory.peak)'
+            echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-cache-out/distances.txt' | sha256sum -c
+          done

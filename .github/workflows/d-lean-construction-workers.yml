@@ -1,0 +1,106 @@
+name: D lean CSR construction-worker tournament
+on:
+  push:
+    paths:
+      - .github/workflows/d-lean-construction-workers.yml
+  workflow_dispatch:
+
+jobs:
+  tournament:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Obtain public organizer reference
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile construction-worker variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          src = Path('track-d/d_traverse.cpp').read_text()
+          old1 = 'Graph *raw = read_graph(graph, graph + gsize, terminal, bypass, threads);'
+          old2 = 'Graph *fwd = contract(raw, bypass, threads, ends),\n        *rev = transpose(*fwd, threads);'
+          assert src.count(old1) == 1 and src.count(old2) == 1
+          for cap in (2, 3, 4, 6, 12):
+              new1 = f'unsigned build_threads = std::min(threads, unsigned({cap}));\n  Graph *raw = read_graph(graph, graph + gsize, terminal, bypass, build_threads);'
+              new2 = 'Graph *fwd = contract(raw, bypass, build_threads, ends),\n        *rev = transpose(*fwd, build_threads);'
+              Path(f'/tmp/td-cap{cap}.cpp').write_text(src.replace(old1, new1).replace(old2, new2))
+          PY
+          for cap in 2 3 4 6 12; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -o "/tmp/td-cap$cap" "/tmp/td-cap$cap.cpp"
+          done
+      - name: Adversarial differential tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          SD_TEST_BINARY=/tmp/td-cap4 python tests/test_d.py
+          SD_TEST_BINARY=/tmp/td-cap6 python tests/test_d.py
+      - name: Generate independent official full seeds
+        shell: bash
+        run: |
+          set -euo pipefail
+          for seed in 1 7; do
+            mkdir -p "/tmp/d-full-$seed"
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out "/tmp/d-full-$seed"
+          done
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/d-full-1/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/d-full-1/queries.txt' | sha256sum -c
+      - name: Interleaved complete-process tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import collections, hashlib, os, pathlib, random, statistics, subprocess, time
+          caps = [2, 3, 4, 6, 12]
+          runs = collections.defaultdict(list)
+          sha1 = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          sha7 = None
+          rng = random.Random(20261101)
+          for seed in (1, 7):
+              for workers in (4, 6, 12):
+                  for cap in caps:
+                      pathlib.Path(f'/tmp/d-out-{seed}-{workers}-{cap}').mkdir(exist_ok=True)
+                  for round_idx in range(13):
+                      order = caps[:]
+                      rng.shuffle(order)
+                      for cap in order:
+                          env = os.environ.copy()
+                          env.update(SD_DATA=f'/tmp/d-full-{seed}', SD_OUT=f'/tmp/d-out-{seed}-{workers}-{cap}', SD_THREADS=str(workers))
+                          t0 = time.perf_counter()
+                          subprocess.run([f'/tmp/td-cap{cap}'], env=env, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                          dt = time.perf_counter() - t0
+                          out = pathlib.Path(env['SD_OUT'], 'distances.txt').read_bytes()
+                          digest = hashlib.sha256(out).hexdigest()
+                          if seed == 1:
+                              assert digest == sha1, (seed, workers, cap, round_idx, digest)
+                          elif sha7 is None:
+                              sha7 = digest
+                          else:
+                              assert digest == sha7, (seed, workers, cap, round_idx, digest)
+                          runs[seed, workers, cap].append(dt)
+                  print('SEED', seed, 'WORKERS', workers, 'seed7_sha', sha7, flush=True)
+                  for cap in caps:
+                      vals = runs[seed, workers, cap]
+                      base = runs[seed, workers, 12]
+                      wins = sum(x < y for x, y in zip(vals, base)) if cap != 12 else 0
+                      print(f'cap={cap} median={statistics.median(vals):.6f} min={min(vals):.6f} paired_wins_vs_12={wins}/13', flush=True)
+          print('PASS 390 full-seed exact executions, 2 seeds x 3 worker settings x 5 caps x 13 rounds', flush=True)
+          PY
+      - name: Native peak RSS and pinned offline Docker correctness
+        shell: bash
+        run: |
+          set -euo pipefail
+          for cap in 4 12; do
+            mkdir -p "/tmp/d-mem-$cap"
+            SD_DATA=/tmp/d-full-1 SD_OUT="/tmp/d-mem-$cap" SD_THREADS=12 /usr/bin/time -v "/tmp/td-cap$cap" 2>&1 | grep -E 'Maximum resident set size|Elapsed'
+            echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-mem-'$cap'/distances.txt' | sha256sum -c
+          done
+          docker build --pull --network none -t d-lean-baseline track-d
+          mkdir -p /tmp/d-docker-out
+          docker run --rm --network none --read-only --memory 8g -e SD_THREADS=12 -v /tmp/d-full-1:/data:ro -v /tmp/d-docker-out:/out:rw d-lean-baseline
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-docker-out/distances.txt' | sha256sum -c

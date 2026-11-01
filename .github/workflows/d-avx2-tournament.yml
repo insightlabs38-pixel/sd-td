@@ -1,0 +1,41 @@
+name: D AVX2 separator matched tournament
+on:
+  push:
+    branches: [d/avx2-separator-tournament-20261101]
+    paths: [.github/workflows/d-avx2-tournament.yml]
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Read frozen public generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile exact baseline, compiler-only AVX2, and AVX2 separator
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show f400da36c6fcd7e2c8a6bd9af64c038690494e10:track-d/d_traverse.cpp > /tmp/d-base.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-sse2 /tmp/d-base.cpp
+          g++ -O3 -std=c++17 -pthread -flto -mavx2 -static -s -o /tmp/d-avxflags /tmp/d-base.cpp
+          g++ -O3 -std=c++17 -pthread -flto -mavx2 -static -s -o /tmp/d-avxsep track-d/d_traverse.cpp
+      - name: Independent directed adversarial oracle for AVX2
+        run: SD_TEST_BINARY=/tmp/d-avxsep python3 tests/test_d.py
+      - name: Exact full seeds 1 and 7, 4/6/12 workers, 11 matched rounds
+        run: python3 tests/avx2_tournament.py
+      - name: Resource measurement
+        shell: bash
+        run: |
+          set -euo pipefail
+          for mode in sse2 avxflags avxsep; do
+            mkdir -p /tmp/d-rss-out
+            SD_DATA=/tmp/d-avx2-unused SD_OUT=/tmp/d-rss-out true
+            echo "D_AVX2_RESOURCE mode=$mode binary_bytes=$(stat -c %s /tmp/d-$mode)"
+          done

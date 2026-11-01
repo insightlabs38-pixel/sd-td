@@ -1,0 +1,54 @@
+name: D fused hierarchy pinned PGO comparison
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-fused-hierarchy']
+    paths:
+      - 'research/docker-fch/**'
+      - '.github/workflows/d-fch-pgo.yml'
+  workflow_dispatch:
+jobs:
+  pgo-compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 24
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fetch public frozen generator and oracle
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build two pinned offline PGO Docker images
+        run: |
+          set -euo pipefail
+          docker build --pull -t d-pgo-base track-d
+          docker build --pull -t d-pgo-fch -f research/docker-fch/Dockerfile .
+      - name: Extract separately PGO-trained immutable binaries
+        run: |
+          set -euo pipefail
+          for mode in base fch; do
+            container=$(docker create "d-pgo-$mode")
+            docker cp "$container":/traverse "/tmp/d-pgo-$mode"
+            docker rm "$container"
+            chmod +x "/tmp/d-pgo-$mode"
+            sha256sum "/tmp/d-pgo-$mode"
+          done
+      - name: Adversarial exactness of pinned PGO challenger
+        run: SD_TEST_BINARY=/tmp/d-pgo-fch python tests/test_d.py
+      - name: Matched 2-seed complete workload and peak RSS comparison
+        run: python research/docker-fch/bench_pgo.py
+      - name: Verify pinned candidate Docker runtime on official full seed
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/pgo-docker-out
+          docker run --rm --network none --read-only --memory 8g \
+            -e TRACK=d -e SD_THREADS=4 \
+            -v /tmp/pgo-full-1:/data:ro \
+            -v /tmp/pgo-docker-out:/out:rw d-pgo-fch
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/pgo-docker-out/distances.txt' | sha256sum -c
+      - name: Archive detailed whole-run performance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-fused-hierarchy-pinned-pgo-qualification
+          path: /tmp/d-pgo-fch.json
+          if-no-files-found: ignore

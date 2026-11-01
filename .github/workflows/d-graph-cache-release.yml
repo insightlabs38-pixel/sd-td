@@ -55,13 +55,18 @@ jobs:
           modes=('base','unmap','fadvise')
           out=pathlib.Path('/tmp/d-cache-out'); out.mkdir(exist_ok=True)
           expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
-          for seed,rounds in ((1,9),(7,3)):
+          for seed,rounds in ((1,17),(7,7)):
               for workers in (4,6,12):
                   vals={m:[] for m in modes}
                   checks={}
                   for i in range(rounds):
                       for mode in modes[i%3:]+modes[:i%3]:
                           env=dict(os.environ,SD_THREADS=str(workers),SD_DATA=f'/tmp/graph-seed{seed}',SD_OUT=str(out))
+                          # The fadvise variant evicts page cache globally: restore
+                          # identical warm input before EVERY timed execution.
+                          with open(f'/tmp/graph-seed{seed}/graph.txt','rb') as source:
+                              while source.read(1<<20):
+                                  pass
                           t=time.perf_counter()
                           subprocess.run([f'/tmp/d-{mode}'],env=env,check=True,stdout=subprocess.DEVNULL)
                           vals[mode].append(time.perf_counter()-t)
@@ -73,7 +78,7 @@ jobs:
                   print('D_CACHE_TOURNAMENT',seed,workers,{'base':round(b,6),'unmap':round(statistics.median(vals['unmap']),6),'fadvise':round(statistics.median(vals['fadvise']),6),'wins_unmap':sum(x<y for x,y in zip(vals['unmap'],vals['base'])),'wins_fadvise':sum(x<y for x,y in zip(vals['fadvise'],vals['base'])),'rounds':rounds,'hash':checks['base']},flush=True)
           print('D_CACHE_EXACT_ALL_PASS',flush=True)
           PY
-      - name: Native RSS and pinned offline container cgroup memory
+      - name: Native RSS and exploratory container cgroup memory (cache attribution confounded)
         shell: bash
         run: |
           set -euo pipefail

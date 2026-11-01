@@ -785,8 +785,8 @@ struct Side {
     for (u32 k = 0; k < bk.size; ++k) {
       if (k + LOOK < bk.size) {
         u32 ahead = bk.data[k + LOOK] & mask;
-        __builtin_prefetch(&g.slot[size_t(ahead) * 4], 0, 1);
-        __builtin_prefetch(dist.at(ahead), 0, 1);
+        __builtin_prefetch(&g.slot[size_t(ahead) * 4], 0, 0);
+        __builtin_prefetch(dist.at(ahead), 0, 0);
       }
       u32 u = bk.data[k] & mask;
       u64 d = base | bk.data[k] >> queue.node_bits;

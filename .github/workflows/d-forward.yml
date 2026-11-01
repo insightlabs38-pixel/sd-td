@@ -1,0 +1,40 @@
+name: D forward-only architectural qualification
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-forward-only']
+    paths:
+      - 'research/d-breakthrough/**'
+      - '.github/workflows/d-forward.yml'
+  workflow_dispatch:
+
+jobs:
+  forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fetch official generator and oracle
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile original fused bidirectional and new forward-only engine
+        run: |
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-forward research/d-breakthrough/forward_only.cpp
+          wc -c track-d/d_traverse.cpp research/d-breakthrough/forward_only.cpp
+      - name: Independent exact differential across 88 adversarial cases
+        run: SD_TEST_BINARY=/tmp/d-forward python tests/test_d.py
+      - name: Full graph 2000-query batches for two independent seeds
+        run: python research/d-breakthrough/bench_forward.py
+      - name: ASan and UBSan random differential
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -o /tmp/d-forward-san research/d-breakthrough/forward_only.cpp
+          SD_TEST_BINARY=/tmp/d-forward-san python tests/test_d.py
+      - name: Preserve full benchmark receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-forward-only-tournament
+          path: /tmp/d-forward-results.json
+          if-no-files-found: ignore

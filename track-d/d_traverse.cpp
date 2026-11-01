@@ -414,7 +414,18 @@ static inline uint32_t bump(uint32_t& x) { return __atomic_fetch_add(&x, 1u, __A
 static void add_reverse(Graph& g, unsigned threads) {
     uint32_t n = g.n, m = g.fwd.off[n];
     g.rev = Packed(n, m);
-    blocked(threads, m, [&](size_t lo, size_t hi) { for (size_t i = lo; i < hi; ++i) bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]); });
+#ifndef SD_REV_PREFETCH
+#define SD_REV_PREFETCH 8
+#endif
+    blocked(threads, m, [&](size_t lo, size_t hi) {
+        for (size_t i = lo; i < hi; ++i) {
+#if SD_REV_PREFETCH
+            if (i + SD_REV_PREFETCH < hi)
+                __builtin_prefetch(&g.rev.off[g.fwd.head(g.fwd.adj[i + SD_REV_PREFETCH])], 1, 1);
+#endif
+            bump(g.rev.off[g.fwd.head(g.fwd.adj[i])]);
+        }
+    });
     Array<uint32_t> cursor(n);
     std::vector<uint32_t> start(threads + 1, 0);
     parallel(threads, [&](unsigned t) {

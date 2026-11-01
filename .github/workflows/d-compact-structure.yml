@@ -1,0 +1,27 @@
+name: D directed compact hierarchy structural profile
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-compact-multiround']
+    paths: ['.github/workflows/d-compact-structure.yml']
+  workflow_dispatch:
+jobs:
+  structural:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fetch official generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build three-round independent compact hierarchy
+        run: g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_OVERLAY_DEG=3 -DSD_OVERLAY_BUDGET=2 -DSD_OVERLAY_ROUNDS=3 -o /tmp/d-compact research/d-breakthrough/compact_multi.cpp
+      - name: Measure every independent contraction round on full data
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/data /tmp/out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/data
+          SD_DATA=/tmp/data SD_OUT=/tmp/out SD_THREADS=4 /usr/bin/time -f 'D_COMPACT_WALL wall_s=%e peak_rss_kib=%M cpu_user_s=%U' /tmp/d-compact
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/out/distances.txt' | sha256sum -c

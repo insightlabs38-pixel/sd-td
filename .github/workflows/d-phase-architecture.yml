@@ -37,7 +37,7 @@ jobs:
           for seed in 1 7; do
             python /tmp/official/generators/d_traverse.py --seed $seed --scale full --out /tmp/data-d
             for rep in 1 2 3; do
-              for mode in base lazy forward partial; do
+              for mode in base lazy forward partial partial4; do
                 echo "D_PHASE_CONFIG seed=$seed rep=$rep mode=$mode"
                 SD_DATA=/tmp/data-d SD_OUT=/tmp/out-d SD_THREADS=4 /tmp/d-phase-$mode
                 if [ "$seed" = 1 ]; then

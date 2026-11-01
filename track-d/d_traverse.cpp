@@ -34,9 +34,7 @@ template <class T> T *alloc(size_t n) {
   madvise(p, bytes, MADV_NOHUGEPAGE);
   return static_cast<T *>(p);
 }
-template <class T> void release(T *p, size_t n) {
-  munmap(p, n * sizeof(T));
-}
+template <class T> void release(T *p, size_t n) { munmap(p, n * sizeof(T)); }
 
 template <class F> void parallel(unsigned threads, F f) {
   std::vector<std::thread> pool;
@@ -80,8 +78,8 @@ u32 decimal(const char *a, const char *b, const char *file) {
 
 // Calls emit(u, v, w) for each line in [begin, end) of the file [lo, hi).
 template <class Emit>
-void parse(const char *lo, const char *hi, const char *begin,
-           const char *end, Emit emit) {
+void parse(const char *lo, const char *hi, const char *begin, const char *end,
+           Emit emit) {
   const char *field = begin;
   u32 val[3], k = 0;
   char pad[64];
@@ -243,7 +241,8 @@ Graph *build(std::vector<Bins> &bins, u32 n, u32 m, unsigned threads,
           u64 w = e.w;
           if (w == 0xFFFF)
             w = std::lower_bound(bin.heavy.begin(), bin.heavy.end(),
-                                 std::pair(i, u64(0)))->second;
+                                 std::pair(i, u64(0)))
+                    ->second;
           g->put(at[e.key >> bits]++, e.key & ((1u << bits) - 1), w,
                  escapes[t]);
         });
@@ -395,13 +394,14 @@ struct Grower {
 // Grows the regions from the survivors of each worker's id slice, then
 // concatenates them into the forward graph and renames the query endpoints.
 Graph *contract(Graph *raw, const Bits &bypass, unsigned threads,
-             std::vector<u32> &ends) {
+                std::vector<u32> &ends) {
   u32 n = raw->n, m = raw->off[n], lbits = id_bits(n + 1);
   Bits claimed(bypass.size());
   std::vector<Region> regions(threads);
   parallel(threads, [&](unsigned t) {
     Region &reg = regions[t];
-    reg.order = alloc<u32>(n), reg.ends = alloc<u32>(n), reg.out = alloc<u32>(m);
+    reg.order = alloc<u32>(n), reg.ends = alloc<u32>(n),
+    reg.out = alloc<u32>(m);
     Grower grower{*raw, bypass, claimed, Bits(claimed.size()), reg};
     for (u32 x = cut(n, t, threads); x < cut(n, t + 1, threads); ++x)
       if (!test(bypass, x))
@@ -423,7 +423,9 @@ Graph *contract(Graph *raw, const Bits &bypass, unsigned threads,
     base[t + 1] = base[t] + regions[t].len;
     edges[t + 1] = edges[t] + regions[t].edges;
   }
-  auto locate = [&](u32 r) { return base[r >> lbits] + (r & ((1u << lbits) - 1)); };
+  auto locate = [&](u32 r) {
+    return base[r >> lbits] + (r & ((1u << lbits) - 1));
+  };
   Graph *g = new Graph(base[threads], edges[threads]);
   std::vector<Escapes> escapes(threads);
   parallel(threads, [&](unsigned t) {
@@ -648,7 +650,8 @@ int main() {
   for (u32 v : ends)
     set(terminal, v);
   Graph *raw = read_graph(graph, graph + gsize, terminal, bypass, threads);
-  Graph *fwd = contract(raw, bypass, threads, ends), *rev = transpose(*fwd, threads);
+  Graph *fwd = contract(raw, bypass, threads, ends),
+        *rev = transpose(*fwd, threads);
   size_t queries = ends.size() / 2;
   std::vector<int64_t> answers(queries);
   std::vector<u32> by_source(queries);
@@ -674,7 +677,8 @@ int main() {
   std::string text;
   for (int64_t x : answers)
     text += std::to_string(x) + '\n';
-  int fd = open((out + "/distances.txt").c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  int fd = open((out + "/distances.txt").c_str(), O_WRONLY | O_CREAT | O_TRUNC,
+                0644);
   if (fd < 0 || write(fd, text.data(), text.size()) != ssize_t(text.size()))
     exit(2);
   exit(0); // leaves the large buffers to the kernel

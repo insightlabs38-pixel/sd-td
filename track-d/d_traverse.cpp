@@ -799,7 +799,8 @@ struct Side {
         bool take = nd < old;
         *x = take ? nd : old;
         queue.push(nd, v, take);
-        best = std::min(best, nd + other.dist.get(v));
+        if (take)
+          best = std::min(best, nd + other.dist.get(v));
       });
     }
     queue.near -= bk.size;

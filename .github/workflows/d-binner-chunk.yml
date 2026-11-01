@@ -1,0 +1,72 @@
+name: Track D binner chunk size tournament
+on:
+  push:
+    paths:
+      - .github/workflows/d-binner-chunk.yml
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build five variants and run differential fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/chunk-bin /tmp/chunk-src
+          for chunk in 64 128 256 512 1024; do
+            sed "s/static constexpr u32 CHUNK = 256;/static constexpr u32 CHUNK = $chunk;/" track-d/d_traverse.cpp > "/tmp/chunk-src/d_$chunk.cpp"
+            g++ -O3 -std=c++17 -pthread -flto -static -s -o "/tmp/chunk-bin/d_$chunk" "/tmp/chunk-src/d_$chunk.cpp"
+            SD_TEST_BINARY="/tmp/chunk-bin/d_$chunk" python tests/test_d.py
+          done
+      - name: Full-scale two-seed interleaved benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/chunk-data/seed1 /tmp/chunk-data/seed7
+          python track-d/d_traverse_generator.py --seed 1 --scale full --out /tmp/chunk-data/seed1
+          python track-d/d_traverse_generator.py --seed 7 --scale full --out /tmp/chunk-data/seed7
+          python - <<'PY'
+          import hashlib, os, random, statistics, subprocess, tempfile, time
+          variants=(256,64,128,512,1024)
+          expected="a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          results={}
+          with tempfile.TemporaryDirectory() as out:
+              for seed in (1,7):
+                  data=f"/tmp/chunk-data/seed{seed}"
+                  for workers in (4,6,12):
+                      timings={v:[] for v in variants}
+                      baseline=None
+                      for v in variants:
+                          env=dict(os.environ,SD_DATA=data,SD_OUT=out,SD_THREADS=str(workers))
+                          subprocess.run([f"/tmp/chunk-bin/d_{v}"],env=env,check=True,stdout=subprocess.DEVNULL)
+                          digest=hashlib.sha256(open(out+"/distances.txt","rb").read()).hexdigest()
+                          if v==256: baseline=digest
+                          if digest!=baseline: raise AssertionError(f"mismatch seed={seed} workers={workers} chunk={v}")
+                          if seed==1 and digest!=expected: raise AssertionError("official seed1 hash")
+                      rng=random.Random(0xD600+seed*100+workers)
+                      for roundno in range(11):
+                          order=list(variants)
+                          rng.shuffle(order)
+                          for v in order:
+                              env=dict(os.environ,SD_DATA=data,SD_OUT=out,SD_THREADS=str(workers))
+                              start=time.perf_counter_ns()
+                              subprocess.run([f"/tmp/chunk-bin/d_{v}"],env=env,check=True,stdout=subprocess.DEVNULL)
+                              timings[v].append((roundno,(time.perf_counter_ns()-start)/1e9))
+                              digest=hashlib.sha256(open(out+"/distances.txt","rb").read()).hexdigest()
+                              if digest!=baseline: raise AssertionError(f"mismatch seed={seed} workers={workers} round={roundno} chunk={v}")
+                      med={v:statistics.median(t for _,t in timings[v]) for v in variants}
+                      wins={v:sum(t<timings[256][r][1] for r,t in timings[v]) for v in variants if v!=256}
+                      print("RESULT seed",seed,"workers",workers,"medians",med,"wins_vs_256",wins,flush=True)
+                      results[(seed,workers)]=(med,wins)
+          for v in (64,128,512,1024):
+              print("SUMMARY chunk",v,"wins",sum(results[k][1][v] for k in results),"of",11*len(results),flush=True)
+          PY
+          for chunk in 64 128 256 512 1024; do
+            mkdir -p /tmp/chunk-out
+            echo -n "PEAK_RSS chunk=$chunk KiB="
+            env SD_DATA=/tmp/chunk-data/seed1 SD_OUT=/tmp/chunk-out SD_THREADS=12 /usr/bin/time -f '%M' /tmp/chunk-bin/d_$chunk 2>&1
+          done

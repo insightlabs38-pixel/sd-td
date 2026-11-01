@@ -649,6 +649,19 @@ static Graph read_graph(const std::string &path, std::vector<Query> &queries,
                   [&](u32 u, u32 v, u32 w) { bins[t].add(u, v, w); });
       bins[t].finish();
     });
+#if SD_INPUT_RELEASE >= 1
+    // Parsing is complete; release the file mapping before graph construction.
+    if (munmap(const_cast<char *>(lo), size))
+      fail("munmap graph");
+#if SD_INPUT_RELEASE >= 2
+    // The input will not be read again; hint that its cached pages can go.
+    int fd = open(path.c_str(), O_RDONLY);
+    if (fd < 0)
+      fail("open graph");
+    posix_fadvise(fd, 0, 0, POSIX_FADV_DONTNEED);
+    close(fd);
+#endif
+#endif
     fill_rows(bins, shift, terminal, raw, bypass, threads);
   }
   Graph g = build_forward(raw, bypass, m, threads, queries);

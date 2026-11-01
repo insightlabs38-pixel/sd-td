@@ -1,0 +1,105 @@
+name: D lean build-cap-4 pinned GCC15 qualification
+on:
+  push:
+    paths:
+      - .github/workflows/d-lean-cap4-pinned.yml
+  workflow_dispatch:
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Obtain public organizer reference
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build both pinned offline Docker images
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d-base
+          git show fdcc8d04afc8041e5821fa68c45b44a584eb511c:track-d/d_traverse.cpp > /tmp/d-base/d_traverse.cpp
+          cp track-d/Dockerfile /tmp/d-base/Dockerfile
+          docker build --pull --network none -t d-cap4 track-d
+          docker build --pull --network none -t d-base /tmp/d-base
+          for name in cap4 base; do
+            id=$(docker create "d-$name")
+            docker cp "$id:/traverse" "/tmp/td-$name"
+            docker rm "$id"
+            chmod +x "/tmp/td-$name"
+          done
+      - name: Candidate exactness on pinned GCC15 binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          SD_TEST_BINARY=/tmp/td-cap4 python tests/test_d.py
+          SD_TEST_BINARY=/tmp/td-cap4 python tests/boundary_d.py
+          SD_TEST_BINARY=/tmp/td-cap4 python tests/stress_d.py 20
+          mkdir -p /tmp/d-sample /tmp/d-sample-ref /tmp/d-sample-out
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/d-sample
+          python /tmp/official/reference/d_traverse.py --data /tmp/d-sample --out /tmp/d-sample-ref
+          SD_DATA=/tmp/d-sample SD_OUT=/tmp/d-sample-out /tmp/td-cap4
+          cmp /tmp/d-sample-ref/distances.txt /tmp/d-sample-out/distances.txt
+      - name: Generate full official seeds 1 and 7
+        shell: bash
+        run: |
+          set -euo pipefail
+          for seed in 1 7; do
+            mkdir -p "/tmp/d-full-$seed"
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out "/tmp/d-full-$seed"
+          done
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/d-full-1/graph.txt' | sha256sum -c
+      - name: Pinned GCC15 interleaved exact A/B tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import collections, hashlib, os, pathlib, random, statistics, subprocess, time
+          rng = random.Random(202611011)
+          expected = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          results = collections.defaultdict(list)
+          seed7 = None
+          for seed in (1, 7):
+              for workers in (4, 6, 12):
+                  for name in ('base', 'cap4'):
+                      pathlib.Path(f'/tmp/d-out-{seed}-{workers}-{name}').mkdir(exist_ok=True)
+                  for k in range(13):
+                      names = ['base', 'cap4']
+                      rng.shuffle(names)
+                      for name in names:
+                          env = os.environ.copy()
+                          env.update(SD_DATA=f'/tmp/d-full-{seed}', SD_OUT=f'/tmp/d-out-{seed}-{workers}-{name}', SD_THREADS=str(workers))
+                          t0 = time.perf_counter()
+                          subprocess.run([f'/tmp/td-{name}'], env=env, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                          elapsed = time.perf_counter() - t0
+                          digest = hashlib.sha256(pathlib.Path(env['SD_OUT'], 'distances.txt').read_bytes()).hexdigest()
+                          if seed == 1:
+                              assert digest == expected, (seed, workers, name, k, digest)
+                          elif seed7 is None:
+                              seed7 = digest
+                          else:
+                              assert digest == seed7, (seed, workers, name, k, digest)
+                          results[seed, workers, name].append(elapsed)
+                  a = results[seed, workers, 'base']
+                  b = results[seed, workers, 'cap4']
+                  wins = sum(x < y for x, y in zip(b, a))
+                  print(f'SEED={seed} WORKERS={workers} base_median={statistics.median(a):.6f} cap4_median={statistics.median(b):.6f} cap4_wins={wins}/13 seed7_sha={seed7}', flush=True)
+          print('PASS 156 pinned GCC15 exact full-seed executions', flush=True)
+          PY
+      - name: Pinned Docker read-only network-disabled 8GB qualification
+        shell: bash
+        run: |
+          set -euo pipefail
+          for workers in 1 4 12; do
+            mkdir -p "/tmp/d-docker-$workers"
+            chmod 777 "/tmp/d-docker-$workers"
+            docker run --rm --network none --read-only --memory 8g --user 65534:65534 -e SD_THREADS="$workers" -v /tmp/d-full-1:/data:ro -v "/tmp/d-docker-$workers:/out:rw" d-cap4
+            echo "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-docker-$workers/distances.txt" | sha256sum -c
+          done
+          for name in base cap4; do
+            mkdir -p "/tmp/d-mem-$name"
+            SD_DATA=/tmp/d-full-1 SD_OUT="/tmp/d-mem-$name" SD_THREADS=12 /usr/bin/time -v "/tmp/td-$name" 2>&1 | grep -E 'Maximum resident set size|Elapsed'
+          done

@@ -1,0 +1,65 @@
+name: D duplicate-query exactness and matched tournament
+on:
+  push:
+    branches: [d/duplicate-query-20261101]
+    paths: [track-d/d_traverse.cpp, .github/workflows/d-duplicate-query.yml]
+jobs:
+  tournament:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build exact baseline and challenger
+        run: |
+          git show 4812c263bb2bc9f0dbc769942b7651132766b30e:track-d/d_traverse.cpp > /tmp/base.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/base /tmp/base.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/candidate track-d/d_traverse.cpp
+      - name: Differential adversarial exactness
+        run: SD_TEST_BINARY=/tmp/candidate python tests/test_d.py
+      - name: Official generator and paired full-size tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for seed in 1 7; do
+            mkdir -p "/tmp/data-$seed" /tmp/output
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out "/tmp/data-$seed"
+          done
+          python - <<'PY'
+          import hashlib, os, pathlib, random, statistics, subprocess, time
+          root = pathlib.Path('/tmp')
+          expected = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for seed in (1, 7):
+              inp = root / f'data-{seed}'
+              pairs = [tuple(map(int, line.split())) for line in (inp/'queries.txt').read_text().splitlines()]
+              print('seed', seed, 'queries', len(pairs), 'duplicates', len(pairs)-len(set(pairs)), flush=True)
+              for workers in (4, 6, 12):
+                  rng = random.Random(1700+seed*10+workers)
+                  times = {'base': [], 'candidate': []}
+                  oracle = None
+                  wins = 0
+                  for repeat in range(13):
+                      order = ['base', 'candidate']
+                      rng.shuffle(order)
+                      measurements = {}
+                      for name in order:
+                          env = os.environ.copy()
+                          env.update(SD_DATA=str(inp), SD_OUT='/tmp/output', SD_THREADS=str(workers))
+                          start = time.perf_counter()
+                          subprocess.run(['/tmp/'+name], env=env, check=True, stdout=subprocess.DEVNULL)
+                          measurements[name] = time.perf_counter()-start
+                          out = (root/'output'/'distances.txt').read_bytes()
+                          digest = hashlib.sha256(out).hexdigest()
+                          if seed == 1:
+                              assert digest == expected, (seed, workers, name, digest)
+                          if oracle is None:
+                              oracle = out
+                          else:
+                              assert out == oracle, (seed, workers, name)
+                      for name in times: times[name].append(measurements[name])
+                      wins += measurements['candidate'] < measurements['base']
+                  a, b = (statistics.median(times[name]) for name in ('base','candidate'))
+                  print(f'seed={seed} workers={workers} base={a:.6f} candidate={b:.6f} change={(b/a-1)*100:+.3f}% wins={wins}/13', flush=True)
+          PY

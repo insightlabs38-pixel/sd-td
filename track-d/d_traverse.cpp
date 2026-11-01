@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <memory>
 #include <numeric>
+#include <queue>
 #include <string>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -665,14 +666,10 @@ struct Queue {
     u32 *data = nullptr;
     u32 size = 0, cap = 0;
   };
-  struct Far {
-    u64 d;
-    u32 v;
-    bool operator<(const Far &o) const { return d > o.d; }
-  };
+  using Far = std::pair<u64, u32>;
   std::array<Bucket, B> bucket;
   std::array<u64, B / 64> occupied{};
-  std::vector<Far> far;
+  std::priority_queue<Far, std::vector<Far>, std::greater<Far>> far;
   u64 cur = 0;
   size_t near = 0;
   unsigned shift, node_bits;
@@ -687,13 +684,13 @@ struct Queue {
       for (u64 bits = occupied[w]; bits; bits &= bits - 1)
         bucket[w * 64 + __builtin_ctzll(bits)].size = 0;
     occupied.fill(0);
-    far.clear();
+    far = {};
     cur = near = 0;
   }
   void push(u64 d, u32 v, bool take = true) {
     if ((d >> shift) - cur >= B) {
       if (take)
-        far.push_back({d, v}), std::push_heap(far.begin(), far.end());
+        far.push({d, v});
       return;
     }
     unsigned b = (d >> shift) & (B - 1);
@@ -719,15 +716,12 @@ struct Queue {
         bits = occupied[w = (w + 1) & (B / 64 - 1)];
       cur += (((w << 6) | __builtin_ctzll(bits)) - b) & (B - 1);
     } else if (!far.empty()) {
-      cur = far.front().d >> shift;
+      cur = far.top().first >> shift;
     } else {
       return INF;
     }
-    while (!far.empty() && (far.front().d >> shift) - cur < B) {
-      std::pop_heap(far.begin(), far.end());
-      push(far.back().d, far.back().v);
-      far.pop_back();
-    }
+    for (; !far.empty() && (far.top().first >> shift) - cur < B; far.pop())
+      push(far.top().first, far.top().second);
     return cur << shift;
   }
 };
@@ -738,11 +732,13 @@ class Distances {
   static constexpr unsigned SHIFT = 7, SIZE = 1u << SHIFT;
   std::vector<u64 *> dir_;
   std::vector<u32> used_;
-  std::vector<std::unique_ptr<u64[]>> store_;
+  Array<u64> store_; // pages are handed out in order, so only the deepest
+                     // search's pages are touched
   std::array<u64, SIZE> blank_;
 
 public:
-  explicit Distances(u32 n) : dir_((n >> SHIFT) + 1) {
+  explicit Distances(u32 n)
+      : dir_((n >> SHIFT) + 1), store_(dir_.size() * SIZE, true) {
     blank_.fill(INF);
     std::fill(dir_.begin(), dir_.end(), blank_.data());
   }
@@ -753,9 +749,7 @@ public:
   u64 *slot(u32 v) {
     u64 *&p = dir_[v >> SHIFT];
     if (p == blank_.data()) {
-      if (used_.size() == store_.size())
-        store_.emplace_back(new u64[SIZE]);
-      p = store_[used_.size()].get();
+      p = &store_[used_.size() * SIZE];
       std::fill(p, p + SIZE, INF);
       used_.push_back(v >> SHIFT);
     }

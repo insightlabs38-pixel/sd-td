@@ -1,4 +1,4 @@
-name: Track D exactness and Docker
+name: D final candidates paired benchmark
 on:
   push:
     paths:
@@ -6,62 +6,80 @@ on:
   workflow_dispatch:
 
 jobs:
-  verify:
+  benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Obtain public organizer oracle
-        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
-      - name: Build candidate
-        run: g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse track-d/d_traverse.cpp
-      - name: Differential random and adversarial cases
-        run: SD_TEST_BINARY=/tmp/traverse python tests/test_d.py
-      - name: Compare official generated cases
+      - name: Build four sources with the pinned gcc:15 image and the Dockerfile flags
         shell: bash
         run: |
           set -euo pipefail
-          for item in 'tiny 2' 'sample 1' 'sample 2'; do
-            read -r scale seed <<< "$item"
-            mkdir -p "/tmp/data-$scale-$seed" "/tmp/ref-$scale-$seed" "/tmp/out-$scale-$seed"
-            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale "$scale" --out "/tmp/data-$scale-$seed"
-            python /tmp/official/reference/d_traverse.py --data "/tmp/data-$scale-$seed" --out "/tmp/ref-$scale-$seed"
-            SD_DATA="/tmp/data-$scale-$seed" SD_OUT="/tmp/out-$scale-$seed" /tmp/traverse
-            cmp "/tmp/ref-$scale-$seed/distances.txt" "/tmp/out-$scale-$seed/distances.txt"
-            sha256sum "/tmp/out-$scale-$seed/distances.txt"
+          sha1sum bench/*.cpp
+          git hash-object bench/*.cpp
+          docker pull -q gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+          for v in pr15 pr16 c2 c2cap4; do
+            docker run --rm --network=none -v "$PWD/bench:/src:ro" -v /tmp:/out gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce \
+              g++ -O3 -std=c++17 -pthread -flto -static -s -o "/out/d-$v" "/src/$v.cpp"
           done
-          echo 'a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/out-sample-1/distances.txt' | sha256sum -c
-      - name: Full seed-1 official hashes and native resource use
+          nproc; lscpu | grep -E 'Model name|Thread|Core'
+      - name: Differential and boundary regression of the candidates
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p /tmp/full-data /tmp/full-out
-          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/full-data
-          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/full-data/graph.txt' | sha256sum -c
-          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
-          SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
-          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
-      - name: Build official-style pinned Docker image
-        run: docker build --pull -t sd-td-check track-d
-      - name: Docker runtime and output byte comparison
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p /tmp/docker-out
-          docker run --rm --network none --read-only -e TRACK=d -v /tmp/data-sample-1:/data:ro -v /tmp/docker-out:/out:rw sd-td-check
-          cmp /tmp/ref-sample-1/distances.txt /tmp/docker-out/distances.txt
-          mkdir -p /tmp/docker-full-out
-          docker run --rm --network none --read-only --memory 8g -e TRACK=d -v /tmp/full-data:/data:ro -v /tmp/docker-full-out:/out:rw sd-td-check
-          cmp /tmp/full-out/distances.txt /tmp/docker-full-out/distances.txt
-      - name: Docker worker-count matrix
-        shell: bash
-        run: |
-          set -euo pipefail
-          for t in 1 4 12; do
-            mkdir -p "/tmp/docker-t$t"
-            docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
-            cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
+          for v in c2 c2cap4; do
+            SD_TEST_BINARY="/tmp/d-$v" python tests/test_d.py
+            SD_TEST_BINARY="/tmp/d-$v" python tests/boundary_d.py
           done
+          SD_TEST_BINARY=/tmp/d-c2 python tests/stress_d.py 20
+      - name: Organizer generator, full seeds 1 and 7
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for seed in 1 7; do
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out "/tmp/data-$seed"
+          done
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/data-1/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/data-1/queries.txt' | sha256sum -c
+      - name: Randomized paired exact full-seed benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, os, random, statistics, time
+          from pathlib import Path
+          names = ('pr15', 'pr16', 'c2', 'c2cap4')
+          rng = random.Random(20261101)
+          want = {1: 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e',
+                  7: '66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646'}
+          for seed in (1, 7):
+              for workers in (4, 6, 12):
+                  wall = {n: [] for n in names}; rss = {n: [] for n in names}
+                  for r in range(13):
+                      order = list(names); rng.shuffle(order)
+                      for n in order:
+                          out = Path(f'/tmp/out-{n}'); out.mkdir(exist_ok=True)
+                          env = dict(os.environ, SD_DATA=f'/tmp/data-{seed}', SD_OUT=str(out), SD_THREADS=str(workers))
+                          t0 = time.perf_counter()
+                          pid = os.fork()
+                          if pid == 0:
+                              os.execve(f'/tmp/d-{n}', [f'/tmp/d-{n}'], env)
+                          _, status, ru = os.wait4(pid, 0)
+                          dt = time.perf_counter() - t0
+                          assert os.waitstatus_to_exitcode(status) == 0, (n, seed, workers)
+                          digest = hashlib.sha256((out / 'distances.txt').read_bytes()).hexdigest()
+                          assert digest == want[seed], (n, seed, workers, r, digest)
+                          wall[n].append(dt); rss[n].append(ru.ru_maxrss)
+                  base = statistics.median(wall['pr15'])
+                  print(f'SEED={seed} WORKERS={workers} pr15 median {base:.6f} s')
+                  for n in names:
+                      med = statistics.median(wall[n])
+                      wins = sum(a < b for a, b in zip(wall[n], wall['pr15']))
+                      print(f'  {n:7s} median {med:.6f} s ({(med / base - 1) * 100:+.2f}% vs pr15, {wins}/13 paired wins) '
+                            f'min {min(wall[n]):.6f} max {max(wall[n]):.6f} maxrss {max(rss[n])} KiB', flush=True)
+          print('ALL OUTPUTS EXACT')
+          PY

@@ -1,0 +1,33 @@
+name: Track D exact query-tail anatomy
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-query-anatomy-chat']
+    paths: ['research/d-breakthrough/**', '.github/workflows/d-query-anatomy.yml']
+  workflow_dispatch:
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile independent per-query profile binary
+        run: |
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-query research/d-breakthrough/query_anatomy.cpp
+      - name: Full graph seed rank-based query cost
+        run: |
+          set -euo pipefail
+          for seed in 1 7; do
+            mkdir -p /tmp/d-anatomy-data /tmp/d-anatomy-out
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out /tmp/d-anatomy-data
+            for count in 4 12; do
+              echo "D_SEED $seed D_THREADS=$count"
+              SD_THREADS=$count SD_DATA=/tmp/d-anatomy-data SD_OUT=/tmp/d-anatomy-out /tmp/d-query 2>&1 | sed 's/\\n/\n/g'
+              if [ "$seed" = 1 ]; then
+                echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-anatomy-out/distances.txt' | sha256sum -c
+              fi
+            done
+          done

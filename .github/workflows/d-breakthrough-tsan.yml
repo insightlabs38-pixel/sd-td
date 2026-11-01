@@ -1,0 +1,36 @@
+name: D research ThreadSanitizer qualification
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-sanitizers']
+    paths: ['.github/workflows/d-breakthrough-tsan.yml']
+  workflow_dispatch:
+jobs:
+  tsan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    strategy:
+      fail-fast: false
+      matrix:
+        candidate: [lazy-shortcuts, forward-only, partial-ch]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch exact independent research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --depth=1 origin "refs/heads/research/d-breakthrough-20261101-${{matrix.candidate}}"
+          case "${{matrix.candidate}}" in
+            lazy-shortcuts) file=lazy_virtual_shortcuts.cpp; flags='-DSD_LAZY_DEG=3 -DSD_LAZY_DEPTH=3';;
+            forward-only) file=forward_only.cpp; flags='';;
+            partial-ch) file=partial_ch.cpp; flags='-DSD_OVERLAY_DEG=3 -DSD_OVERLAY_BUDGET=4';;
+          esac
+          git show FETCH_HEAD:research/d-breakthrough/$file > /tmp/d-tsan.cpp
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=thread -fno-omit-frame-pointer $flags -o /tmp/d-tsan /tmp/d-tsan.cpp
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Execute 88 exact Dijkstra differential cases under TSan
+        env:
+          SD_TEST_BINARY: /tmp/d-tsan
+          TSAN_OPTIONS: halt_on_error=1
+        run: python tests/test_d.py

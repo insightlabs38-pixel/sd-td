@@ -2,7 +2,7 @@
 
 Exact directed shortest paths on a road-like graph, built for the end-to-end clock: parse, preprocess, answer, write. Construction dominates the timed run, so the design minimises passes over the 5M edges and keeps every per-vertex visit to one cache miss.
 
-Pipeline, all phases parallel across all hardware threads:
+Pipeline: construction uses up to four workers; query processing uses up to twelve:
 
 1. **Parse.** `graph.txt` is mmapped and cut at line boundaries per thread. Each 64-byte block yields a separator bitmask (SSE2); every number is decoded from the 8 bytes ending at its separator, so fields parse independently of one another. Edges go to 6-byte bin entries keyed by the tail's id bucket; weights of 65535 or more keep a marker and live in a side table.
 2. **Raw rows.** Each bucket becomes 4-slot rows in cache: a vertex with at most four out-edges is one 16-byte row, longer rows keep three edges and a spill code that locates a counted list. Out-degree <= 2 non-endpoint vertices are marked bypassable.

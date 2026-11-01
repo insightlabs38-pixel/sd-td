@@ -544,6 +544,7 @@ class Distances {
 public:
     explicit Distances(uint32_t n) : dir_((n >> SHIFT) + 1) { blank_.fill(INF); std::fill(dir_.begin(), dir_.end(), blank_.data()); }
     uint64_t get(uint32_t v) const { return dir_[v >> SHIFT][v & (SIZE - 1)]; }
+    void prefetch(uint32_t v) const { __builtin_prefetch(dir_[v >> SHIFT] + (v & (SIZE - 1)), 0, 1); }
     // Lowers the label of v to d if that improves it.
     bool lower(uint32_t v, uint64_t d) {
         uint64_t* p = dir_[v >> SHIFT];
@@ -584,6 +585,9 @@ struct Side {
             if (dist.get(u) != d) continue;
             ++count;
             for (uint32_t i = off[u], last = off[u + 1]; i < last; ++i) {
+#if defined(SD_DIST_LOOKAHEAD) && SD_DIST_LOOKAHEAD > 0
+                if (i + SD_DIST_LOOKAHEAD < last) dist.prefetch(adj[i + SD_DIST_LOOKAHEAD] >> wbits);
+#endif
                 uint32_t e = adj[i], v = e >> wbits;
                 uint64_t w = e & wmask;
                 if (w == wmask) w = csr.weight(i);

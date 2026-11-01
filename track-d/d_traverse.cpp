@@ -649,6 +649,11 @@ static Graph read_graph(const std::string &path, std::vector<Query> &queries,
                   [&](u32 u, u32 v, u32 w) { bins[t].add(u, v, w); });
       bins[t].finish();
     });
+    // Parsed bin pools own every encoded edge. The 92MB mmap is no longer
+    // needed; release it BEFORE raw adjacency and fused region allocations
+    // overlap its resident pages. No derived data is cached across runs.
+    if (munmap(const_cast<char *>(lo), size) != 0)
+      fail("munmap graph");
     fill_rows(bins, shift, terminal, raw, bypass, threads);
   }
   Graph g = build_forward(raw, bypass, m, threads, queries);

@@ -1,0 +1,82 @@
+name: D prefetch locality pinned PGO qualification
+on:
+  push:
+    paths:
+      - .github/workflows/d-prefetch-pgo.yml
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build two pinned PGO images and compare exact output
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          python - <<'PY'
+          from pathlib import Path
+          src=Path('track-d/d_traverse.cpp').read_text()
+          graph='__builtin_prefetch(&g.slot[size_t(ahead) * 4], 0, 1);'
+          dist='__builtin_prefetch(dist.at(ahead), 0, 1);'
+          assert src.count(graph)==1 and src.count(dist)==1
+          for h in (0,1):
+              d=Path(f'/tmp/ctx-h{h}')
+              d.mkdir()
+              (d/'d_traverse.cpp').write_text(src.replace(graph,graph.replace(', 0, 1);',f', 0, {h});')).replace(dist,dist.replace(', 0, 1);',f', 0, {h});')))
+          PY
+          for h in 0 1; do
+            cp track-d/Dockerfile track-d/d_traverse_generator.py "/tmp/ctx-h$h/"
+            docker build --pull -t "sd-d-h$h" "/tmp/ctx-h$h"
+            cid="$(docker create "sd-d-h$h")"
+            docker cp "$cid:/traverse" "/tmp/d-h$h"
+            docker rm "$cid"
+            SD_TEST_BINARY="/tmp/d-h$h" python tests/test_d.py
+          done
+          python3 - <<'PY'
+          import hashlib, os, pathlib, random, statistics, subprocess, time
+          hints=(0,1);workers=(4,6,12);rounds=13
+          data={}
+          for seed in (1,7):
+              p=pathlib.Path(f'/tmp/seed-{seed}');p.mkdir()
+              subprocess.run(['python3','/tmp/official/generators/d_traverse.py','--seed',str(seed),'--scale','full','--out',str(p)],check=True)
+              data[seed]=p
+          out={h:pathlib.Path(f'/tmp/out-h{h}') for h in hints}
+          for p in out.values():p.mkdir()
+          expected={1:'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e',7:'66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646'}
+          for p in data.values():
+              for f in ('graph.txt','queries.txt'):
+                  with (p/f).open('rb') as fd:
+                      while fd.read(1<<20):pass
+          rng=random.Random(2026110107)
+          for seed in (1,7):
+              for t in workers:
+                  times={h:[] for h in hints};wins=0
+                  for i in range(rounds):
+                      order=list(hints);rng.shuffle(order);one={}
+                      for h in order:
+                          env=os.environ.copy();env.update(SD_DATA=str(data[seed]),SD_OUT=str(out[h]),SD_THREADS=str(t))
+                          begin=time.perf_counter()
+                          subprocess.run([f'/tmp/d-h{h}'],env=env,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                          elapsed=time.perf_counter()-begin
+                          digest=hashlib.sha256((out[h]/'distances.txt').read_bytes()).hexdigest()
+                          assert digest==expected[seed],(seed,t,h,i,digest)
+                          times[h].append(elapsed);one[h]=elapsed
+                      wins+=one[0]<one[1]
+                  a=statistics.median(times[0]);b=statistics.median(times[1])
+                  print(f'PGO_RESULT seed={seed} workers={t} hint0_s={a:.6f} hint1_s={b:.6f} change_pct={(a/b-1)*100:+.3f} wins={wins}/{rounds}',flush=True)
+          print('PASS PGO exact full-seed executions',2*len(workers)*rounds*len(hints),flush=True)
+          PY
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample
+          mkdir -p /tmp/sample-ref
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample --out /tmp/sample-ref
+          for h in 0 1; do
+            mkdir -p "/tmp/docker-h$h"
+            docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=6 -v /tmp/sample:/data:ro -v "/tmp/docker-h$h:/out:rw" "sd-d-h$h"
+            cmp /tmp/sample-ref/distances.txt "/tmp/docker-h$h/distances.txt"
+          done
+          echo 'PASS pinned offline PGO Docker exact sample'

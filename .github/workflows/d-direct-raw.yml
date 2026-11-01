@@ -1,0 +1,38 @@
+name: D direct raw graph architecture
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-direct-raw']
+    paths: ['research/d-breakthrough/**', '.github/workflows/d-direct-raw.yml']
+  workflow_dispatch:
+jobs:
+  raw:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Frozen official generator and oracle
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile unchanged fused baseline and no-BFS direct raw architecture
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-raw research/d-breakthrough/direct_raw.cpp
+          wc -c track-d/d_traverse.cpp research/d-breakthrough/direct_raw.cpp
+      - name: Independent Dijkstra adversarial differential
+        run: SD_TEST_BINARY=/tmp/d-raw python tests/test_d.py
+      - name: Two complete 2000-query full-seed benchmarks
+        run: python research/d-breakthrough/bench_raw.py
+      - name: Sanitizer differential
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -o /tmp/d-raw-san research/d-breakthrough/direct_raw.cpp
+          SD_TEST_BINARY=/tmp/d-raw-san python tests/test_d.py
+      - name: Store exact wall timing receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-raw-graph-complete-tournament
+          path: /tmp/d-raw-results.json
+          if-no-files-found: ignore

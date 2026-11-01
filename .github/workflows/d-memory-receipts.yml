@@ -1,0 +1,52 @@
+name: D complete-workload memory and structural receipts
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-sanitizers']
+    paths: ['.github/workflows/d-memory-receipts.yml']
+  workflow_dispatch:
+jobs:
+  metrics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Obtain generator and research challenger branches
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for v in lazy-shortcuts forward-only partial-ch; do
+            git fetch --no-tags --depth=1 origin "refs/heads/research/d-breakthrough-20261101-$v"
+            case "$v" in
+              lazy-shortcuts) file=lazy_virtual_shortcuts.cpp;;
+              forward-only) file=forward_only.cpp;;
+              partial-ch) file=partial_ch.cpp;;
+            esac
+            git show FETCH_HEAD:research/d-breakthrough/$file > /tmp/d-$v.cpp
+          done
+      - name: Build all four native solvers
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_LAZY_DEG=3 -DSD_LAZY_DEPTH=1 -o /tmp/d-lazy-shortcuts /tmp/d-lazy-shortcuts.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-forward-only /tmp/d-forward-only.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_OVERLAY_DEG=3 -DSD_OVERLAY_BUDGET=4 -o /tmp/d-partial-ch /tmp/d-partial-ch.cpp
+      - name: Full-seed runtime and peak memory by architecture
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/metrics-data /tmp/metrics-out
+          for seed in 1 7; do
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out /tmp/metrics-data
+            for mode in base lazy-shortcuts forward-only partial-ch; do
+              for round in 1 2 3; do
+                echo "D_METRICS seed=$seed mode=$mode round=$round"
+                SD_THREADS=4 SD_DATA=/tmp/metrics-data SD_OUT=/tmp/metrics-out /usr/bin/time -f 'D_METRICS wall_s=%e peak_kib=%M cpu_user_s=%U' /tmp/d-$mode
+                if [ "$seed" = 1 ]; then
+                  echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/metrics-out/distances.txt' | sha256sum -c
+                fi
+              done
+            done
+          done

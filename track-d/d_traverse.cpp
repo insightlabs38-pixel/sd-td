@@ -13,6 +13,10 @@
 #include <unistd.h>
 #include <vector>
 
+#ifndef D_BIN_CHUNK
+#define D_BIN_CHUNK 256
+#endif
+
 using u32 = uint32_t;
 using u64 = uint64_t;
 // Above any path length (all are below 2^53), so INF + d cannot wrap.
@@ -158,7 +162,7 @@ struct __attribute__((packed)) Entry {
 // released together once its rows are built, and the bins shrink while the
 // graph grows. Each worker owns `cap` entries (whole pages) of each group.
 struct alignas(64) Bins {
-  static constexpr u32 CHUNK = 256, GROUP = 16;
+  static constexpr u32 CHUNK = D_BIN_CHUNK, GROUP = 16;
   u32 bits, shift, buckets, cap;
   Entry *pool;
   std::vector<u32> fill, used;

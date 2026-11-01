@@ -74,3 +74,52 @@ jobs:
                   print(f'  {mode}: median={statistics.median(current):.6f}s, speedup={100*(1-statistics.median(current)/statistics.median(baseline)):.3f}%, wins={wins}/21',flush=True)
           print('PASS 198 exact full-seed executions (including warmups)',flush=True)
           PY
+
+      - name: Build three official-style GCC15 PGO engines
+        shell: bash
+        run: |
+          set -euo pipefail
+          for mode in base adj1 adj2; do
+            file="track-d/Dockerfile"
+            if [ "$mode" = adj1 ]; then
+              sed 's/g++ -O3/g++ -DSD_PREFETCH_ADJ=1 -O3/g' track-d/Dockerfile > track-d/Dockerfile.adj1
+              file="track-d/Dockerfile.adj1"
+            fi
+            if [ "$mode" = adj2 ]; then
+              sed 's/g++ -O3/g++ -DSD_PREFETCH_ADJ=2 -O3/g' track-d/Dockerfile > track-d/Dockerfile.adj2
+              file="track-d/Dockerfile.adj2"
+            fi
+            docker build --pull -q -f "$file" -t "sd-td-$mode" track-d
+            cid="$(docker create "sd-td-$mode")"
+            docker cp "$cid:/traverse" "/tmp/pgo-$mode"
+            docker rm "$cid"
+          done
+      - name: Twenty-five paired GCC15 PGO passes per worker count
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os,subprocess,time,statistics,hashlib,pathlib
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          modes=('base','adj1','adj2')
+          for workers in (4,6,12):
+              times={m:[] for m in modes}
+              for round in range(26):
+                  order=modes if round%2==0 else tuple(reversed(modes))
+                  for mode in order:
+                      out=pathlib.Path('/tmp')/('pgo-prefetch-'+mode)
+                      out.mkdir(exist_ok=True)
+                      env=dict(os.environ,SD_DATA='/tmp/full-data',SD_OUT=str(out),SD_THREADS=str(workers))
+                      start=time.perf_counter()
+                      subprocess.run(['/tmp/pgo-'+mode],env=env,check=True,stdout=subprocess.DEVNULL)
+                      elapsed=time.perf_counter()-start
+                      digest=hashlib.sha256((out/'distances.txt').read_bytes()).hexdigest()
+                      if digest!=expected: raise RuntimeError(f'wrong output {mode} {workers} {round} {digest}')
+                      if round: times[mode].append(elapsed)
+              baseline=times['base']
+              print(f'PGO workers={workers}, baseline={statistics.median(baseline):.6f}s',flush=True)
+              for mode in modes[1:]:
+                  current=times[mode]
+                  wins=sum(x<y for x,y in zip(current,baseline))
+                  print(f'  PGO {mode}: median={statistics.median(current):.6f}s, speedup={100*(1-statistics.median(current)/statistics.median(baseline)):.3f}%, wins={wins}/25',flush=True)
+          print('PASS 234 exact PGO full-seed executions (including warmups)',flush=True)
+          PY

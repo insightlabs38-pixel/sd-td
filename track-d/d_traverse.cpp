@@ -858,9 +858,7 @@ int main() {
       std::min(12u, std::max(1u, std::thread::hardware_concurrency()));
   if (getenv("SD_THREADS"))
     threads = std::max(1, std::min(64, atoi(getenv("SD_THREADS"))));
-  unsigned build_threads = threads;
-  if (getenv("SD_BUILD_THREADS"))
-    build_threads = std::max(1, std::min(64, atoi(getenv("SD_BUILD_THREADS"))));
+  unsigned build_threads = std::min(4u, threads);
   std::vector<Query> queries = read_queries(data + "/queries.txt");
   Graph g = read_graph(data + "/graph.txt", queries, build_threads);
   add_reverse(g, build_threads);

@@ -1,0 +1,47 @@
+name: D AVX2 pinned PGO Docker qualification
+on:
+  push:
+    branches: [d/avx2-build-pgo-20261101]
+    paths: [.github/workflows/d-avx2-pgo.yml]
+  workflow_dispatch:
+
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fetch frozen public organizer oracle
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Exact native AVX2 differential fixtures
+        run: |
+          g++ -O3 -std=c++17 -pthread -flto -mavx2 -static -s -o /tmp/d-avx2 track-d/d_traverse.cpp
+          SD_TEST_BINARY=/tmp/d-avx2 python3 tests/test_d.py
+      - name: Build two immutable pinned offline PGO images
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d-base-context
+          cp track-d/d_traverse.cpp track-d/d_traverse_generator.py /tmp/d-base-context/
+          git show f400da36c6fcd7e2c8a6bd9af64c038690494e10:track-d/Dockerfile > /tmp/d-base-context/Dockerfile
+          docker build --pull --network none -t d-pgo-base /tmp/d-base-context
+          docker build --pull --network none -t d-pgo-avx2 track-d
+      - name: Official sample seed 2 PGO Docker exactness
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/d-sample /tmp/d-reference /tmp/d-out
+          chmod 777 /tmp/d-out
+          python3 /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/d-sample
+          python3 /tmp/official/reference/d_traverse.py --data /tmp/d-sample --out /tmp/d-reference
+          for mode in base avx2; do
+            docker run --rm --network none --read-only --memory 8g --user 65534:65534 -e SD_THREADS=12 -v /tmp/d-sample:/data:ro -v /tmp/d-out:/out:rw d-pgo-$mode
+            cmp /tmp/d-reference/distances.txt /tmp/d-out/distances.txt
+          done
+      - name: Exact matched full-system PGO Docker tournament
+        run: python3 tests/avx2_pgo_tournament.py

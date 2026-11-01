@@ -583,11 +583,12 @@ template <class L> struct Side {
       ++settled;
       for (u32 i = g.off[u]; i < g.off[u + 1]; ++i) {
         u32 v = g.head(g.adj[i]);
-        L *x = dist.slot(v);
-        u64 nd = d + g.weight(i), old = *x;
-        *x = L(std::min(nd, old));
+        u64 nd = d + g.weight(i), old = dist.get(v);
         overflow |= nd >= Labels<L>::NONE;
-        queue.push(nd, v, nd < old);
+        if (nd < old) {
+          *dist.slot(v) = L(nd);
+          queue.push(nd, v);
+        }
         best = std::min(best, nd + other.dist.get(v));
       }
     }

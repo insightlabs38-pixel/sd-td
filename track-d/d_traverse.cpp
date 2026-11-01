@@ -666,8 +666,10 @@ int main() {
   Bits terminal(scan(p) / 64 + 1), bypass(terminal.size());
   for (u32 v : ends)
     set(terminal, v);
-  Graph *raw = read_graph(graph, graph + gsize, terminal, bypass, threads);
-  auto [fwd, rev] = contract(raw, bypass, threads, ends);
+  unsigned build_threads = std::min(threads, 4u);
+  Graph *raw =
+      read_graph(graph, graph + gsize, terminal, bypass, build_threads);
+  auto [fwd, rev] = contract(raw, bypass, build_threads, ends);
   size_t queries = ends.size() / 2;
   std::vector<int64_t> answers(queries);
   std::vector<u32> by_source(queries);

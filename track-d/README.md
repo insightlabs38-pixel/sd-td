@@ -1,6 +1,6 @@
 # Traverse
 
-Exact directed shortest paths on a road-like graph, built for the end-to-end clock: parse, preprocess, answer, write. Every phase uses all workers (`SD_THREADS`, default up to twelve).
+Exact directed shortest paths on a road-like graph, built for the end-to-end clock: parse, preprocess, answer, write. Queries use all workers (`SD_THREADS`, default up to twelve); parsing and construction use at most four.
 
 1. **Parse.** `graph.txt` is mmapped and cut at line boundaries per worker. Each 64-byte block yields a separator bitmask (SSE2); every number is decoded from the 8 bytes ending at its separator. Edges go to 6-byte bin entries keyed by the tail's bucket of ids; weights of 65535 or more keep a marker and live in a side table.
 2. **Raw graph.** Each bucket is turned into compressed rows in cache (packed `head << wbits | weight` words, oversized weights in a sorted escape table). All workers' bins share one pool laid out by group of buckets; each group is unmapped (one call) as soon as its rows exist, so the bins shrink while the graph grows. Out-degree <= 2 vertices that are not query endpoints are marked bypassable.

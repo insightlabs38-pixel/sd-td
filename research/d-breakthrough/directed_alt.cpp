@@ -876,6 +876,9 @@ struct ALT {
 // Directed triangle inequalities give feasible forward/reverse potentials:
 // h_t(v)=max(0,d(L,t)-d(L,v),d(v,L)-d(t,L)),
 // h_s(v)=max(0,d(L,v)-d(L,s),d(s,L)-d(v,L)).
+// Infinite landmark distances use a finite cap above every possible valid
+// path length (n * UINT32_MAX < 2^53). This preserves edge consistency
+// across one-way sinks and sources instead of dropping undefined terms.
 // phi=h_t-h_s is twice a balanced feasible potential.  All finite reduced
 // forward and backward queue keys are nonnegative; no Euclidean assumption.
 struct Potential {
@@ -899,10 +902,18 @@ struct Potential {
       const auto &k = c[i];
       if (k.lt != INF && a != INF && k.lt > a)
         to_target = std::max(to_target, k.lt - a);
-      if (b != INF && k.tl != INF && b > k.tl)
-        to_target = std::max(to_target, b - k.tl);
-      if (a != INF && k.ls != INF && a > k.ls)
-        from_source = std::max(from_source, a - k.ls);
+      if (k.tl != INF) {
+        if (b == INF)
+          to_target = std::max(to_target, u64(1) << 53);
+        else if (b > k.tl)
+          to_target = std::max(to_target, b - k.tl);
+      }
+      if (k.ls != INF) {
+        if (a == INF)
+          from_source = std::max(from_source, u64(1) << 53);
+        else if (a > k.ls)
+          from_source = std::max(from_source, a - k.ls);
+      }
       if (k.sl != INF && b != INF && k.sl > b)
         from_source = std::max(from_source, k.sl - b);
     }

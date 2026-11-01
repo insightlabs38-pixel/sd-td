@@ -26,7 +26,7 @@ jobs:
           python track-d/d_traverse_generator.py --seed 7 --scale full --out /tmp/batch-data/seed7
           python - <<'PY'
           import hashlib, os, random, statistics, subprocess, tempfile, time
-          variants=(2,4,8,16)
+          variants=(16,2,4,8)
           expected="a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
           results={}
           with tempfile.TemporaryDirectory() as out:

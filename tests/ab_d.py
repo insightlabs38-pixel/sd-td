@@ -13,5 +13,8 @@ for _ in range(int(os.environ.get('ROUNDS', '15'))):
         start = time.perf_counter()
         subprocess.run([b], env=env, check=True)
         times[b].append(time.perf_counter() - start)
+base = times[bins[0]]
 for b, v in times.items():
-    print(f'{b}: median {statistics.median(v):.3f} min {min(v):.3f} max {max(v):.3f}')
+    wins = sum(x < y for x, y in zip(v, base))
+    ratio = statistics.median(x / y for x, y in zip(v, base))
+    print(f'{b}: median {statistics.median(v):.6f} min {min(v):.6f} max {max(v):.6f} paired_wins {wins}/{len(v)} paired_ratio {ratio:.6f}')

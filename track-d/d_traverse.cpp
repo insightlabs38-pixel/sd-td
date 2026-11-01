@@ -865,8 +865,26 @@ int main() {
   std::vector<int64_t> answers(queries.size(), -1);
   std::vector<u32> order(queries.size());
   std::iota(order.begin(), order.end(), 0);
+  // Query ordering changes only the work schedule, never output positions.
+  auto gap = [&](u32 i) {
+    u32 s = queries[i].from, t = queries[i].to;
+    return s > t ? s - t : t - s;
+  };
+#if SD_SCHED == 1
+  std::sort(order.begin(), order.end(),
+            [&](u32 a, u32 b) { return gap(a) > gap(b); });
+#elif SD_SCHED == 2
+  std::sort(order.begin(), order.end(),
+            [&](u32 a, u32 b) { return gap(a) < gap(b); });
+#elif SD_SCHED == 3
+  std::sort(order.begin(), order.end(),
+            [&](u32 a, u32 b) { return queries[a].to < queries[b].to; });
+#elif SD_SCHED == 4
+  // Original input order.
+#else
   std::sort(order.begin(), order.end(),
             [&](u32 a, u32 b) { return queries[a].from < queries[b].from; });
+#endif
   std::atomic<size_t> next{0};
   parallel(std::min<size_t>(threads, std::max<size_t>(1, queries.size())),
            [&](unsigned) {

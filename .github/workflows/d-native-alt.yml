@@ -1,0 +1,52 @@
+name: D native exact directed ALT full-system research
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-native-directed-alt']
+    paths: ['research/d-breakthrough/**','.github/workflows/d-native-alt.yml']
+  workflow_dispatch:
+jobs:
+  exact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Frozen independent organizer generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile native baseline and 1/2/4-landmark A-star engines
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          for k in 1 2 4; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_ALT_LANDMARKS=$k -o /tmp/d-alt$k research/d-breakthrough/native_alt.cpp
+          done
+          wc -l -c track-d/d_traverse.cpp research/d-breakthrough/native_alt.cpp
+      - name: Independent exact oracle, directed zero/large/unreachable
+        run: |
+          set -euo pipefail
+          for k in 1 2 4; do
+            SD_TEST_BINARY=/tmp/d-alt$k python tests/test_d.py
+          done
+      - name: Two full graph seeds, all 2000 queries, 4/12 workers, matched medians
+        run: python research/d-breakthrough/bench_native_alt.py
+      - name: Native resource use for baseline and landmark variants
+        run: |
+          set -euo pipefail
+          for mode in base alt1 alt2 alt4; do
+            echo "NATIVE_ALT_RESOURCE $mode"
+            SD_THREADS=4 SD_DATA=/tmp/d-bt-data-1 SD_OUT=/tmp/d-bt-out /usr/bin/time -f 'D_MAX_RSS_KB %M WALL_S %e' /tmp/d-$mode
+            echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-bt-out/distances.txt' | sha256sum -c
+          done
+      - name: ASan UBSan directed ALT
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -DSD_ALT_LANDMARKS=2 -o /tmp/d-alt-san research/d-breakthrough/native_alt.cpp
+          SD_TEST_BINARY=/tmp/d-alt-san python tests/test_d.py
+      - name: Full benchmark raw output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-exact-native-directed-alt
+          path: /tmp/d-native-alt-results.json
+          if-no-files-found: ignore

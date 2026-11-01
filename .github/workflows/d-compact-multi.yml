@@ -1,0 +1,47 @@
+name: D compact multiround hierarchy qualification
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-compact-multiround']
+    paths: ['research/d-breakthrough/**','.github/workflows/d-compact-multi.yml']
+  workflow_dispatch:
+jobs:
+  multi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Public frozen reference
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build 1 2 3 round dense-compact hierarchies
+        shell: bash
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          for r in 1 2 3; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_OVERLAY_DEG=3 -DSD_OVERLAY_BUDGET=2 -DSD_OVERLAY_ROUNDS=$r -o /tmp/d-multi$r research/d-breakthrough/compact_multi.cpp
+          done
+      - name: Independent 88-case Dijkstra adversarial differential
+        shell: bash
+        run: |
+          set -euo pipefail
+          for r in 1 2 3; do
+            SD_TEST_BINARY=/tmp/d-multi$r python tests/test_d.py
+          done
+      - name: Full seeds 1 and 7, every one of 2000 queries, matched wall
+        run: python research/d-breakthrough/bench_multi.py
+      - name: ASan UBSan differential for three rounds
+        shell: bash
+        run: |
+          set -euo pipefail
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -DSD_OVERLAY_ROUNDS=3 -o /tmp/d-multi-san research/d-breakthrough/compact_multi.cpp
+          SD_TEST_BINARY=/tmp/d-multi-san python tests/test_d.py
+      - name: Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-compact-multiround-results
+          path: /tmp/d-multiround-results.json
+          if-no-files-found: ignore

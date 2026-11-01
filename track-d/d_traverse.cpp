@@ -463,6 +463,7 @@ public:
 struct Graph {
   std::unique_ptr<Rows> fwd, rev;
   size_t edges = 0;
+  std::vector<u32> region_cuts;
 };
 
 struct Query {
@@ -507,6 +508,7 @@ static Graph build_forward(Rows &raw, const Bits &bypass, size_t m,
   };
   Graph g;
   g.edges = edges;
+  g.region_cuts = base;
   g.fwd = std::make_unique<Rows>(base[threads], edges + 1024 * threads);
   Rows &fwd = *g.fwd;
   std::vector<Escapes> escapes(threads);
@@ -547,9 +549,13 @@ static void add_reverse(Graph &g, unsigned threads) {
   Array<u32> degree(n), placed(n);
   std::vector<Escapes> escapes(threads);
   std::atomic<unsigned> arrived{0};
+#ifdef SD_REGION_CUTS
+  std::vector<u32> cuts = g.region_cuts;
+#else
   std::vector<u32> cuts(threads + 1);
   for (unsigned t = 0; t <= threads; ++t)
     cuts[t] = cut(n, t, threads);
+#endif
   parallel(threads, [&](unsigned t) {
     u32 lo = cuts[t], hi = cuts[t + 1];
     memset(&degree[lo], 0, size_t(hi - lo) * 4);

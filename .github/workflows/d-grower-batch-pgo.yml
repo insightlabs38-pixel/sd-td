@@ -1,0 +1,79 @@
+name: D fused growth batch-16 pinned PGO Docker qualification
+on:
+  push:
+    branches: [d/grower-batch-20261101]
+    paths: [.github/workflows/d-grower-batch-pgo.yml]
+jobs:
+  qualify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build identical pinned PGO images except growth batch
+        shell: bash
+        run: |
+          set -euo pipefail
+          for mode in base b16; do
+            mkdir -p /tmp/d-$mode
+            cp track-d/Dockerfile track-d/d_traverse_generator.py /tmp/d-$mode/
+          done
+          cp track-d/d_traverse.cpp /tmp/d-base/d_traverse.cpp
+          sed 's/#define D_GROW_BATCH 32/#define D_GROW_BATCH 16/' track-d/d_traverse.cpp > /tmp/d-b16/d_traverse.cpp
+          docker build --pull --network none -t d-pgo-base /tmp/d-base
+          docker build --pull --network none -t d-pgo-b16 /tmp/d-b16
+      - name: Pinned offline sample correctness and full-scale paired tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          python - <<'PY'
+          import hashlib,json,os,pathlib,random,statistics,subprocess,tempfile
+          SCRIPT='a=$(date +%s%N); /traverse; b=$(date +%s%N); echo D_NS=$((b-a)); echo D_PEAK=$(cat /sys/fs/cgroup/memory.peak)'
+          EXPECT='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          def run(mode,data,out,workers):
+              cmd=['docker','run','--rm','--network','none','--read-only','--memory','8g',
+                   '--user','65534:65534','-e',f'SD_THREADS={workers}',
+                   '-v',f'{data}:/data:ro','-v',f'{out}:/out:rw',
+                   '--entrypoint','/bin/sh',f'd-pgo-{mode}','-c',SCRIPT]
+              p=subprocess.run(cmd,check=True,text=True,capture_output=True)
+              vals=dict(line.strip().split('=',1) for line in p.stdout.splitlines() if line.startswith(('D_NS=','D_PEAK=')))
+              digest=hashlib.sha256((out/'distances.txt').read_bytes()).hexdigest()
+              return int(vals['D_NS'])/1e9,int(vals['D_PEAK']),digest
+          rng=random.Random(2026110116)
+          with tempfile.TemporaryDirectory(prefix='d-batch-pgo-') as td:
+              root=pathlib.Path(td)
+              data=root/'sample';data.mkdir()
+              subprocess.run(['python3','/tmp/official/generators/d_traverse.py','--seed','2','--scale','sample','--out',str(data)],check=True)
+              ref=root/'reference';ref.mkdir()
+              subprocess.run(['python3','/tmp/official/reference/d_traverse.py','--data',str(data),'--out',str(ref)],check=True)
+              truth=(ref/'distances.txt').read_bytes()
+              out={mode:root/f'out-{mode}' for mode in ('base','b16')}
+              for v in out.values():v.mkdir();v.chmod(0o777)
+              for mode in out:
+                  _,_,digest=run(mode,data,out[mode],12)
+                  assert digest==hashlib.sha256(truth).hexdigest()
+              for seed,reps in ((1,13),(7,9)):
+                  data=root/f'full-{seed}';data.mkdir()
+                  subprocess.run(['python3','/tmp/official/generators/d_traverse.py','--seed',str(seed),'--scale','full','--out',str(data)],check=True)
+                  for workers in (4,6,12):
+                      samples={mode:[] for mode in out}
+                      peaks={mode:[] for mode in out}
+                      wins=0;reference=None
+                      for i in range(reps):
+                          order=list(out);rng.shuffle(order);pair={}
+                          for mode in order:
+                              elapsed,peak,digest=run(mode,data,out[mode],workers)
+                              if reference is None:reference=digest
+                              assert digest==reference
+                              if seed==1:assert digest==EXPECT
+                              samples[mode].append(elapsed);peaks[mode].append(peak);pair[mode]=elapsed
+                          wins+=pair['b16']<pair['base']
+                      a=statistics.median(samples['base']);b=statistics.median(samples['b16'])
+                      print('D_BATCH_PGO',json.dumps(dict(seed=seed,workers=workers,rounds=reps,
+                          base_s=round(a,6),b16_s=round(b,6),speedup_pct=round(100*(1-b/a),3),
+                          b16_wins=wins,cgroup_peak_bytes={mode:int(statistics.median(peaks[mode])) for mode in out})),flush=True)
+              print('D_BATCH_PGO_PASS',flush=True)
+          PY

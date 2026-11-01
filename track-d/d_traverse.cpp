@@ -483,6 +483,10 @@ static Graph build_forward(Rows &raw, const Bits &bypass, size_t m,
     reg.ends = Array<u32>(n, true);
     reg.out = Array<u32>(m, true);
     Grower grower(raw, bypass, claimed, reg);
+    // Start region growth at known query sources to improve locality for
+    // source-centered searches, then cover all remaining survivors.
+    for (size_t k = t; k < queries.size(); k += threads)
+      grower.grow(queries[k].from);
     // Seeds are the unclaimed survivors of this worker's raw-id slice, so idle
     // workers start new regions.
     for (u32 x = cut(n, t, threads); x < cut(n, t + 1, threads); ++x)

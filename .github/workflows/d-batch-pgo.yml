@@ -1,0 +1,75 @@
+name: Track D small BFS batch pinned PGO qualification
+on:
+  push:
+    paths:
+      - .github/workflows/d-batch-pgo.yml
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build pinned PGO variants and run differential fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/batch-bin /tmp/batch-data/seed1 /tmp/batch-data/seed7 /tmp/batch-docker-out
+          for batch in 16 4 8; do
+            cp -a track-d "/tmp/batch-context-$batch"
+            sed -i "s/static constexpr u32 BATCH = 16;/static constexpr u32 BATCH = $batch;/" "/tmp/batch-context-$batch/d_traverse.cpp"
+            docker build --pull -t "sd-d-pgo-$batch" "/tmp/batch-context-$batch"
+            cid="$(docker create "sd-d-pgo-$batch")"
+            docker cp "$cid:/traverse" "/tmp/batch-bin/pgo_$batch"
+            docker rm "$cid"
+            chmod +x "/tmp/batch-bin/pgo_$batch"
+            SD_TEST_BINARY="/tmp/batch-bin/pgo_$batch" python tests/test_d.py
+          done
+          python track-d/d_traverse_generator.py --seed 1 --scale full --out /tmp/batch-data/seed1
+          python track-d/d_traverse_generator.py --seed 7 --scale full --out /tmp/batch-data/seed7
+          for batch in 16 4 8; do
+            docker run --rm --network none --read-only --memory 8g -e SD_THREADS=4 -v /tmp/batch-data/seed1:/data:ro -v /tmp/batch-docker-out:/out:rw "sd-d-pgo-$batch"
+            echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/batch-docker-out/distances.txt' | sha256sum -c
+          done
+      - name: Matched pinned-PGO full-seed tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, os, random, statistics, subprocess, tempfile, time
+          variants=(16,4,8)
+          expected="a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          results={}
+          with tempfile.TemporaryDirectory() as out:
+              for seed in (1,7):
+                  data=f"/tmp/batch-data/seed{seed}"
+                  for workers in (4,6,12):
+                      timings={v:[] for v in variants}
+                      baseline=None
+                      for v in variants:
+                          env=dict(os.environ,SD_DATA=data,SD_OUT=out,SD_THREADS=str(workers))
+                          subprocess.run([f"/tmp/batch-bin/pgo_{v}"],env=env,check=True,stdout=subprocess.DEVNULL)
+                          digest=hashlib.sha256(open(out+"/distances.txt","rb").read()).hexdigest()
+                          if baseline is None: baseline=digest
+                          if digest!=baseline: raise AssertionError(f"PGO mismatch seed={seed} workers={workers} batch={v}")
+                          if seed==1 and digest!=expected: raise AssertionError("official full hash")
+                      rng=random.Random(0xD200+seed*100+workers)
+                      for roundno in range(13):
+                          order=list(variants)
+                          rng.shuffle(order)
+                          for v in order:
+                              env=dict(os.environ,SD_DATA=data,SD_OUT=out,SD_THREADS=str(workers))
+                              start=time.perf_counter_ns()
+                              subprocess.run([f"/tmp/batch-bin/pgo_{v}"],env=env,check=True,stdout=subprocess.DEVNULL)
+                              timings[v].append((roundno,(time.perf_counter_ns()-start)/1e9))
+                              digest=hashlib.sha256(open(out+"/distances.txt","rb").read()).hexdigest()
+                              if digest!=baseline: raise AssertionError(f"PGO mismatch seed={seed} workers={workers} round={roundno} batch={v}")
+                      med={v:statistics.median(t for _,t in timings[v]) for v in variants}
+                      wins={v:sum(t<timings[16][r][1] for r,t in timings[v]) for v in (4,8)}
+                      print("PGO_RESULT seed",seed,"workers",workers,"medians",med,"wins_vs_16",wins,flush=True)
+                      results[(seed,workers)]=(med,wins)
+          for v in (4,8):
+              print("PGO_SUMMARY batch",v,"wins",sum(results[k][1][v] for k in results),"of",13*len(results),flush=True)
+          PY

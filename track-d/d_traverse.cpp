@@ -481,6 +481,7 @@ struct Heap {
     static constexpr unsigned B = 2048;
     std::array<std::vector<uint32_t>, B> bucket;
     std::array<uint64_t, B / 64> occupied{};
+    uint32_t nonempty = 0; // one bit per nonempty group of 64 buckets
     std::vector<HeapNode> far;
     uint64_t cur = 0;
     size_t near = 0;
@@ -494,6 +495,7 @@ struct Heap {
         for (size_t w = 0; w < occupied.size(); ++w)
             for (uint64_t bits = occupied[w]; bits; bits &= bits - 1) bucket[w * 64 + __builtin_ctzll(bits)].clear();
         occupied.fill(0);
+        nonempty = 0;
         far.clear();
         cur = 0;
         near = 0;
@@ -503,6 +505,7 @@ struct Heap {
         unsigned b = (d >> shift) & (B - 1);
         bucket[b].push_back(v | static_cast<uint32_t>((d & ((uint64_t(1) << shift) - 1)) << node_bits));
         occupied[b >> 6] |= 1ull << (b & 63);
+        nonempty |= 1u << (b >> 6);
         ++near;
     }
     // Positions cur on the first nonempty bucket and returns its smallest possible key; INF if empty.
@@ -510,7 +513,12 @@ struct Heap {
         if (near) {
             unsigned b = cur & (B - 1), w = b >> 6;
             uint64_t bits = occupied[w] & (~0ull << (b & 63));
-            while (!bits) { w = (w + 1) & (B / 64 - 1); bits = occupied[w]; }
+            if (!bits) {
+                uint32_t later = nonempty & (~0u << ((w + 1) & (B / 64 - 1)));
+                if (!later) later = nonempty;
+                w = __builtin_ctz(later);
+                bits = occupied[w];
+            }
             cur += (((w << 6) | __builtin_ctzll(bits)) - b) & (B - 1);
         } else if (!far.empty()) {
             cur = far.front().distance >> shift;
@@ -597,6 +605,7 @@ struct Side {
         }
         unsigned b = heap.cur & (Heap::B - 1);
         heap.occupied[b >> 6] &= ~(1ull << (b & 63));
+        if (!heap.occupied[b >> 6]) heap.nonempty &= ~(1u << (b >> 6));
         return count;
     }
 };

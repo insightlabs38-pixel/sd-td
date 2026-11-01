@@ -1,0 +1,12 @@
+1 pr17 wall 0.53491 cpu 0.533697 maxrss 144144
+1 fixed wall 0.524571 cpu 0.523936 maxrss 144136
+1 fixed_weight wall 0.51549 cpu 0.514084 maxrss 144208
+4 pr17 wall 0.382343 cpu 0.719417 maxrss 144304
+4 fixed wall 0.378305 cpu 0.705932 maxrss 144220
+4 fixed_weight wall 0.371269 cpu 0.68883 maxrss 144260
+6 pr17 wall 0.388919 cpu 0.709771 maxrss 144764
+6 fixed wall 0.383365 cpu 0.698429 maxrss 144896
+6 fixed_weight wall 0.378432 cpu 0.693207 maxrss 144712
+12 pr17 wall 0.392801 cpu 0.703244 maxrss 146496
+12 fixed wall 0.386668 cpu 0.68687 maxrss 146440
+12 fixed_weight wall 0.385959 cpu 0.683022 maxrss 146576

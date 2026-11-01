@@ -1,0 +1,5 @@
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Warning: Unable to read /etc/apt/apt.conf.d/80-applied-apt-retries - open (13: Permission denied)
+Error: Unable to locate package linux-perf

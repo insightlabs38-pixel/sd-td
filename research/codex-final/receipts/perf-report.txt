@@ -1,0 +1,1 @@
+zero-sized data (work/receipts/perf.data), nothing to do!

@@ -1,0 +1,5 @@
+g++ (GCC) 15.3.0
+variants/coalesce9.cpp:706:1: fatal error: error writing to /tmp/ccE5Yujl.s: No space left on device
+  706 | }
+      | ^
+compilation terminated.

@@ -1,0 +1,12 @@
+start wall_ms=0.000 cpu_ms=1.995 rss_kib=812
+parse-bin wall_ms=105.541 cpu_ms=105.545 rss_kib=121260
+raw-csr wall_ms=37.081 cpu_ms=37.082 rss_kib=121772
+grow-contract wall_ms=201.870 cpu_ms=201.735 rss_kib=143424
+rename-map wall_ms=7.800 cpu_ms=7.800 rss_kib=143424
+forward-rename-count wall_ms=39.916 cpu_ms=39.911 rss_kib=144144
+graph n=1199079 m=4039190 escapes=4764 reverse_escapes=4764
+reverse-place wall_ms=25.652 cpu_ms=25.653 rss_kib=144144
+schedule wall_ms=0.140 cpu_ms=0.140 rss_kib=144144
+query pops=6200294 stale=813834 arcs=18374534 changes=7267262
+queries wall_ms=220.475 cpu_ms=220.471 rss_kib=144144
+output wall_ms=0.982 cpu_ms=0.981 rss_kib=144144

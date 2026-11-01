@@ -1,0 +1,14 @@
+Error response from daemon: write /var/lib/docker/tmp/docker-export-2276610951/blobs/sha256/0fceba70669334d0c2890d8a9c5e8f0a8c153fde2d921de69084f3360e741c08: no space left on device
+Traceback (most recent call last):
+  File "/workspace/work/flatten.py", line 4, in <module>
+    for entry in tarfile.open(fileobj=p.stdout,mode='r|'):
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/tarfile.py", line 1918, in open
+    t = cls(name, filemode, stream, **kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/tarfile.py", line 1794, in __init__
+    self.firstmember = self.next()
+                       ^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/tarfile.py", line 2789, in next
+    raise ReadError("empty file") from None
+tarfile.ReadError: empty file

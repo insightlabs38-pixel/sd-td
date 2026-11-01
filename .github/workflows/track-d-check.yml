@@ -44,6 +44,50 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Paired lean binner 256 versus 512 tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DD_BIN_CHUNK=512 -o /tmp/traverse-512 track-d/d_traverse.cpp
+          SD_TEST_BINARY=/tmp/traverse-512 python tests/test_d.py
+          SD_TEST_BINARY=/tmp/traverse-512 python tests/boundary_d.py
+          mkdir -p /tmp/full-data7 /tmp/binner-out
+          python /tmp/official/generators/d_traverse.py --seed 7 --scale full --out /tmp/full-data7
+          python - <<'PY'
+          import hashlib, os, random, statistics, subprocess, time
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          random.seed(11012027)
+          for seed in (1,7):
+              data=f'/tmp/full-data{7 if seed==7 else ""}'
+              for workers in (4,6,12):
+                  times={'baseline':[],'candidate':[]}
+                  wins=0
+                  seed7_hash=None
+                  for r in range(11):
+                      order=['baseline','candidate']
+                      random.shuffle(order)
+                      pair={}
+                      for name in order:
+                          exe='/tmp/traverse' if name=='baseline' else '/tmp/traverse-512'
+                          env=os.environ.copy()
+                          env.update(SD_DATA=data,SD_OUT='/tmp/binner-out',SD_THREADS=str(workers))
+                          t=time.perf_counter()
+                          subprocess.run([exe],env=env,check=True,stdout=subprocess.DEVNULL)
+                          pair[name]=time.perf_counter()-t
+                          with open('/tmp/binner-out/distances.txt','rb') as f:
+                              digest=hashlib.sha256(f.read()).hexdigest()
+                          if seed==1:
+                              assert digest==expected,(name,workers,r,digest)
+                          elif seed7_hash is None:
+                              seed7_hash=digest
+                          else:
+                              assert digest==seed7_hash,(name,workers,r,digest)
+                      for name in pair: times[name].append(pair[name])
+                      wins+=pair['candidate']<pair['baseline']
+                  a=statistics.median(times['baseline'])
+                  b=statistics.median(times['candidate'])
+                  print(f'seed={seed} workers={workers} baseline={a:.6f} candidate={b:.6f} improvement={(a-b)/a*100:.3f}% wins={wins}/11',flush=True)
+          PY
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

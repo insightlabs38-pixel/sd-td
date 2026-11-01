@@ -28,6 +28,19 @@ All three families were built in C++17 and verified under independent Dijkstra/a
 - Previous October 31 probes separately found degree3/4 settled-node reductions and ALT expansion reductions on an 8.8k-node synthetic network. These were *not* end-to-end speedup evidence.
 - Other independent repository branches subsequently ran native balanced directed ALT (one/two landmarks), fused shortcut insertion and direct raw layout; available CI also reports substantial complete-runtime regressions, indicating that straightforward forms do not defeat the fused champion.
 
+## Direct phase diagnostics (matched native seed1)
+
+[Actions 41291433678](https://github.com/insightlabs38-pixel/sd-td/actions/runs/41291433678) instrumented each complete architecture. On a single four-worker host, three seed1 repeats showed:
+
+| Stage (approx median ms) | Baseline | Lazy degree3-depth1 | Forward only | Partial hierarchy budget0 |
+|---|---:|---:|---:|---:|
+| Original graph build | 136 | 136 | 138 | 137 |
+| Reverse construction | 21 | 21 | 0 | 22 |
+| Hierarchy overlay | 0 | 0 | 0 | 63 |
+| All queries | 89 | 152 | 220 | 89 |
+
+This cleanly identifies the losses: lazy inline expansion adds ~63ms **inside queries**, not during graph construction; forward-only saves ~21ms transpose but adds ~131ms searching; budget0 directed elimination adds ~63ms overlay and makes the query stage essentially unchanged. A better implementation must avoid *both* a separate whole-graph overlay pass and rising shortcut density, and demonstrate a substantial reduction in query work.
+
 ## Why the candidate economics failed
 
 **Construction dominates ~60% of the process**, and its optimization is already unusually fused. A 20ms preprocessing increase requires saving about one-third of the ~60ms query stage merely to break even on T, before source-size and memory penalties. Extra directed shortcuts are not free: they raise graph density, cache traffic, reverse construction and edge relaxations. Recursively inlined path expansion also performs additional relaxations and can defeat the cheap monotone bucket queue. Forward-only avoids reverse construction but makes long-rank queries too expensive.

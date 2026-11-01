@@ -1,6 +1,8 @@
 name: Track D exactness and Docker
 on:
   push:
+    branches:
+      - d/distance-page-prefetch-20261101
     paths:
       - .github/workflows/track-d-check.yml
   workflow_dispatch:
@@ -44,6 +46,22 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Exact distance-page prefetch and 21-pass matched tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          for lookahead in 0 4 8; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_DIST_LOOKAHEAD=$lookahead -o "/tmp/prefetch$lookahead" track-d/d_traverse.cpp
+            if [[ "$lookahead" != 0 ]]; then
+              SD_TEST_BINARY="/tmp/prefetch$lookahead" python tests/test_d.py
+            fi
+            SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out SD_THREADS=4 "/tmp/prefetch$lookahead"
+            echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+          done
+          for workers in 4 6 12; do
+            echo "PREFETCH TOURNAMENT workers=$workers"
+            SD_THREADS=$workers ROUNDS=21 python tests/ab_d.py /tmp/full-data /tmp/full-out /tmp/prefetch0 /tmp/prefetch4 /tmp/prefetch8
+          done
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

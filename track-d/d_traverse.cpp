@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <emmintrin.h>
+#include <immintrin.h>
 #include <fcntl.h>
 #include <memory>
 #include <numeric>
@@ -95,6 +95,13 @@ static u32 cut(size_t n, unsigned t, unsigned threads) {
 // Bit i is set when p[i] is a separator (space or LF), the only bytes below
 // '0'.
 static u64 separators(const char *p) {
+#ifdef __AVX2__
+  __m256i zero = _mm256_set1_epi8('0');
+  __m256i lo = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(p));
+  __m256i hi = _mm256_loadu_si256(reinterpret_cast<const __m256i *>(p + 32));
+  return u64(u32(_mm256_movemask_epi8(_mm256_cmpgt_epi8(zero, lo)))) |
+         (u64(u32(_mm256_movemask_epi8(_mm256_cmpgt_epi8(zero, hi)))) << 32);
+#else
   u64 m = 0;
   for (int k = 0; k < 4; ++k) {
     __m128i x = _mm_loadu_si128(reinterpret_cast<const __m128i *>(p + 16 * k));
@@ -102,6 +109,7 @@ static u64 separators(const char *p) {
     m |= bits << (16 * k);
   }
   return m;
+#endif
 }
 
 // Value of the digits [a, b). Short numbers are read as the 8 bytes ending at

@@ -840,7 +840,23 @@ struct Worker {
       u64 f = fwd.queue.lower_bound(), b = bwd.queue.lower_bound();
       if (f == INF || b == INF || f + b >= best)
         break;
-      if (fs <= bs)
+      // Direction policy is selected only for controlled exactness/performance tests.
+#ifndef SD_DIRECTION
+#define SD_DIRECTION 0
+#endif
+#if SD_DIRECTION == 1
+      bool forward = f <= b;
+#elif SD_DIRECTION == 2
+      bool forward = fwd.queue.near + fwd.queue.far.size() <=
+                     bwd.queue.near + bwd.queue.far.size();
+#elif SD_DIRECTION == 3
+      size_t fq = fwd.queue.near + fwd.queue.far.size();
+      size_t bq = bwd.queue.near + bwd.queue.far.size();
+      bool forward = fq * 2 < bq ? true : bq * 2 < fq ? false : fs <= bs;
+#else
+      bool forward = fs <= bs;
+#endif
+      if (forward)
         fs += fwd.drain(bwd, best);
       else
         bs += bwd.drain(fwd, best);

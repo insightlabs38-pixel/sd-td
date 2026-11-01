@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
@@ -44,6 +46,32 @@ jobs:
           echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-data/queries.txt' | sha256sum -c
           SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out /usr/bin/time -v /tmp/traverse
           echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/full-out/distances.txt' | sha256sum -c
+      - name: Matched two-level occupancy tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show 64b07e3ae8b23a27088a952b77e5186f21fe35e2:track-d/d_traverse.cpp > /tmp/d-baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse-baseline /tmp/d-baseline.cpp
+          python - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          for workers in (4, 6, 12):
+              pairs = []
+              for trial in range(17):
+                  results = {}
+                  for name in (("candidate", "baseline") if trial % 2 else ("baseline", "candidate")):
+                      env = dict(os.environ, SD_DATA="/tmp/full-data", SD_OUT="/tmp/full-out", SD_THREADS=str(workers))
+                      binary = "/tmp/traverse" if name == "candidate" else "/tmp/traverse-baseline"
+                      start = time.perf_counter()
+                      subprocess.run([binary], env=env, check=True, stdout=subprocess.DEVNULL)
+                      results[name] = time.perf_counter() - start
+                      with open("/tmp/full-out/distances.txt", "rb") as f:
+                          assert hashlib.sha256(f.read()).hexdigest() == expected
+                  pairs.append(results)
+              a = [p["baseline"] for p in pairs]
+              b = [p["candidate"] for p in pairs]
+              print(f"workers={workers} baseline={statistics.median(a):.6f} candidate={statistics.median(b):.6f} wins={sum(y<x for x,y in zip(a,b))}/17", flush=True)
+          PY
       - name: Build official-style pinned Docker image
         run: docker build --pull -t sd-td-check track-d
       - name: Docker runtime and output byte comparison

@@ -29,7 +29,7 @@ u32 cut(size_t n, unsigned t, unsigned threads) { return n * t / threads; }
 // are refused, as partly used buffers would round up to them.
 template <class T> T *alloc(size_t n) {
   size_t bytes = n * sizeof(T) + 64;
-  int flags = MAP_PRIVATE | MAP_ANONYMOUS;
+  int flags = MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE;
   void *p = mmap(nullptr, bytes, PROT_READ | PROT_WRITE, flags, -1, 0);
   madvise(p, bytes, MADV_NOHUGEPAGE);
   return static_cast<T *>(p);

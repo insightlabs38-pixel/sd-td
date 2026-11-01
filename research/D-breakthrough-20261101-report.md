@@ -41,6 +41,21 @@ All three families were built in C++17 and verified under independent Dijkstra/a
 
 This cleanly identifies the losses: lazy inline expansion adds ~63ms **inside queries**, not during graph construction; forward-only saves ~21ms transpose but adds ~131ms searching; budget0 directed elimination adds ~63ms overlay and makes the query stage essentially unchanged. A better implementation must avoid *both* a separate whole-graph overlay pass and rising shortcut density, and demonstrate a substantial reduction in query work.
 
+## Dense-compacted multi-round shortcut hierarchy
+
+A further independent architecture, `research/d-breakthrough-20261101-compact-multiround`, performs exact directed independent-set elimination, **dense survivor renumbering**, rebuilds both adjacency directions, then repeats for 1/2/3 rounds. All variants passed 88-case differential tests across worker/probe configurations, seeds 1 and 7 with full 2,000-query batches, seed1 official SHA, ASan/UBSan; three-round variant also passed [ThreadSanitizer 41291844948](https://github.com/insightlabs38-pixel/sd-td/actions/runs/41291844948).
+
+[Full tournament 41291555905](https://github.com/insightlabs38-pixel/sd-td/actions/runs/41291555905), nine paired full-graph repetitions per configuration, 4-worker seed1 medians:
+
+| Variant | Median wall (ms) | Relative runtime increase |
+|---|---:|---:|
+| Fused baseline | 256.010 | Reference |
+| Compact one round | 350.910 | +37.1% |
+| Compact two rounds | 417.252 | +63.0% |
+| Compact three rounds | 480.202 | +87.6% |
+
+The same ordering and similar slowdowns held for seed 7 and twelve workers. [Full graph structural profile 41291791967](https://github.com/insightlabs38-pixel/sd-td/actions/runs/41291791967) revealed: round 0 removed 93,049 vertices, leaving 1,106,042 vertices/3,812,358 arcs; round 1 removed 79,839 more, leaving 1,026,203/3,706,851; round 2 removed just 5,717, leaving 1,020,486/3,701,484. The **14.9% node and ~8.4% arc reduction** cannot pay for three additional whole-graph rewrites and reverse transposes on 2,000 queries. The source remains preserved for future single-pass fusion or more effective core criteria; the broader family is not declared impossible.
+
 ## Why the candidate economics failed
 
 **Construction dominates ~60% of the process**, and its optimization is already unusually fused. A 20ms preprocessing increase requires saving about one-third of the ~60ms query stage merely to break even on T, before source-size and memory penalties. Extra directed shortcuts are not free: they raise graph density, cache traffic, reverse construction and edge relaxations. Recursively inlined path expansion also performs additional relaxations and can defeat the cheap monotone bucket queue. Forward-only avoids reverse construction but makes long-rank queries too expensive.

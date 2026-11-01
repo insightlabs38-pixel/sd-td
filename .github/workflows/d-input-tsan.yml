@@ -1,0 +1,32 @@
+name: D input lifetime thread sanitizer differential
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-input-tsan']
+    paths: ['.github/workflows/d-input-tsan.yml']
+  workflow_dispatch:
+jobs:
+  tsan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile real dynamically linked TSAN instrumented C++ solver
+        run: g++ -O1 -g -std=c++17 -pthread -fsanitize=thread -fno-omit-frame-pointer -o /tmp/d-input-tsan research/d-breakthrough/input_lifetime.cpp
+      - name: Independent directed adversarial and randomized TSAN oracle
+        run: |
+          SD_TEST_BINARY=/tmp/d-input-tsan TSAN_OPTIONS=halt_on_error=1 python - <<'PY'
+          import sys
+          sys.path.insert(0,"tests")
+          import test_d as t
+          U=t.U
+          t.run_case(8,[(0,1,4),(1,2,3),(0,2,9),(2,0,5),(2,1,6),(1,3,0),(3,4,0),(4,4,7),(4,5,U),(2,1,2),(5,6,U),(0,1,4)],[(0,2),(2,1),(1,4),(4,4),(7,7),(0,6),(4,5),(6,0),(0,7),(1,0),(2,1)],threads=(1,4))
+          t.run_case(4,[(0,1,U),(1,2,U),(2,3,U)],[(0,3),(3,0),(1,3),(0,0)],threads=(1,4))
+          for seed in range(4):
+            n=73+seed*11
+            edges,qs=t.random_case(7100+seed,n,n*5,32)
+            t.run_case(n,edges,qs,threads=(1,4))
+          print("TSAN_D_DIFFERENTIAL_PASS")
+          PY

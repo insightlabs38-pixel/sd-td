@@ -615,8 +615,8 @@ template <class L> struct Side {
 
 // An exact forward probe settles up to 256 vertices; then bidirectional
 // Dijkstra balances settled counts until the two queue fronts sum to at least
-// the best meeting. Returns the distance, or NONE or more if t is unreached
-// as far as L can tell.
+// the best meeting. Returns the distance, INF when there is no path, or NONE
+// or more when the distance may not fit L.
 template <class L> struct Worker {
   Side<L> fwd, bwd;
   u64 solve(u32 s, u32 t) {
@@ -629,15 +629,17 @@ template <class L> struct Worker {
     u64 best = INF, fs = 0, bs = 0;
     while (fs < 256) {
       u64 f = fwd.queue.lower_bound(), known = fwd.dist.get(t);
-      if (known < f || f == INF)
-        return known;
+      if (known < f || f == INF) // t is settled, or the forward side ran out
+        return known < Labels<L>::NONE ? known : INF;
       fs += fwd.drain(bwd, best);
     }
     bwd.start(t);
     best = fwd.dist.get(t);
     for (;;) {
       u64 f = fwd.queue.lower_bound(), b = bwd.queue.lower_bound();
-      if (f == INF || b == INF || f + b >= best)
+      if (f == INF || b == INF) // one side has seen all it can reach
+        return best < Labels<L>::NONE ? best : INF;
+      if (f + b >= best)
         return best;
       if (fs <= bs)
         fs += fwd.drain(bwd, best);
@@ -680,7 +682,8 @@ int main() {
     for (size_t k; (k = next++) < queries;) {
       u32 i = by_source[k], s = ends[2 * i], t = ends[2 * i + 1];
       u64 d = narrow.solve(s, t);
-      if (narrow.fwd.wide || narrow.bwd.wide || d >= Labels<u32>::NONE) {
+      if (narrow.fwd.wide || narrow.bwd.wide ||
+          (d >= Labels<u32>::NONE && d < INF)) {
         if (!wide)
           wide = new Worker<u64>{Side<u64>(*fwd), Side<u64>(*rev)};
         d = wide->solve(s, t);

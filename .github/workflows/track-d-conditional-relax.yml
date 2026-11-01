@@ -1,0 +1,75 @@
+name: Track D conditional-relax tournament
+on:
+  push:
+    branches: [d/conditional-relax-20261101]
+    paths: [.github/workflows/track-d-conditional-relax.yml]
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Compile matched binaries
+        run: |
+          git show 2add5077ceee8afe3759d65759d4026b244e764f:track-d/d_traverse.cpp > /tmp/baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/base /tmp/baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/candidate track-d/d_traverse.cpp
+      - name: Differential and 64-bit boundary verification
+        run: |
+          SD_TEST_BINARY=/tmp/candidate python tests/test_d.py
+          SD_TEST_BINARY=/tmp/candidate python tests/boundary_d.py
+          SD_TEST_BINARY=/tmp/candidate python tests/stress_d.py 10
+      - name: Fetch public official generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Interleaved official full-size tournament
+        shell: bash
+        run: |
+          cat > /tmp/bench.py <<'PY'
+          import hashlib, os, pathlib, random, statistics, subprocess, time
+          from collections import defaultdict
+          root = pathlib.Path('/tmp')
+          official = root / 'official/generators/d_traverse.py'
+          expected_seed1 = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for seed in (1, 7):
+              data = root / f'data-{seed}'
+              out = root / f'out-{seed}'
+              data.mkdir(exist_ok=True)
+              out.mkdir(exist_ok=True)
+              subprocess.run(['python', str(official), '--seed', str(seed), '--scale', 'full', '--out', str(data)], check=True)
+              expected = expected_seed1 if seed == 1 else None
+              for workers in (4, 6, 12):
+                  samples = defaultdict(list)
+                  wins = 0
+                  for round_id in range(13):
+                      pair = ['base', 'candidate']
+                      random.Random(seed * 10000 + workers * 100 + round_id).shuffle(pair)
+                      times = {}
+                      for variant in pair:
+                          env = dict(os.environ, SD_DATA=str(data), SD_OUT=str(out), SD_THREADS=str(workers))
+                          t0 = time.perf_counter_ns()
+                          subprocess.run(['/tmp/' + variant], env=env, check=True)
+                          elapsed = (time.perf_counter_ns() - t0) / 1e9
+                          digest = hashlib.sha256((out / 'distances.txt').read_bytes()).hexdigest()
+                          if expected is None:
+                              assert variant == 'base', 'seed 7 must start with baseline'
+                              expected = digest
+                          assert digest == expected, (seed, workers, variant, digest, expected)
+                          times[variant] = elapsed
+                          samples[variant].append(elapsed)
+                      wins += times['candidate'] < times['base']
+                  a = statistics.median(samples['base'])
+                  b = statistics.median(samples['candidate'])
+                  print(f'SEED={seed} WORKERS={workers} BASE={a:.6f} CAND={b:.6f} CHANGE={(b/a-1)*100:+.3f}% WINS={wins}/13 HASH={expected}', flush=True)
+          PY
+          python /tmp/bench.py
+      - name: Native peak RSS comparison
+        run: |
+          for t in 4 6 12; do
+            for bin in base candidate; do
+              SD_DATA=/tmp/data-1 SD_OUT=/tmp/out-1 SD_THREADS=$t /usr/bin/time -f "RSS workers=$t variant=$bin KB=%M wall=%e" /tmp/$bin
+            done
+          done

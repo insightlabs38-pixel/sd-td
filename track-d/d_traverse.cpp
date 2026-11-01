@@ -572,8 +572,7 @@ static void add_reverse(Graph &g, unsigned threads) {
                  .push_back({v, u, fwd.weight(e, i)});
       });
 #ifdef D_SLEEP_BARRIER
-    if (pthread_barrier_wait(&arrived) < 0)
-      fail("pthread_barrier_wait");
+    pthread_barrier_wait(&arrived);
 #else
     for (arrived.fetch_add(1); arrived < threads;)
       std::this_thread::yield();

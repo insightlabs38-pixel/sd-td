@@ -13,6 +13,10 @@
 #include <unistd.h>
 #include <vector>
 
+#ifndef D_PREFETCH_LOCALITY
+#define D_PREFETCH_LOCALITY 0
+#endif
+
 using u32 = uint32_t;
 using u64 = uint64_t;
 // Above any path length (all are below 2^53), so INF + d cannot wrap.
@@ -573,9 +577,10 @@ template <class L> struct Side {
     bool overflow = false;
     for (u32 k = 0; k < bk.size; ++k) {
       u32 ahead = bk.data[std::min(k + 8, bk.size - 1)] & mask;
-      __builtin_prefetch(&g.off[ahead]), __builtin_prefetch(dist.at(ahead));
+      __builtin_prefetch(&g.off[ahead]),
+          __builtin_prefetch(dist.at(ahead), 0, D_PREFETCH_LOCALITY);
       ahead = bk.data[std::min(k + 4, bk.size - 1)] & mask;
-      __builtin_prefetch(&g.adj[g.off[ahead]]);
+      __builtin_prefetch(&g.adj[g.off[ahead]], 0, D_PREFETCH_LOCALITY);
       u32 u = bk.data[k] & mask;
       u64 d = queue.cur << queue.shift | bk.data[k] >> queue.node_bits;
       if (dist.get(u) != d)

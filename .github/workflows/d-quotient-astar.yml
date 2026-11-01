@@ -1,0 +1,41 @@
+name: D exact directed quotient A-star
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-quotient-astar']
+    paths: ['research/d-breakthrough/**', '.github/workflows/d-quotient-astar.yml']
+  workflow_dispatch:
+jobs:
+  quotient:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build native bidirectional baseline and two exact directed quotient solvers
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_QSHIFT=13 -o /tmp/d-q13 research/d-breakthrough/quotient_astar.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_QSHIFT=14 -o /tmp/d-q14 research/d-breakthrough/quotient_astar.cpp
+          wc -l -c track-d/d_traverse.cpp research/d-breakthrough/quotient_astar.cpp
+      - name: Adversarial independent exact oracle for both quotient scales
+        run: |
+          set -euo pipefail
+          SD_TEST_BINARY=/tmp/d-q13 python tests/test_d.py
+          SD_TEST_BINARY=/tmp/d-q14 python tests/test_d.py
+      - name: Full graph seeds 1 and 7 complete query batches matched timings
+        run: python research/d-breakthrough/bench_quotient.py
+      - name: Sanitizer qualification quotient A-star
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -DSD_QSHIFT=13 -o /tmp/d-q-san research/d-breakthrough/quotient_astar.cpp
+          SD_TEST_BINARY=/tmp/d-q-san python tests/test_d.py
+      - name: Archive raw exact tournament
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-directed-quotient-exact-benchmark
+          path: /tmp/d-quotient-results.json
+          if-no-files-found: ignore

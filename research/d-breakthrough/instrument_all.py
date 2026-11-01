@@ -8,6 +8,7 @@ files = {
   "lazy": ("/tmp/d-lazy-shortcuts.cpp", "-DSD_LAZY_DEG=3 -DSD_LAZY_DEPTH=1"),
   "forward": ("/tmp/d-forward-only.cpp", ""),
   "partial": ("/tmp/d-partial-ch.cpp", "-DSD_OVERLAY_DEG=3 -DSD_OVERLAY_BUDGET=0"),
+  "partial4": ("/tmp/d-partial-ch.cpp", "-DSD_OVERLAY_DEG=3 -DSD_OVERLAY_BUDGET=4"),
 }
 for name, (path, flags) in files.items():
     s = Path(path).read_text()

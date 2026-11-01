@@ -1,0 +1,36 @@
+name: D refined hierarchy ThreadSanitizer qualification
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-fused-hierarchy-refined']
+    paths: ['.github/workflows/d-refined-tsan.yml']
+  workflow_dispatch:
+jobs:
+  tsan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Prepare official tiny and sample directed graphs
+        run: |
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for entry in "tiny 2" "sample 1"; do
+            read -r scale seed <<< "$entry"
+            mkdir -p /tmp/tsan-$scale /tmp/tsan-ref-$scale /tmp/tsan-out-$scale
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale "$scale" --out /tmp/tsan-$scale
+            python /tmp/official/reference/d_traverse.py --data /tmp/tsan-$scale --out /tmp/tsan-ref-$scale
+          done
+      - name: Compile directed fused hierarchy with ThreadSanitizer
+        run: g++ -O1 -g -std=c++17 -pthread -fsanitize=thread -fno-omit-frame-pointer -DSD_FCH_DEG=3 -DSD_FCH_BUDGET=3 -o /tmp/d-refined-tsan research/d-breakthrough/fused_hierarchy_refined.cpp
+      - name: Exact multiple-worker ThreadSanitizer run and oracle
+        run: |
+          set -euo pipefail
+          for scale in tiny sample; do
+            for workers in 1 4; do
+              echo "TSAN_VERIFY scale=$scale workers=$workers"
+              TSAN_OPTIONS="halt_on_error=1 exitcode=77" SD_THREADS=$workers SD_DATA=/tmp/tsan-$scale SD_OUT=/tmp/tsan-out-$scale /tmp/d-refined-tsan
+              cmp /tmp/tsan-ref-$scale/distances.txt /tmp/tsan-out-$scale/distances.txt
+            done
+          done

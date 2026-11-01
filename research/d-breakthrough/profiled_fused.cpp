@@ -881,11 +881,12 @@ int main() {
            [&](unsigned) {
              Worker worker(g);
              for (size_t k; (k = next.fetch_add(1, std::memory_order_relaxed)) <
-                            queries.size();)
+                            queries.size();) {
                auto q0 = now();
                answers[order[k]] =
                    worker.solve(queries[order[k]].from, queries[order[k]].to);
                micros[order[k]] = millis(q0, now()) * 1000.;
+             }
            });
   const auto t4 = now();
   std::vector<double> ranked = micros;

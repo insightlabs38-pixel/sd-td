@@ -24,7 +24,7 @@ static double trace_now() {
   return double(ts.tv_sec) + double(ts.tv_nsec) * 1e-9;
 }
 static void trace_phase(const char *name, double began) {
-  fprintf(stderr, "D_PHASE %s %.6f\\n", name, trace_now() - began);
+  fprintf(stderr, "D_PHASE %s %.6f\n", name, trace_now() - began);
 }
 
 using u32 = uint32_t;

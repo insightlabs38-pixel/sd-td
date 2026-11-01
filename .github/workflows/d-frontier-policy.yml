@@ -1,0 +1,84 @@
+name: D exact frontier-policy tournament
+on:
+  push:
+    paths:
+      - .github/workflows/d-frontier-policy.yml
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify organizer generator identity
+        run: |
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          cmp track-d/d_traverse_generator.py /tmp/official/generators/d_traverse.py
+      - name: Compile four exact search policies
+        run: |
+          for mode in 0 1 2 3; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_DIRECTION=$mode -o /tmp/solver-$mode track-d/d_traverse.cpp
+          done
+      - name: Adversarial differential suite for every policy
+        run: |
+          for mode in 0 1 2 3; do
+            SD_TEST_BINARY=/tmp/solver-$mode python tests/test_d.py
+          done
+      - name: Official sample reference agreement
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/sample /tmp/sample-ref
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample --out /tmp/sample-ref
+          for mode in 0 1 2 3; do
+            mkdir -p "/tmp/sample-out-$mode"
+            SD_DATA=/tmp/sample SD_OUT="/tmp/sample-out-$mode" /tmp/solver-$mode
+            cmp /tmp/sample-ref/distances.txt "/tmp/sample-out-$mode/distances.txt"
+          done
+      - name: Two full seeds, exact hashes and randomized paired timing
+        shell: bash
+        run: |
+          set -euo pipefail
+          python track-d/d_traverse_generator.py --seed 1 --scale full --out /tmp/full-1
+          python track-d/d_traverse_generator.py --seed 7 --scale full --out /tmp/full-7
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/full-1/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/full-1/queries.txt' | sha256sum -c
+          python - <<'PY'
+          import collections, hashlib, os, pathlib, random, statistics, subprocess, time
+          official = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          rng = random.Random(20261101)
+          data = collections.defaultdict(dict)
+          for seed in (1, 7):
+              graph = pathlib.Path(f'/tmp/full-{seed}/graph.txt')
+              out = pathlib.Path('/tmp/policy-output')
+              out.mkdir(exist_ok=True)
+              truth = official if seed == 1 else None
+              for workers in (4, 6, 12):
+                  for r in range(13):
+                      modes = list(range(4))
+                      rng.shuffle(modes)
+                      for mode in modes:
+                          with graph.open('rb') as f:
+                              while f.read(1 << 20):
+                                  pass
+                          env = dict(os.environ, SD_DATA=f'/tmp/full-{seed}', SD_OUT=str(out), SD_THREADS=str(workers))
+                          t = time.perf_counter()
+                          subprocess.run([f'/tmp/solver-{mode}'], env=env, check=True, stdout=subprocess.DEVNULL)
+                          dt = time.perf_counter() - t
+                          digest = hashlib.sha256((out / 'distances.txt').read_bytes()).hexdigest()
+                          if truth is None:
+                              truth = digest
+                          assert digest == truth, (seed, workers, r, mode, digest, truth)
+                          data[(seed, workers, mode)][r] = dt
+                  base = data[(seed, workers, 0)]
+                  for mode in range(4):
+                      cur = data[(seed, workers, mode)]
+                      wins = sum(cur[k] < base[k] for k in base) if mode else 0
+                      print(f'seed={seed} workers={workers} policy={mode} median={statistics.median(cur.values()):.6f}s wins={wins}/13', flush=True)
+          print('PASS 312 exact full-scale runs; all modes and worker counts', flush=True)
+          PY

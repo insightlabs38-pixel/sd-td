@@ -1,0 +1,38 @@
+name: D directed quotient full phase diagnostics
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-quotient-diagnostics']
+    paths: ['research/d-breakthrough/**','.github/workflows/d-quotient-diagnostics.yml']
+  workflow_dispatch:
+jobs:
+  attribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Official generated full graph
+        run: |
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          mkdir -p /tmp/d-quotient-data /tmp/d-quotient-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/d-quotient-data
+      - name: Compile quotient and same-main stage-profile baseline
+        run: |
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_QSHIFT=13 -o /tmp/d-qprofile research/d-breakthrough/quotient_profile.cpp
+          git fetch origin research/d-breakthrough-20261101-stage-attribution-chat
+          git show FETCH_HEAD:research/d-breakthrough/stage_profile.cpp > /tmp/d-mainprofile.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-mainprofile /tmp/d-mainprofile.cpp
+      - name: Matched full-system phase accounting
+        run: |
+          set -euo pipefail
+          for t in 4 12; do
+            for rep in 1 2 3 4 5; do
+              for engine in mainprofile qprofile; do
+                echo "QUOTIENT_PHASE engine=$engine threads=$t rep=$rep"
+                SD_THREADS=$t SD_DATA=/tmp/d-quotient-data SD_OUT=/tmp/d-quotient-out /usr/bin/time -f 'MAX_RSS_KB %M WALL_S %e' /tmp/d-$engine 2>&1 | grep -E 'D_QUOTIENT_DIAG|D_STAGE|MAX_RSS_KB'
+                echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-quotient-out/distances.txt' | sha256sum -c
+              done
+            done
+          done

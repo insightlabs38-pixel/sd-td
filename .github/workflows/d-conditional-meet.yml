@@ -1,0 +1,66 @@
+name: D conditional meeting lookup A/B
+on:
+  push:
+    branches: [d/conditional-meet-20261101]
+    paths:
+      - .github/workflows/d-conditional-meet.yml
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fetch official public oracle and build both variants
+        run: |
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          git show 249e80bf028ee02d834b81ea043a0ac206541e09:track-d/d_traverse.cpp >/tmp/baseline.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s /tmp/baseline.cpp -o /tmp/base
+          g++ -O3 -std=c++17 -pthread -flto -static -s track-d/d_traverse.cpp -o /tmp/candidate
+      - name: Differential fixtures and official sample
+        run: |
+          SD_TEST_BINARY=/tmp/candidate python tests/test_d.py
+          mkdir -p /tmp/sample /tmp/ref /tmp/out
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample --out /tmp/ref
+          SD_DATA=/tmp/sample SD_OUT=/tmp/out /tmp/candidate
+          cmp /tmp/ref/distances.txt /tmp/out/distances.txt
+      - name: Matched official full-seed tournament
+        run: |
+          mkdir -p /tmp/full /tmp/bout /tmp/cout
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/full
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/full/graph.txt' | sha256sum -c
+          python - <<'PY'
+          import os,subprocess,time,statistics,hashlib
+          expected="a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          for threads in (4,6,12):
+              pairs=[]
+              for i in range(17):
+                  order=("base","candidate") if i%2==0 else ("candidate","base")
+                  times={}
+                  for name in order:
+                      out="/tmp/bout" if name=="base" else "/tmp/cout"
+                      env=dict(os.environ,SD_DATA="/tmp/full",SD_OUT=out,SD_THREADS=str(threads))
+                      t=time.perf_counter()
+                      subprocess.run("/tmp/"+("base" if name=="base" else "candidate"),env=env,check=True)
+                      times[name]=time.perf_counter()-t
+                      with open(out+"/distances.txt","rb") as f: got=hashlib.sha256(f.read()).hexdigest()
+                      assert got==expected,(name,threads,i,got)
+                  pairs.append((times["base"],times["candidate"]))
+              b=statistics.median(x[0] for x in pairs)
+              c=statistics.median(x[1] for x in pairs)
+              diffs=[x[0]-x[1] for x in pairs]
+              print(f"workers={threads} baseline={b:.6f}s candidate={c:.6f}s speedup={(b-c)/b*100:.2f}% paired_wins={sum(x>0 for x in diffs)}/17 median_paired_delta={statistics.median(diffs):.6f}s",flush=True)
+          PY
+      - name: Candidate pinned offline Docker sample qualification
+        run: |
+          docker build --pull -t d-conditional-check track-d
+          mkdir -p /tmp/dockerout
+          docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=6 -v /tmp/sample:/data:ro -v /tmp/dockerout:/out:rw d-conditional-check
+          cmp /tmp/ref/distances.txt /tmp/dockerout/distances.txt

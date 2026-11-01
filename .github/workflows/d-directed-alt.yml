@@ -1,0 +1,44 @@
+name: D balanced directed ALT qualification
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-directed-alt']
+    paths:
+      - 'research/d-breakthrough/**'
+      - '.github/workflows/d-directed-alt.yml'
+  workflow_dispatch:
+jobs:
+  directed-alt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Public official generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile unchanged champion and optimized native ALT
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_ALT_LANDMARKS=1 -o /tmp/d-alt1 research/d-breakthrough/directed_alt.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_ALT_LANDMARKS=2 -o /tmp/d-alt2 research/d-breakthrough/directed_alt.cpp
+          wc -c track-d/d_traverse.cpp research/d-breakthrough/directed_alt.cpp
+      - name: Adversarial exact independent Dijkstra differential
+        run: |
+          for mode in alt1 alt2; do
+            SD_TEST_BINARY=/tmp/d-$mode python tests/test_d.py
+          done
+      - name: Full generator seed 1 and 7 end-to-end paired tournament
+        run: python research/d-breakthrough/bench_alt.py
+      - name: Sanitizer exactness for directed potentials
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -DSD_ALT_LANDMARKS=1 -o /tmp/d-alt-san research/d-breakthrough/directed_alt.cpp
+          SD_TEST_BINARY=/tmp/d-alt-san python tests/test_d.py
+      - name: Store benchmark receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-balanced-directed-alt-native
+          path: /tmp/d-alt-results.json
+          if-no-files-found: ignore

@@ -1,0 +1,70 @@
+name: D reverse-build sleeping barrier tournament
+on:
+  push:
+    branches: [d/reverse-barrier-20261101]
+    paths: [.github/workflows/d-reverse-barrier.yml]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build and verify exactness
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-spin track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DD_SLEEP_BARRIER -o /tmp/d-sleep track-d/d_traverse.cpp
+          for variant in spin sleep; do
+            SD_TEST_BINARY=/tmp/d-$variant python tests/test_d.py
+          done
+          for seed in 1 7; do
+            mkdir -p /tmp/data-$seed /tmp/out-spin-$seed /tmp/out-sleep-$seed
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out /tmp/data-$seed
+            for variant in spin sleep; do
+              SD_DATA=/tmp/data-$seed SD_OUT=/tmp/out-$variant-$seed SD_THREADS=4 /tmp/d-$variant
+            done
+            cmp /tmp/out-spin-$seed/distances.txt /tmp/out-sleep-$seed/distances.txt
+          done
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/out-spin-1/distances.txt' | sha256sum -c
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/out-sleep-1/distances.txt' | sha256sum -c
+          mkdir -p /tmp/sample /tmp/ref /tmp/sample-out
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample --out /tmp/ref
+          SD_DATA=/tmp/sample SD_OUT=/tmp/sample-out SD_THREADS=12 /tmp/d-sleep
+          cmp /tmp/ref/distances.txt /tmp/sample-out/distances.txt
+      - name: Warm-cache randomized paired full-process benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, os, random, statistics, subprocess, time
+          rng = random.Random(0xD20261101)
+          for seed in (1, 7):
+              data = f'/tmp/data-{seed}'
+              expected = open(f'/tmp/out-spin-{seed}/distances.txt','rb').read()
+              for workers in (4, 6, 12):
+                  times = {'spin': [], 'sleep': []}
+                  wins = 0
+                  for i in range(13):
+                      order = ['spin','sleep']
+                      rng.shuffle(order)
+                      round_times = {}
+                      for v in order:
+                          with open(f'{data}/graph.txt','rb') as f:
+                              while f.read(1<<20): pass
+                          env = dict(os.environ, SD_DATA=data, SD_OUT=f'/tmp/out-{v}-{seed}', SD_THREADS=str(workers))
+                          t = time.perf_counter_ns()
+                          subprocess.run([f'/tmp/d-{v}'],env=env,check=True,stdout=subprocess.DEVNULL)
+                          elapsed = (time.perf_counter_ns()-t)/1e9
+                          assert open(f'/tmp/out-{v}-{seed}/distances.txt','rb').read()==expected
+                          times[v].append(elapsed)
+                          round_times[v] = elapsed
+                      wins += round_times['sleep'] < round_times['spin']
+                  a,b=statistics.median(times['spin']),statistics.median(times['sleep'])
+                  print(f'SEED={seed} WORKERS={workers} SPIN={a:.6f} SLEEP={b:.6f} CHANGE={(b/a-1)*100:+.2f}% SLEEP_WINS={wins}/13',flush=True)
+          PY

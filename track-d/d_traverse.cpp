@@ -227,9 +227,9 @@ public:
 
 // ---------------------------------------------------------------- graphs
 
-// Adjacency in 4-slot rows of packed edges (head in the high bits, weight in
+// Adjacency in 3-slot rows of packed edges (head in the high bits, weight in
 // the low bits), so visiting a vertex costs one cache miss. A vertex with more
-// than four edges keeps three inline and a spill code in the fourth slot that
+// than three edges keeps two inline and a spill code in the third slot that
 // locates a counted list after the rows.
 struct Rows {
   static constexpr u32 EMPTY = ~0u;
@@ -242,7 +242,7 @@ struct Rows {
     size_t at = 0, end = 0;
   };
   Rows(u32 count, size_t extra, bool sparse = false)
-      : slot(size_t(count) * 4 + extra, sparse), n(count) {
+      : slot(size_t(count) * 3 + extra, sparse), n(count) {
     wbits = 32 - id_bits(u64(n) + 2);
     while (wbits > 1 && (u64(n + 1) << wbits) + extra >= EMPTY)
       --wbits; // spill codes stay below EMPTY
@@ -262,35 +262,35 @@ struct Rows {
       fresh.push_back({u32(i), w});
     slot[i] = v << wbits | u32(std::min<u64>(w, mask));
   }
-  // Empties u's row and, for more than four edges, reserves its list from the
+  // Empties u's row and, for more than three edges, reserves its list from the
   // caller's chunk.
   void open(u32 u, u32 degree, Cursor &c) {
-    u32 *r = &slot[size_t(u) * 4];
-    r[0] = r[1] = r[2] = r[3] = EMPTY;
-    if (degree <= 4)
+    u32 *r = &slot[size_t(u) * 3];
+    r[0] = r[1] = r[2] = EMPTY;
+    if (degree <= 3)
       return;
-    if (c.end - c.at < degree - 2) {
-      size_t size = std::max<size_t>(1024, degree - 2);
+    if (c.end - c.at < degree - 1) {
+      size_t size = std::max<size_t>(1024, degree - 1);
       c.at = tail.fetch_add(size, std::memory_order_relaxed),
       c.end = c.at + size;
     }
-    r[3] = spill + u32(c.at);
-    slot[size_t(n) * 4 + c.at] = degree - 3;
-    c.at += degree - 2;
+    r[2] = spill + u32(c.at);
+    slot[size_t(n) * 3 + c.at] = degree - 2;
+    c.at += degree - 1;
   }
-  size_t list(u32 code) const { return size_t(n) * 4 + (code - spill); }
-  // Slot of u's k-th edge once the row is open; the fourth slot holds a spill
+  size_t list(u32 code) const { return size_t(n) * 3 + (code - spill); }
+  // Slot of u's k-th edge once the row is open; the third slot holds a spill
   // code only for long rows.
   size_t at(u32 u, u32 k) const {
-    u32 code = slot[size_t(u) * 4 + 3];
-    return k < 3 || code < spill || code == EMPTY ? size_t(u) * 4 + k
-                                                  : list(code) + k - 2;
+    u32 code = slot[size_t(u) * 3 + 2];
+    return k < 2 || code < spill || code == EMPTY ? size_t(u) * 3 + k
+                                                  : list(code) + k - 1;
   }
   template <class F> void each(u32 u, F &&f) const {
-    const u32 *r = &slot[size_t(u) * 4];
-    for (unsigned k = 0; k < 4; ++k) {
+    const u32 *r = &slot[size_t(u) * 3];
+    for (unsigned k = 0; k < 3; ++k) {
       if (r[k] < spill) {
-        f(r[k], size_t(u) * 4 + k);
+        f(r[k], size_t(u) * 3 + k);
         continue;
       }
       if (r[k] == EMPTY)
@@ -390,7 +390,7 @@ class Grower {
   }
   // Advances a walk one hop; returns false once its edge is final.
   bool step(Walk &w) {
-    const u32 *r = &raw.slot[size_t(w.at) * 4]; // at most two edges
+    const u32 *r = &raw.slot[size_t(w.at) * 3]; // at most two edges
     u32 ahead = 0, next = w.at, which = 0;
     for (u32 k = 0; k < 2 && r[k] != Rows::EMPTY; ++k) {
       u32 h = raw.head(r[k]);
@@ -404,10 +404,10 @@ class Grower {
     else if (ahead == 0 || next == w.root)
       next = w.root, w.weight = 0;
     else {
-      w.weight += raw.weight(r[which], size_t(w.at) * 4 + which);
+      w.weight += raw.weight(r[which], size_t(w.at) * 3 + which);
       w.prev = w.at, w.at = next;
       if (test(bypass, next) && ++w.steps < 64) {
-        __builtin_prefetch(&raw.slot[size_t(next) * 4]);
+        __builtin_prefetch(&raw.slot[size_t(next) * 3]);
         return true;
       }
     }
@@ -428,7 +428,7 @@ class Grower {
       if (walks_.size() == walking)
         walks_.resize(2 * walking + 64);
       walks_[walking++] = {pos, u, u, y, 0, w};
-      __builtin_prefetch(&raw.slot[size_t(y) * 4]);
+      __builtin_prefetch(&raw.slot[size_t(y) * 3]);
     });
   }
 
@@ -443,7 +443,7 @@ public:
     for (u32 hi; lo < reg.len; lo = hi) {
       hi = std::min(reg.len, lo + BATCH);
       for (u32 h = lo + 2 * BATCH; h < std::min(reg.len, hi + 2 * BATCH); ++h)
-        __builtin_prefetch(&raw.slot[size_t(reg.order[h]) * 4]);
+        __builtin_prefetch(&raw.slot[size_t(reg.order[h]) * 3]);
       size_t walking = 0;
       for (u32 h = lo; h < hi; ++h) {
         gather(reg.order[h], walking);
@@ -574,9 +574,9 @@ static void add_reverse(Graph &g, unsigned threads) {
       rev.open(v, degree[v], cursor);
     auto add = [&](u32 v, u32 u, u64 w) {
       u32 k = placed[v]++;
-      rev.put(degree[v] <= 4 || k < 3
-                  ? size_t(v) * 4 + k
-                  : rev.list(rev.slot[size_t(v) * 4 + 3]) + k - 2,
+      rev.put(degree[v] <= 3 || k < 2
+                  ? size_t(v) * 3 + k
+                  : rev.list(rev.slot[size_t(v) * 3 + 2]) + k - 1,
               u, w, escapes[t]);
     };
     for (u32 u = lo; u < hi; ++u)
@@ -785,7 +785,7 @@ struct Side {
     for (u32 k = 0; k < bk.size; ++k) {
       if (k + LOOK < bk.size) {
         u32 ahead = bk.data[k + LOOK] & mask;
-        __builtin_prefetch(&g.slot[size_t(ahead) * 4], 0, 1);
+        __builtin_prefetch(&g.slot[size_t(ahead) * 3], 0, 1);
         __builtin_prefetch(dist.at(ahead), 0, 1);
       }
       u32 u = bk.data[k] & mask;
@@ -819,8 +819,8 @@ struct Worker {
   int64_t solve(u32 s, u32 t) {
     if (s == t)
       return 0;
-    if (fwd.g.slot[size_t(s) * 4] == Rows::EMPTY ||
-        bwd.g.slot[size_t(t) * 4] == Rows::EMPTY)
+    if (fwd.g.slot[size_t(s) * 3] == Rows::EMPTY ||
+        bwd.g.slot[size_t(t) * 3] == Rows::EMPTY)
       return -1;
     bwd.dist.reset();
     fwd.start(s);

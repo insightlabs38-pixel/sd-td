@@ -1,0 +1,59 @@
+name: Track D three-slot row experiment
+on:
+  push:
+    branches: [d/three-slot-rows-20261101]
+    paths:
+      - track-d/d_traverse.cpp
+      - .github/workflows/d-three-slot.yml
+  workflow_dispatch:
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile baseline and challenger
+        run: |
+          git show dadbd493089d7decaad283e7326e7ce6ff72d4d4:track-d/d_traverse.cpp > /tmp/base.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/base /tmp/base.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/candidate track-d/d_traverse.cpp
+      - name: Differential adversarial and random oracle
+        run: SD_TEST_BINARY=/tmp/candidate python tests/test_d.py
+      - name: Full organizer generator and paired benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/data /tmp/out-base /tmp/out-candidate
+          python track-d/d_traverse_generator.py --seed 1 --scale full --out /tmp/data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/data/graph.txt' | sha256sum -c
+          echo '160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/data/queries.txt' | sha256sum -c
+          python - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          truth='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for threads in (4, 6, 12):
+              pairs=[]
+              for i in range(11):
+                  order=('base','candidate') if i%2==0 else ('candidate','base')
+                  elapsed={}
+                  for name in order:
+                      env=dict(os.environ,SD_DATA='/tmp/data',SD_OUT='/tmp/out-'+name,SD_THREADS=str(threads))
+                      t=time.perf_counter_ns()
+                      subprocess.run(['/usr/bin/time','-f','%M','-o','/tmp/rss-'+name,'/tmp/'+name],env=env,check=True)
+                      wall=(time.perf_counter_ns()-t)/1e9
+                      rss=int(open('/tmp/rss-'+name).read().strip())
+                      data=open('/tmp/out-'+name+'/distances.txt','rb').read()
+                      assert hashlib.sha256(data).hexdigest()==truth,(threads,i,name)
+                      elapsed[name]=(wall,rss)
+                  pairs.append(elapsed)
+              a=[x['base'][0] for x in pairs];b=[x['candidate'][0] for x in pairs]
+              am=[x['base'][1] for x in pairs];bm=[x['candidate'][1] for x in pairs]
+              print('WORKERS',threads,'baseline',statistics.median(a),'candidate',statistics.median(b),
+                    'wins',sum(y<x for x,y in zip(a,b)),'/11',
+                    'rssKiB',statistics.median(am),statistics.median(bm),flush=True)
+          PY

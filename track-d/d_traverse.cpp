@@ -649,9 +649,10 @@ int main() {
   Bits terminal(scan(p) / 64 + 1), bypass(terminal.size());
   for (u32 v : ends)
     set(terminal, v);
-  Graph *raw = read_graph(graph, graph + gsize, terminal, bypass, threads);
-  Graph *fwd = contract(raw, bypass, threads, ends),
-        *rev = transpose(*fwd, threads);
+  unsigned build_threads = std::min(threads, 4u);
+  Graph *raw = read_graph(graph, graph + gsize, terminal, bypass, build_threads);
+  Graph *fwd = contract(raw, bypass, build_threads, ends),
+        *rev = transpose(*fwd, build_threads);
   size_t queries = ends.size() / 2;
   std::vector<int64_t> answers(queries);
   std::vector<u32> by_source(queries);

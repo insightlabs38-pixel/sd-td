@@ -1,0 +1,22 @@
+name: D compact multiround ThreadSanitizer
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-compact-multiround']
+    paths: ['.github/workflows/d-compact-tsan.yml']
+  workflow_dispatch:
+jobs:
+  tsan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile three-round dense compact directed hierarchy with TSan
+        run: g++ -O1 -g -std=c++17 -pthread -fsanitize=thread -fno-omit-frame-pointer -DSD_OVERLAY_ROUNDS=3 -o /tmp/d-compact-tsan research/d-breakthrough/compact_multi.cpp
+      - name: Independent adversarial exactness with TSan
+        env:
+          SD_TEST_BINARY: /tmp/d-compact-tsan
+          TSAN_OPTIONS: halt_on_error=1
+        run: python tests/test_d.py

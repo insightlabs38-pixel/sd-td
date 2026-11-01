@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <memory>
 #include <numeric>
+#include <pthread.h>
 #include <queue>
 #include <string>
 #include <sys/mman.h>
@@ -546,7 +547,13 @@ static void add_reverse(Graph &g, unsigned threads) {
       threads, std::vector<std::vector<Remote>>(threads));
   Array<u32> degree(n), placed(n);
   std::vector<Escapes> escapes(threads);
+#ifdef D_SLEEP_BARRIER
+  pthread_barrier_t arrived;
+  if (pthread_barrier_init(&arrived, nullptr, threads))
+    fail("pthread_barrier_init");
+#else
   std::atomic<unsigned> arrived{0};
+#endif
   std::vector<u32> cuts(threads + 1);
   for (unsigned t = 0; t <= threads; ++t)
     cuts[t] = cut(n, t, threads);
@@ -564,8 +571,13 @@ static void add_reverse(Graph &g, unsigned threads) {
              [std::upper_bound(cuts.begin(), cuts.end(), v) - cuts.begin() - 1]
                  .push_back({v, u, fwd.weight(e, i)});
       });
+#ifdef D_SLEEP_BARRIER
+    if (pthread_barrier_wait(&arrived) < 0)
+      fail("pthread_barrier_wait");
+#else
     for (arrived.fetch_add(1); arrived < threads;)
       std::this_thread::yield();
+#endif
     for (unsigned s = 0; s < threads; ++s)
       for (const Remote &r : box[s][t])
         ++degree[r.head];
@@ -589,6 +601,9 @@ static void add_reverse(Graph &g, unsigned threads) {
       for (const Remote &r : box[s][t])
         add(r.head, r.tail, r.w);
   });
+#ifdef D_SLEEP_BARRIER
+  pthread_barrier_destroy(&arrived);
+#endif
   merge(rev.escapes, escapes);
 }
 

@@ -1,0 +1,34 @@
+name: D full-system phase attribution
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-phases']
+    paths: ['research/d-breakthrough/**','.github/workflows/d-profile.yml']
+  workflow_dispatch:
+jobs:
+  instrument:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Compile instrumented baseline
+        run: g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-profile research/d-breakthrough/profiled_fused.cpp
+      - name: Differential adversarial
+        run: SD_TEST_BINARY=/tmp/d-profile python tests/test_d.py
+      - name: Profile full 2k query batches seed1 seed7 seed13
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/full-data /tmp/full-out
+          for seed in 1 7 13; do
+            python /tmp/official/generators/d_traverse.py --seed $seed --scale full --out /tmp/full-data
+            for threads in 4 12; do
+              echo "PROFILE_CONFIG seed=$seed workers=$threads"
+              for round in 1 2 3; do
+                SD_DATA=/tmp/full-data SD_OUT=/tmp/full-out SD_THREADS=$threads /tmp/d-profile
+              done
+            done
+          done

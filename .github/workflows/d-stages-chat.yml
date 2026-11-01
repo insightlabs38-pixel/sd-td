@@ -1,0 +1,30 @@
+name: Track D exact phase attribution
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-stage-attribution-chat']
+    paths: ['research/d-breakthrough/**', '.github/workflows/d-stages-chat.yml']
+  workflow_dispatch:
+jobs:
+  breakdown:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - run: |
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-stage research/d-breakthrough/stage_profile.cpp
+          mkdir -p /tmp/d-stage-data /tmp/d-stage-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/d-stage-data
+      - name: Complete workload five matched phase breakdown repetitions
+        run: |
+          set -euo pipefail
+          for count in 4 12; do
+            for i in {1..5}; do
+              echo "D_PROFILE threads=$count repetition=$i"
+              SD_THREADS=$count SD_DATA=/tmp/d-stage-data SD_OUT=/tmp/d-stage-out /usr/bin/time -v /tmp/d-stage 2>&1 | grep -E 'D_STAGE|Maximum resident|Elapsed'
+              echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-stage-out/distances.txt' | sha256sum -c
+            done
+          done

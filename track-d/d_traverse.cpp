@@ -575,6 +575,10 @@ struct Side {
         size_t count = 0;
         while (!bk.empty()) {
             if (bk.size() >= 3) __builtin_prefetch(off + (bk[bk.size() - 3] & node_mask), 0, 1);
+#ifdef SD_PREFETCH_ADJ
+            if (bk.size() > SD_PREFETCH_ADJ)
+                __builtin_prefetch(adj + off[bk[bk.size() - 1 - SD_PREFETCH_ADJ] & node_mask], 0, 1);
+#endif
             uint32_t entry = bk.back();
             bk.pop_back();
             --heap.near;

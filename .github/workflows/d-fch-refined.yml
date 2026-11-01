@@ -1,0 +1,49 @@
+name: D branch-targeted fused contraction
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-fused-hierarchy-refined']
+    paths:
+      - 'research/d-breakthrough/fused_hierarchy_refined.cpp'
+      - '.github/workflows/d-fch-refined.yml'
+  workflow_dispatch:
+jobs:
+  refined:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Frozen official generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build independently selected degree-3/4 directed overlays
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_FCH_DEG=3 -DSD_FCH_BUDGET=3 -o /tmp/d-fch3 research/d-breakthrough/fused_hierarchy_refined.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_FCH_DEG=4 -DSD_FCH_BUDGET=3 -o /tmp/d-fch4 research/d-breakthrough/fused_hierarchy_refined.cpp
+      - name: Exact 88-case independent shortest path differential, both variants
+        run: |
+          set -euo pipefail
+          SD_TEST_BINARY=/tmp/d-fch3 python tests/test_d.py
+          SD_TEST_BINARY=/tmp/d-fch4 python tests/test_d.py
+      - name: Full generator seeds and all 2000 queries paired against baseline
+        run: python research/d-breakthrough/bench_fch.py
+      - name: Count eliminated true-branch vertices and check official hash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/fch-out
+          SD_THREADS=4 SD_DATA=/tmp/d-bt-data-1 SD_OUT=/tmp/fch-out /tmp/d-fch3
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/fch-out/distances.txt' | sha256sum -c
+      - name: Native address/undefined sanitizer differential
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -o /tmp/d-refined-san research/d-breakthrough/fused_hierarchy_refined.cpp
+          SD_TEST_BINARY=/tmp/d-refined-san python tests/test_d.py
+      - name: Archive reproducible full-scale evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-refined-fused-ch
+          path: /tmp/d-fch-results.json
+          if-no-files-found: ignore

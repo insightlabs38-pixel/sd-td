@@ -1,0 +1,63 @@
+name: Track D small BFS batch tournament
+on:
+  push:
+    paths:
+      - .github/workflows/d-batch-tournament.yml
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build and compare original source with batch 2, 4, 8, 16
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/batch-bin /tmp/batch-src
+          for batch in 2 4 8 16; do
+            sed "s/static constexpr u32 BATCH = 16;/static constexpr u32 BATCH = $batch;/" track-d/d_traverse.cpp > /tmp/batch-src/d_$batch.cpp
+            g++ -O3 -std=c++17 -pthread -flto -static -s -o "/tmp/batch-bin/d_$batch" "/tmp/batch-src/d_$batch.cpp"
+          done
+          mkdir -p /tmp/batch-data/seed1 /tmp/batch-data/seed7
+          python track-d/d_traverse_generator.py --seed 1 --scale full --out /tmp/batch-data/seed1
+          python track-d/d_traverse_generator.py --seed 7 --scale full --out /tmp/batch-data/seed7
+          python - <<'PY'
+          import hashlib, os, random, statistics, subprocess, tempfile, time
+          variants=(2,4,8,16)
+          expected="a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          results={}
+          with tempfile.TemporaryDirectory() as out:
+              for seed in (1,7):
+                  data=f"/tmp/batch-data/seed{seed}"
+                  for workers in (4,6,12):
+                      keys=[(v,workers,seed) for v in variants]
+                      for v in variants:
+                          env=dict(os.environ,SD_DATA=data,SD_OUT=out,SD_THREADS=str(workers))
+                          subprocess.run([f"/tmp/batch-bin/d_{v}"],env=env,check=True,stdout=subprocess.DEVNULL)
+                          digest=hashlib.sha256(open(out+"/distances.txt","rb").read()).hexdigest()
+                          if v==16: baseline=digest
+                          elif digest!=baseline: raise AssertionError(f"mismatch seed={seed} workers={workers} batch={v}")
+                          if seed==1 and digest!=expected: raise AssertionError("official seed1 hash")
+                      timings={v:[] for v in variants}
+                      rng=random.Random(0xD010 + seed*100 + workers)
+                      for roundno in range(13):
+                          order=list(variants)
+                          rng.shuffle(order)
+                          for v in order:
+                              env=dict(os.environ,SD_DATA=data,SD_OUT=out,SD_THREADS=str(workers))
+                              start=time.perf_counter_ns()
+                              subprocess.run([f"/tmp/batch-bin/d_{v}"],env=env,check=True,stdout=subprocess.DEVNULL)
+                              timings[v].append((roundno,(time.perf_counter_ns()-start)/1e9))
+                              digest=hashlib.sha256(open(out+"/distances.txt","rb").read()).hexdigest()
+                              if digest!=baseline: raise AssertionError(f"mismatch seed={seed} workers={workers} round={roundno} batch={v}")
+                      med={v:statistics.median(t for _,t in timings[v]) for v in variants}
+                      wins={v:sum(t<timings[16][r][1] for r,t in timings[v]) for v in variants if v!=16}
+                      print("RESULT seed",seed,"workers",workers,"baseline",baseline, "medians",med,"wins_vs_16",wins,flush=True)
+                      results[(seed,workers)]=(med,wins)
+          for v in (2,4,8):
+              total=sum(results[k][1][v] for k in results)
+              print("SUMMARY batch",v,"wins",total,"of",13*len(results),flush=True)
+          PY

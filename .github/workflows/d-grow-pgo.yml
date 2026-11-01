@@ -1,0 +1,73 @@
+name: D batch-eight pinned PGO qualification
+on:
+  push:
+    branches: [d/grow-mini-20261101]
+    paths: [.github/workflows/d-grow-pgo.yml]
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build pinned PGO variants and exact benchmark
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for b in 8 16; do
+            mkdir -p "/tmp/ctx-b$b"
+            cp track-d/Dockerfile track-d/d_traverse_generator.py "/tmp/ctx-b$b/"
+            sed "s/static constexpr u32 BATCH = 16;/static constexpr u32 BATCH = $b;/" track-d/d_traverse.cpp > "/tmp/ctx-b$b/d_traverse.cpp"
+            grep -q "static constexpr u32 BATCH = $b;" "/tmp/ctx-b$b/d_traverse.cpp"
+            docker build --pull -t "sd-d-b$b" "/tmp/ctx-b$b"
+            cid="$(docker create "sd-d-b$b")"
+            docker cp "$cid:/traverse" "/tmp/d-b$b"
+            docker rm "$cid"
+            SD_TEST_BINARY="/tmp/d-b$b" python tests/test_d.py
+          done
+          python3 - <<'PY'
+          import hashlib, os, pathlib, random, statistics, subprocess, time
+          B=(8,16);workers=(4,6,12);rounds=11
+          data={}
+          for seed in (1,7):
+              p=pathlib.Path(f"/tmp/seed-{seed}");p.mkdir()
+              subprocess.run(["python3","/tmp/official/generators/d_traverse.py","--seed",str(seed),"--scale","full","--out",str(p)],check=True)
+              data[seed]=p
+          out={b:pathlib.Path(f"/tmp/out-b{b}") for b in B}
+          for p in out.values():p.mkdir()
+          expected={1:"a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e",7:"66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646"}
+          for p in data.values():
+              for f in ("graph.txt","queries.txt"):
+                  with (p/f).open("rb") as fd:
+                      while fd.read(1<<20):pass
+          rng=random.Random(202611018)
+          for seed in (1,7):
+              for t in workers:
+                  times={b:[] for b in B};wins=0
+                  for i in range(rounds):
+                      order=list(B);rng.shuffle(order);one={}
+                      for b in order:
+                          env=os.environ.copy();env.update(SD_DATA=str(data[seed]),SD_OUT=str(out[b]),SD_THREADS=str(t))
+                          begin=time.perf_counter()
+                          subprocess.run([f"/tmp/d-b{b}"],env=env,check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                          elapsed=time.perf_counter()-begin
+                          h=hashlib.sha256((out[b]/"distances.txt").read_bytes()).hexdigest()
+                          assert h==expected[seed],(seed,t,b,i,h)
+                          times[b].append(elapsed);one[b]=elapsed
+                      wins+=one[8]<one[16]
+                  a=statistics.median(times[8]);c=statistics.median(times[16])
+                  print(f"PGO_RESULT seed={seed} workers={t} batch8_s={a:.6f} batch16_s={c:.6f} change_pct={(a/c-1)*100:+.3f} wins={wins}/{rounds}",flush=True)
+          print("PASS PGO exact full-seed runs",2*len(workers)*rounds*len(B),flush=True)
+          PY
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample
+          mkdir -p /tmp/sample-ref
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample --out /tmp/sample-ref
+          for b in 8 16; do
+            mkdir -p "/tmp/docker-b$b"
+            docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=6 -v /tmp/sample:/data:ro -v "/tmp/docker-b$b:/out:rw" "sd-d-b$b"
+            cmp /tmp/sample-ref/distances.txt "/tmp/docker-b$b/distances.txt"
+          done
+          echo "PASS offline pinned PGO Docker sample and 8GB read-only"

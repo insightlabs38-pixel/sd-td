@@ -65,3 +65,50 @@ jobs:
             docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"
           done
+
+      - name: Reverse CSR count prefetch tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/rev-prefetch
+          for depth in 0 4 8 16; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_REV_PREFETCH="$depth" -o "/tmp/rev-prefetch/d$depth" track-d/d_traverse.cpp
+          done
+          python3 - <<'PY'
+          import hashlib
+          import os
+          import pathlib
+          import random
+          import statistics
+          import subprocess
+          import time
+          
+          expected = "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e"
+          root = pathlib.Path("/tmp/rev-prefetch")
+          for threads in (4, 6, 12):
+              rounds = []
+              for repeat in range(17):
+                  order = [0, 4, 8, 16]
+                  random.Random(20261101 + threads * 97 + repeat).shuffle(order)
+                  measured = {}
+                  for depth in order:
+                      dest = root / f"out-{threads}-{depth}"
+                      dest.mkdir(exist_ok=True)
+                      env = os.environ.copy()
+                      env.update(SD_DATA="/tmp/full-data", SD_OUT=str(dest), SD_THREADS=str(threads))
+                      t0 = time.perf_counter_ns()
+                      subprocess.run([str(root / f"d{depth}")], env=env, check=True,
+                                     stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                      measured[depth] = (time.perf_counter_ns() - t0) / 1e9
+                      digest = hashlib.sha256((dest / "distances.txt").read_bytes()).hexdigest()
+                      if digest != expected:
+                          raise RuntimeError(f"incorrect output: workers={threads}, depth={depth}, sha={digest}")
+                  rounds.append(measured)
+              for depth in (4, 8, 16):
+                  old = statistics.median(row[0] for row in rounds)
+                  new = statistics.median(row[depth] for row in rounds)
+                  wins = sum(row[depth] < row[0] for row in rounds)
+                  ratios = statistics.median(row[depth] / row[0] for row in rounds)
+                  print(f"REV_PREFETCH workers={threads} depth={depth} baseline={old:.6f} candidate={new:.6f} wins={wins}/17 paired_ratio={ratios:.6f}", flush=True)
+          print("PASS 204 full-seed exact-output executions", flush=True)
+          PY

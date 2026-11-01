@@ -688,6 +688,8 @@ struct Queue {
     cur = near = 0;
   }
   void push(u64 d, u32 v, bool take = true) {
+    if (!take)
+      return;
     if ((d >> shift) - cur >= B) {
       if (take)
         far.push({d, v});

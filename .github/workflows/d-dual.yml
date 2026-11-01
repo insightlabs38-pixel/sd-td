@@ -1,0 +1,41 @@
+name: D dual-bin full-system architecture
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-dual-bin']
+    paths: ['research/d-breakthrough/**', '.github/workflows/d-dual.yml']
+  workflow_dispatch:
+jobs:
+  dual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Official frozen generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build native exact champion and dual-bin architecture
+        run: |
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-dual research/d-breakthrough/dual_bin.cpp
+          wc -l -c track-d/d_traverse.cpp research/d-breakthrough/dual_bin.cpp
+      - name: Differential directed shortest paths all adversarial fixtures
+        run: SD_TEST_BINARY=/tmp/d-dual python tests/test_d.py
+      - name: Two complete graph seeds and matched full runtimes
+        run: python research/d-breakthrough/bench_dual.py
+      - name: Full-seed resource metrics
+        run: |
+          SD_THREADS=4 SD_DATA=/tmp/d-bt-data-1 SD_OUT=/tmp/d-bt-out /usr/bin/time -v /tmp/d-base
+          SD_THREADS=4 SD_DATA=/tmp/d-bt-data-1 SD_OUT=/tmp/d-bt-out /usr/bin/time -v /tmp/d-dual
+      - name: ASan UBSan exactness
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -o /tmp/d-dual-san research/d-breakthrough/dual_bin.cpp
+          SD_TEST_BINARY=/tmp/d-dual-san python tests/test_d.py
+      - name: Archive raw benchmark data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-direct-dual-bin-full-benchmark
+          path: /tmp/d-dual-results.json
+          if-no-files-found: ignore

@@ -1,0 +1,65 @@
+name: D construction-worker cap matched tournament
+on:
+  push:
+    paths:
+      - .github/workflows/d-build-cap-tournament.yml
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Obtain organizer oracle and full seed
+        run: |
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          mkdir -p /tmp/d-data /tmp/d-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/d-data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/d-data/graph.txt' | sha256sum -c
+      - name: Build cap variants and differential fixtures
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src=Path('track-d/d_traverse.cpp').read_text()
+          old='unsigned build_threads = std::min(4u, threads);'
+          assert src.count(old)==1
+          for cap in [1,2,3,4,5,6]:
+              Path(f'/tmp/d-cap-{cap}.cpp').write_text(src.replace(old, f'unsigned build_threads = std::min({cap}u, threads);'))
+          PY
+          for cap in 1 2 3 4 5 6; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -o "/tmp/d-cap-$cap" "/tmp/d-cap-$cap.cpp"
+          done
+          SD_TEST_BINARY=/tmp/d-cap-2 python tests/test_d.py
+          SD_TEST_BINARY=/tmp/d-cap-6 python tests/test_d.py
+      - name: Matched exact full-seed end-to-end tournament
+        env:
+          ROUNDS: '17'
+        run: |
+          python - <<'PY'
+          import hashlib, os, statistics, subprocess, time
+          from pathlib import Path
+          expected='a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          caps=[1,2,3,4,5,6]
+          rounds=int(os.environ['ROUNDS'])
+          for workers in [4,6,12]:
+              times={c:[] for c in caps}
+              for i in range(rounds):
+                  order=caps if i%2==0 else list(reversed(caps))
+                  for cap in order:
+                      env=dict(os.environ,SD_DATA='/tmp/d-data',SD_OUT='/tmp/d-out',SD_THREADS=str(workers))
+                      t=time.perf_counter()
+                      subprocess.run([f'/tmp/d-cap-{cap}'],env=env,check=True,stdout=subprocess.DEVNULL)
+                      elapsed=time.perf_counter()-t
+                      actual=hashlib.sha256(Path('/tmp/d-out/distances.txt').read_bytes()).hexdigest()
+                      assert actual==expected,(workers,cap,i,actual)
+                      times[cap].append(elapsed)
+              base=times[4]
+              print(f'WORKERS={workers} ROUNDS={rounds} SHA={expected}',flush=True)
+              for cap in caps:
+                  v=times[cap]
+                  wins=sum(a<b for a,b in zip(v,base)) if cap!=4 else 0
+                  print(f'  CAP={cap} median={statistics.median(v):.6f} mean={statistics.mean(v):.6f} wins_vs_cap4={wins}/{rounds}',flush=True)
+          PY

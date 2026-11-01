@@ -155,23 +155,23 @@ struct __attribute__((packed)) Entry {
   uint16_t w;
 };
 
-// Edges grouped by their tail's bucket of ids, in chunks from a private
-// pool. Each group of buckets has its own part of the pool, released once the
-// group's rows are built, so the bins shrink while the graph grows.
+// One worker's edges grouped by their tail's bucket of ids, in chunks. The
+// workers share a pool laid out by group of buckets, so a group's entries are
+// released together once its rows are built, and the bins shrink while the
+// graph grows. Each worker owns `cap` entries (whole pages) of each group.
 struct alignas(64) Bins {
-  static constexpr u32 CHUNK = 256, GROUP = 64;
-  u32 bits, shift, buckets, cap; // cap: entries per group, whole pages
+  static constexpr u32 CHUNK = 256, GROUP = 16;
+  u32 bits, shift, buckets, cap;
   Entry *pool;
   std::vector<u32> fill, used;
   std::vector<std::vector<u32>> chunks;
   std::vector<std::pair<u32, u64>> heavy; // pool index -> weight
-  Bins(u32 n, size_t edges)
+  Bins(u32 n, u32 cap, Entry *pool, unsigned t, unsigned workers)
       : bits(id_bits(n)), shift(std::max(6u, std::min(11u, 32 - bits))),
-        buckets(n >> shift), cap((edges / 2048 + 9) * 2048),
-        pool(alloc<Entry>(size_t(buckets / GROUP + 1) * cap)),
-        fill(buckets + 1), chunks(buckets + 1) {
+        buckets(n >> shift), cap(cap), pool(pool), fill(buckets + 1),
+        chunks(buckets + 1) {
     for (u32 g = 0; g <= buckets / GROUP; ++g)
-      used.push_back(g * cap);
+      used.push_back((g * workers + t) * cap);
   }
   void add(u32 u, u32 v, u64 w) {
     u32 b = u >> shift;
@@ -191,6 +191,19 @@ struct alignas(64) Bins {
         f(pool[i], i);
   }
 };
+
+// Bins for each worker, any of which may receive `most` edges.
+std::vector<Bins> make_bins(u32 n, size_t most, unsigned threads) {
+  u32 cap = (most / 2048 + 9) * 2048;
+  std::vector<Bins> bins;
+  for (unsigned t = 0; t < threads; ++t)
+    bins.emplace_back(n, cap, nullptr, t, threads);
+  size_t groups = bins[0].buckets / Bins::GROUP + 1;
+  Entry *pool = alloc<Entry>(groups * threads * cap);
+  for (Bins &bin : bins)
+    bin.pool = pool;
+  return bins;
+}
 
 // Builds the rows of each bucket of tails in cache, then releases the bins of
 // finished groups. mark(u, degree) sees each vertex's out-degree.
@@ -235,8 +248,8 @@ Graph *build(std::vector<Bins> &bins, u32 n, u32 m, unsigned threads,
                  escapes[t]);
         });
       if (--left[b / Bins::GROUP] == 0)
-        for (Bins &bin : bins)
-          release(bin.pool + size_t(b / Bins::GROUP) * bin.cap, bin.cap);
+        release(shape.pool + size_t(b / Bins::GROUP) * threads * shape.cap,
+                threads * shape.cap);
     }
   });
   g->merge(escapes);
@@ -254,9 +267,10 @@ Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
     const char *x = p + (hi - p) * k / threads;
     return x == p || x == hi ? x : (const char *)memchr(x, '\n', hi - x) + 1;
   };
-  std::vector<Bins> bins;
+  size_t most = 0;
   for (unsigned t = 0; t < threads; ++t)
-    bins.emplace_back(n, (line(t + 1) - line(t)) / 6);
+    most = std::max<size_t>(most, (line(t + 1) - line(t)) / 6);
+  std::vector<Bins> bins = make_bins(n, most, threads);
   parallel(threads, [&](unsigned t) {
     Bins &bin = bins[t];
     parse(lo, hi, line(t), line(t + 1),
@@ -436,10 +450,11 @@ Graph *contract(Graph *raw, const Bits &bypass, unsigned threads,
 
 // Transposes g by binning its edges by head, as the parser bins its input.
 Graph *transpose(const Graph &g, unsigned threads) {
-  std::vector<Bins> bins;
+  u32 most = 0;
   for (unsigned t = 0; t < threads; ++t)
-    bins.emplace_back(g.n, g.off[cut(g.n, t + 1, threads)] -
-                               g.off[cut(g.n, t, threads)]);
+    most = std::max(most, g.off[cut(g.n, t + 1, threads)] -
+                              g.off[cut(g.n, t, threads)]);
+  std::vector<Bins> bins = make_bins(g.n, most, threads);
   parallel(threads, [&](unsigned t) {
     for (u32 u = cut(g.n, t, threads); u < cut(g.n, t + 1, threads); ++u)
       for (u32 i = g.off[u]; i < g.off[u + 1]; ++i)

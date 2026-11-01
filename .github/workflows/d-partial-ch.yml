@@ -1,0 +1,45 @@
+name: D directed partial hierarchy native qualification
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-partial-ch']
+    paths:
+      - 'research/d-breakthrough/**'
+      - '.github/workflows/d-partial-ch.yml'
+  workflow_dispatch:
+jobs:
+  hierarchy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 16
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Public frozen generator
+        run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build native baseline and two hierarchy sizes
+        run: |
+          set -euo pipefail
+          g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/d-base track-d/d_traverse.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_OVERLAY_DEG=3 -DSD_OVERLAY_BUDGET=0 -o /tmp/d-pch0 research/d-breakthrough/partial_ch.cpp
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_OVERLAY_DEG=3 -DSD_OVERLAY_BUDGET=4 -o /tmp/d-pch4 research/d-breakthrough/partial_ch.cpp
+          wc -c track-d/d_traverse.cpp research/d-breakthrough/partial_ch.cpp
+      - name: Independent Dijkstra differential on both partial hierarchies
+        run: |
+          set -euo pipefail
+          for mode in pch0 pch4; do
+            SD_TEST_BINARY=/tmp/d-$mode python tests/test_d.py
+          done
+      - name: Full-scale seed 1 and seed 7 2000-query end-to-end tournament
+        run: python research/d-breakthrough/bench_ch.py
+      - name: ASan UBSan randomized fixtures
+        run: |
+          g++ -O1 -g -std=c++17 -pthread -fsanitize=address,undefined -fno-omit-frame-pointer -o /tmp/d-pch-san research/d-breakthrough/partial_ch.cpp
+          SD_TEST_BINARY=/tmp/d-pch-san python tests/test_d.py
+      - name: Store tournament receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d-partial-contraction-benchmarks
+          path: /tmp/d-pch-results.json
+          if-no-files-found: ignore

@@ -4,7 +4,6 @@
 #include <cstring>
 #include <emmintrin.h>
 #include <fcntl.h>
-#include <malloc.h>
 #include <numeric>
 #include <queue>
 #include <string>
@@ -36,7 +35,7 @@ template <class T> T *alloc(size_t n) {
   return static_cast<T *>(p);
 }
 template <class T> void release(T *p, size_t n) {
-  munmap(p, n * sizeof(T) + 64);
+  munmap(p, n * sizeof(T));
 }
 
 template <class F> void parallel(unsigned threads, F f) {
@@ -156,20 +155,32 @@ struct __attribute__((packed)) Entry {
   uint16_t w;
 };
 
-// One parser's edges by tail bucket, in chunks of a private pool.
+// Edges grouped by their tail's bucket of ids, in chunks from a private
+// pool. Each group of buckets has its own part of the pool, released once the
+// group's rows are built, so the bins shrink while the graph grows.
 struct alignas(64) Bins {
-  static constexpr u32 CHUNK = 256;
+  static constexpr u32 CHUNK = 256, GROUP = 64;
+  u32 bits, shift, buckets, cap; // cap: entries per group, whole pages
   Entry *pool;
-  u32 used = 0;
-  std::vector<u32> fill;
+  std::vector<u32> fill, used;
   std::vector<std::vector<u32>> chunks;
-  std::vector<std::pair<u32, u32>> heavy; // pool index -> weight
-  void add(u32 b, u32 key, u32 w) {
+  std::vector<std::pair<u32, u64>> heavy; // pool index -> weight
+  Bins(u32 n, size_t edges)
+      : bits(id_bits(n)), shift(std::max(6u, std::min(11u, 32 - bits))),
+        buckets(n >> shift), cap((edges / 2048 + 9) * 2048),
+        pool(alloc<Entry>(size_t(buckets / GROUP + 1) * cap)),
+        fill(buckets + 1), chunks(buckets + 1) {
+    for (u32 g = 0; g <= buckets / GROUP; ++g)
+      used.push_back(g * cap);
+  }
+  void add(u32 u, u32 v, u64 w) {
+    u32 b = u >> shift;
     if (fill[b] % CHUNK == 0)
-      chunks[b].push_back(fill[b] = used), used += CHUNK;
+      chunks[b].push_back(fill[b] = used[b / GROUP]), used[b / GROUP] += CHUNK;
     if (w >= 0xFFFF)
       heavy.push_back({fill[b], w});
-    pool[fill[b]++] = {key, uint16_t(std::min(w, 0xFFFFu))};
+    u32 key = (u & ((1u << shift) - 1)) << bits | v;
+    pool[fill[b]++] = {key, uint16_t(std::min<u64>(w, 0xFFFF))};
   }
   u32 size(u32 b) const {
     return chunks[b].size() * CHUNK - (CHUNK - fill[b] % CHUNK) % CHUNK;
@@ -181,40 +192,28 @@ struct alignas(64) Bins {
   }
 };
 
-// Parses the edges into per-worker bins, then builds the rows of each bucket
-// of tails in cache. Marks the vertices that can be bypassed: out-degree <= 2
-// and no query endpoint.
-Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
-                  Bits &bypass, unsigned threads) {
-  const char *p = lo;
-  u32 n = scan(p), m = scan(p), bits = id_bits(n);
-  u32 shift = std::max(6u, std::min(11u, 32 - bits)), buckets = n >> shift;
-  std::vector<Bins> bins(threads);
-  // Worker k parses from the first line start at or after its share's start.
-  auto line = [&](unsigned k) {
-    const char *x = p + (hi - p) * k / threads;
-    return x == p || x == hi ? x : (const char *)memchr(x, '\n', hi - x) + 1;
-  };
-  parallel(threads, [&](unsigned t) {
-    const char *begin = line(t), *end = line(t + 1);
-    Bins &bin = bins[t];
-    bin.pool = alloc<Entry>((end - begin) / 6 + (buckets + 1) * Bins::CHUNK);
-    bin.fill.resize(buckets + 1), bin.chunks.resize(buckets + 1);
-    parse(lo, hi, begin, end, [&](u32 u, u32 v, u32 w) {
-      bin.add(u >> shift, (u & ((1u << shift) - 1)) << bits | v, w);
-    });
-    std::sort(bin.heavy.begin(), bin.heavy.end());
-  });
+// Builds the rows of each bucket of tails in cache, then releases the bins of
+// finished groups. mark(u, degree) sees each vertex's out-degree.
+template <class Mark>
+Graph *build(std::vector<Bins> &bins, u32 n, u32 m, unsigned threads,
+             Mark mark) {
   Graph *g = new Graph(n, m);
-  g->off[0] = 0;
-  std::vector<Escapes> escapes(threads);
-  std::atomic<u32> next{0};
+  const Bins &shape = bins[0];
+  u32 bits = shape.bits, shift = shape.shift, buckets = shape.buckets;
+  for (Bins &bin : bins)
+    std::sort(bin.heavy.begin(), bin.heavy.end());
   // Bucket b's edges start after those of the buckets before it.
   std::vector<u32> start(buckets + 2, 0);
   for (u32 b = 0; b <= buckets; ++b)
-    for (unsigned t = 0; t < threads; ++t)
-      start[b + 1] += bins[t].size(b);
+    for (const Bins &bin : bins)
+      start[b + 1] += bin.size(b);
   std::partial_sum(start.begin(), start.end(), start.begin());
+  std::vector<std::atomic<u32>> left(buckets / Bins::GROUP + 1);
+  for (u32 b = 0; b <= buckets; ++b)
+    ++left[b / Bins::GROUP]; // buckets not yet built
+  std::vector<Escapes> escapes(threads);
+  std::atomic<u32> next{0};
+  g->off[0] = 0;
   parallel(threads, [&](unsigned t) {
     std::vector<u32> at(1u << shift);
     for (u32 b; (b = next++) <= buckets;) {
@@ -223,24 +222,50 @@ Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
       for (const Bins &bin : bins)
         bin.each(b, [&](Entry e, u32) { ++at[e.key >> bits]; });
       for (u32 x = 0, pos = start[b]; x < size; ++x) {
-        if (at[x] <= 2 && !test(terminal, first + x))
-          set(bypass, first + x); // buckets are word aligned
+        mark(first + x, at[x]);
         g->off[first + x + 1] = pos += at[x], at[x] = pos - at[x];
       }
       for (const Bins &bin : bins)
         bin.each(b, [&](Entry e, u32 i) {
-          u32 v = e.key & ((1u << bits) - 1), w = e.w;
+          u64 w = e.w;
           if (w == 0xFFFF)
             w = std::lower_bound(bin.heavy.begin(), bin.heavy.end(),
-                                 std::pair(i, 0u))->second;
-          g->put(at[e.key >> bits]++, v, w, escapes[t]);
+                                 std::pair(i, u64(0)))->second;
+          g->put(at[e.key >> bits]++, e.key & ((1u << bits) - 1), w,
+                 escapes[t]);
         });
+      if (--left[b / Bins::GROUP] == 0)
+        for (Bins &bin : bins)
+          release(bin.pool + size_t(b / Bins::GROUP) * bin.cap, bin.cap);
     }
   });
-  for (Bins &bin : bins)
-    release(bin.pool, bin.used);
   g->merge(escapes);
   return g;
+}
+
+// Parses the edges into per-worker bins and builds the raw graph. Marks the
+// vertices that can be bypassed: out-degree <= 2 and no query endpoint.
+Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
+                  Bits &bypass, unsigned threads) {
+  const char *p = lo;
+  u32 n = scan(p), m = scan(p);
+  // Worker k parses from the first line start at or after its share's start.
+  auto line = [&](unsigned k) {
+    const char *x = p + (hi - p) * k / threads;
+    return x == p || x == hi ? x : (const char *)memchr(x, '\n', hi - x) + 1;
+  };
+  std::vector<Bins> bins;
+  for (unsigned t = 0; t < threads; ++t)
+    bins.emplace_back(n, (line(t + 1) - line(t)) / 6);
+  parallel(threads, [&](unsigned t) {
+    Bins &bin = bins[t];
+    parse(lo, hi, line(t), line(t + 1),
+          [&](u32 u, u32 v, u32 w) { bin.add(u, v, w); });
+  });
+  return build(bins, n, m, threads, [&](u32 u, u32 degree) {
+    if (degree <= 2 && !test(terminal, u))
+      set(bypass, u); // buckets are word aligned
+  });
 }
 
 // ---------------------------------------------------------------- ordering
@@ -377,6 +402,7 @@ Graph *contract(Graph *raw, const Bits &bypass, unsigned threads,
     for (u32 i = 0; i < regions[t].len; ++i)
       __atomic_store_n(&where[regions[t].order[i]], t << lbits | i,
                        __ATOMIC_RELAXED);
+    release(regions[t].order, n);
   });
   std::vector<u32> base(threads + 1, 0), edges(threads + 1, 0);
   for (unsigned t = 0; t < threads; ++t) {
@@ -398,7 +424,7 @@ Graph *contract(Graph *raw, const Bits &bypass, unsigned threads,
         g->put(edges[t] + pos, locate(where[e >> wbits]), weight, escapes[t]);
       }
     }
-    release(reg.order, n), release(reg.ends, n), release(reg.out, m);
+    release(reg.ends, n), release(reg.out, m);
   });
   g->off[g->n] = edges[threads];
   g->merge(escapes);
@@ -408,61 +434,18 @@ Graph *contract(Graph *raw, const Bits &bypass, unsigned threads,
   return g;
 }
 
-// Transposes g. Each worker owns an id slice and counts and places the
-// in-edges from its own slice directly; in-edges from other slices pass
-// through inboxes.
+// Transposes g by binning its edges by head, as the parser bins its input.
 Graph *transpose(const Graph &g, unsigned threads) {
-  Graph *r = new Graph(g.n, g.m);
-  struct Remote {
-    u32 head, tail;
-    u64 w;
-  };
-  std::vector<std::vector<std::vector<Remote>>> box(threads);
-  std::vector<u32> cuts(threads + 1), total(threads + 1, 0);
-  for (unsigned t = 0; t <= threads; ++t)
-    cuts[t] = cut(g.n, t, threads);
-  auto owner = [&](u32 v) {
-    return std::upper_bound(cuts.begin(), cuts.end(), v) - cuts.begin() - 1;
-  };
-  // Like the insertion points it becomes, r->off[v] first counts in-edges.
-  u32 *at = r->off;
+  std::vector<Bins> bins;
+  for (unsigned t = 0; t < threads; ++t)
+    bins.emplace_back(g.n, g.off[cut(g.n, t + 1, threads)] -
+                               g.off[cut(g.n, t, threads)]);
   parallel(threads, [&](unsigned t) {
-    box[t].resize(threads);
-    memset(at + cuts[t], 0, (cuts[t + 1] - cuts[t]) * 4);
-    for (u32 u = cuts[t]; u < cuts[t + 1]; ++u)
+    for (u32 u = cut(g.n, t, threads); u < cut(g.n, t + 1, threads); ++u)
       for (u32 i = g.off[u]; i < g.off[u + 1]; ++i)
-        if (u32 v = g.head(g.adj[i]); owner(v) == t)
-          ++at[v];
-        else
-          box[t][owner(v)].push_back({v, u, g.weight(i)});
+        bins[t].add(g.head(g.adj[i]), u, g.weight(i));
   });
-  parallel(threads, [&](unsigned t) {
-    for (unsigned s = 0; s < threads; ++s)
-      for (const Remote &e : box[s][t])
-        ++at[e.head];
-    for (u32 v = cuts[t]; v < cuts[t + 1]; ++v)
-      total[t + 1] += at[v];
-  });
-  std::partial_sum(total.begin(), total.end(), total.begin());
-  std::vector<Escapes> escapes(threads);
-  parallel(threads, [&](unsigned t) {
-    for (u32 v = cuts[t], pos = total[t]; v < cuts[t + 1]; ++v)
-      pos += at[v], at[v] = pos - at[v];
-    std::vector<u32> next(at + cuts[t], at + cuts[t + 1]);
-    auto add = [&](u32 v, u32 u, u64 w) {
-      r->put(next[v - cuts[t]]++, u, w, escapes[t]);
-    };
-    for (u32 u = cuts[t]; u < cuts[t + 1]; ++u)
-      for (u32 i = g.off[u]; i < g.off[u + 1]; ++i)
-        if (u32 v = g.head(g.adj[i]); owner(v) == t)
-          add(v, u, g.weight(i));
-    for (unsigned s = 0; s < threads; ++s)
-      for (const Remote &e : box[s][t])
-        add(e.head, e.tail, e.w);
-  });
-  r->off[g.n] = g.m;
-  r->merge(escapes);
-  return r;
+  return build(bins, g.n, g.m, threads, [](u32, u32) {});
 }
 
 // ---------------------------------------------------------------- queries

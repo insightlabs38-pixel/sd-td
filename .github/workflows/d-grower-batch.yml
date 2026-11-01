@@ -1,0 +1,77 @@
+name: D fused growth batch-size tournament
+on:
+  push:
+    branches: [d/grower-batch-20261101]
+    paths: [.github/workflows/d-grower-batch.yml]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile and qualify growth variants
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for b in 16 32 64 128; do
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DD_GROW_BATCH=$b -o /tmp/d-$b track-d/d_traverse.cpp
+            SD_TEST_BINARY=/tmp/d-$b python tests/test_d.py
+          done
+          for seed in 1 7; do
+            mkdir -p /tmp/data-$seed
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out /tmp/data-$seed
+            for b in 16 32 64 128; do
+              mkdir -p /tmp/out-$seed-$b
+              SD_DATA=/tmp/data-$seed SD_OUT=/tmp/out-$seed-$b SD_THREADS=4 /tmp/d-$b
+              cmp /tmp/out-$seed-32/distances.txt /tmp/out-$seed-$b/distances.txt || test "$b" -le 32
+            done
+            for b in 16 64 128; do
+              cmp /tmp/out-$seed-32/distances.txt /tmp/out-$seed-$b/distances.txt
+            done
+          done
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/out-1-32/distances.txt' | sha256sum -c
+          mkdir -p /tmp/sample /tmp/ref /tmp/sample-out
+          python /tmp/official/generators/d_traverse.py --seed 2 --scale sample --out /tmp/sample
+          python /tmp/official/reference/d_traverse.py --data /tmp/sample --out /tmp/ref
+          for b in 16 32 64 128; do
+            SD_DATA=/tmp/sample SD_OUT=/tmp/sample-out SD_THREADS=12 /tmp/d-$b
+            cmp /tmp/ref/distances.txt /tmp/sample-out/distances.txt
+          done
+      - name: Interleaved full-process benchmark, warm input
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os,random,statistics,subprocess,time
+          rng=random.Random(202611011)
+          for seed in (1,7):
+              data=f'/tmp/data-{seed}'
+              expected=open(f'/tmp/out-{seed}-32/distances.txt','rb').read()
+              for workers in (4,6,12):
+                  times={b:[] for b in (16,32,64,128)}
+                  wins={b:0 for b in (16,64,128)}
+                  for round_no in range(13):
+                      order=list(times)
+                      rng.shuffle(order)
+                      paired={}
+                      for b in order:
+                          with open(f'{data}/graph.txt','rb') as f:
+                              while f.read(1<<20): pass
+                          env=dict(os.environ,SD_DATA=data,SD_OUT=f'/tmp/out-{seed}-{b}',SD_THREADS=str(workers))
+                          start=time.perf_counter_ns()
+                          subprocess.run([f'/tmp/d-{b}'],env=env,check=True,stdout=subprocess.DEVNULL)
+                          elapsed=(time.perf_counter_ns()-start)/1e9
+                          assert open(f'/tmp/out-{seed}-{b}/distances.txt','rb').read()==expected
+                          times[b].append(elapsed)
+                          paired[b]=elapsed
+                      for b in wins: wins[b]+=paired[b]<paired[32]
+                  base=statistics.median(times[32])
+                  print(f'SEED={seed} WORKERS={workers} BASE32={base:.6f}',flush=True)
+                  for b in wins:
+                      med=statistics.median(times[b])
+                      print(f'  BATCH={b} MEDIAN={med:.6f} CHANGE={(med/base-1)*100:+.2f}% WINS={wins[b]}/13',flush=True)
+          PY

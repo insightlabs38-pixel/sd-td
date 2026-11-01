@@ -20,6 +20,8 @@ jobs:
         run: g++ -O3 -std=c++17 -pthread -flto -static -s -o /tmp/traverse track-d/d_traverse.cpp
       - name: Differential random and adversarial cases
         run: SD_TEST_BINARY=/tmp/traverse python tests/test_d.py
+      - name: Stress lattice and contraction cases
+        run: SD_TEST_BINARY=/tmp/traverse python tests/stress_d.py 40
       - name: Compare official generated cases
         shell: bash
         run: |
@@ -60,7 +62,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for t in 1 4 12; do
+          for t in 1 4 6 12; do
             mkdir -p "/tmp/docker-t$t"
             docker run --rm --network none --read-only --memory 8g -e TRACK=d -e SD_THREADS=$t -v /tmp/full-data:/data:ro -v "/tmp/docker-t$t:/out:rw" sd-td-check
             cmp /tmp/full-out/distances.txt "/tmp/docker-t$t/distances.txt"

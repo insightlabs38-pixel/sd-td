@@ -1,0 +1,48 @@
+name: D four native architectures phase attribution
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-sanitizers']
+    paths: ['research/d-breakthrough/instrument_all.py','.github/workflows/d-phase-architecture.yml']
+  workflow_dispatch:
+jobs:
+  breakdown:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Fetch public oracle and immutable candidate versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for v in lazy-shortcuts forward-only partial-ch; do
+            git fetch --no-tags --depth=1 origin "refs/heads/research/d-breakthrough-20261101-$v"
+            case $v in
+              lazy-shortcuts) file=lazy_virtual_shortcuts.cpp;;
+              forward-only) file=forward_only.cpp;;
+              partial-ch) file=partial_ch.cpp;;
+            esac
+            git show FETCH_HEAD:research/d-breakthrough/$file > /tmp/d-$v.cpp
+          done
+      - name: Compile phase-attributed architecture matrix
+        run: python research/d-breakthrough/instrument_all.py
+      - name: Exact full graph results and timed phases, 4 workers
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/data-d /tmp/out-d
+          for seed in 1 7; do
+            python /tmp/official/generators/d_traverse.py --seed $seed --scale full --out /tmp/data-d
+            for rep in 1 2 3; do
+              for mode in base lazy forward partial; do
+                echo "D_PHASE_CONFIG seed=$seed rep=$rep mode=$mode"
+                SD_DATA=/tmp/data-d SD_OUT=/tmp/out-d SD_THREADS=4 /tmp/d-phase-$mode
+                if [ "$seed" = 1 ]; then
+                  echo "a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/out-d/distances.txt" | sha256sum -c
+                fi
+              done
+            done
+          done

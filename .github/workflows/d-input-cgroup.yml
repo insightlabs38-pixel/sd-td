@@ -1,0 +1,43 @@
+name: D official-style cgroup memory input-lifetime
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-input-cgroup']
+    paths: ['research/d-breakthrough/**', '.github/workflows/d-input-cgroup.yml']
+  workflow_dispatch:
+jobs:
+  cgroup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Generate exact official full benchmark
+        run: |
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          mkdir -p /tmp/d-cgroup-data /tmp/d-cgroup-out
+          chmod 777 /tmp/d-cgroup-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/d-cgroup-data
+          echo 'fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/d-cgroup-data/graph.txt' | sha256sum -c
+      - name: Build both immutable pinned official-style PGO Docker images
+        run: |
+          docker build --pull -t d-input-baseline track-d
+          docker build --pull -t d-input-candidate -f research/d-breakthrough/Dockerfile.input-lifetime .
+      - name: Capture isolated container memory.peak and exact output (native Docker)
+        run: |
+          set -euo pipefail
+          for workers in 4 12; do
+            for rep in 1 2 3 4 5; do
+              if (( rep % 2 )); then order='d-input-baseline d-input-candidate'; else order='d-input-candidate d-input-baseline'; fi
+              for image in $order; do
+                echo "D_CONTAINER_MEMORY image=$image threads=$workers round=$rep"
+                docker run --rm --network none --read-only --memory 8g --user 65534:65534 \
+                  -e TRACK=d -e SD_THREADS=$workers \
+                  -v /tmp/d-cgroup-data:/data:ro -v /tmp/d-cgroup-out:/out:rw \
+                  --entrypoint /bin/sh "$image" \
+                  -c '/traverse; echo D_CGROUP_PEAK_BYTES=$(cat /sys/fs/cgroup/memory.peak)'
+                echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/d-cgroup-out/distances.txt' | sha256sum -c
+              done
+            done
+          done

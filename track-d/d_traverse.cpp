@@ -657,15 +657,24 @@ int main() {
   std::vector<int64_t> answers(queries);
   std::vector<u32> by_source(queries);
   std::iota(by_source.begin(), by_source.end(), 0);
-  std::sort(by_source.begin(), by_source.end(),
-            [&](u32 a, u32 b) { return ends[2 * a] < ends[2 * b]; });
+  std::sort(by_source.begin(), by_source.end(), [&](u32 a, u32 b) {
+    return std::pair(ends[2 * a], ends[2 * a + 1]) <
+           std::pair(ends[2 * b], ends[2 * b + 1]);
+  });
+  std::vector<u32> work, alias(queries);
+  for (u32 i : by_source)
+    if (!work.empty() && ends[2 * i] == ends[2 * work.back()] &&
+        ends[2 * i + 1] == ends[2 * work.back() + 1])
+      alias[i] = work.back();
+    else
+      work.push_back(alias[i] = i);
   std::atomic<size_t> next{0};
   parallel(std::min<size_t>(threads, queries + 1), [&](unsigned) {
     // 32-bit labels, unless a query's distances need all 64 bits.
     Worker<u32> narrow{Side<u32>(*fwd), Side<u32>(*rev)};
     Worker<u64> *wide = nullptr;
-    for (size_t k; (k = next++) < queries;) {
-      u32 i = by_source[k], s = ends[2 * i], t = ends[2 * i + 1];
+    for (size_t k; (k = next++) < work.size();) {
+      u32 i = work[k], s = ends[2 * i], t = ends[2 * i + 1];
       u64 d = narrow.solve(s, t);
       if (narrow.fwd.wide || narrow.bwd.wide || d >= Labels<u32>::NONE) {
         if (!wide)
@@ -675,6 +684,8 @@ int main() {
       answers[i] = d < INF ? int64_t(d) : -1;
     }
   });
+  for (u32 i = 0; i < queries; ++i)
+    answers[i] = answers[alias[i]];
   std::string text;
   for (int64_t x : answers)
     text += std::to_string(x) + '\n';

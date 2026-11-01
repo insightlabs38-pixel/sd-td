@@ -1,0 +1,31 @@
+name: D fused independent-set cost diagnostics
+on:
+  push:
+    branches: ['research/d-breakthrough-20261101-fused-diagnostics']
+    paths: ['research/d-breakthrough/**', '.github/workflows/d-fused-diagnostics.yml']
+  workflow_dispatch:
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Build instrumented exact native directed shortcuts
+        run: |
+          g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_EXTRA_DEG=3 -o /tmp/d-fused-prof research/d-breakthrough/fused_profile.cpp
+          mkdir -p /tmp/fused-data /tmp/fused-out
+          python /tmp/official/generators/d_traverse.py --seed 1 --scale full --out /tmp/fused-data
+      - name: Full exact profile seed 1
+        run: |
+          set -euo pipefail
+          for t in 4 12; do
+            for rep in 1 2 3 4 5; do
+              echo "FUSED_PROFILE threads=$t rep=$rep"
+              SD_THREADS=$t SD_DATA=/tmp/fused-data SD_OUT=/tmp/fused-out /usr/bin/time -v /tmp/d-fused-prof 2>&1 | grep -E 'D_FUSED_DIAG|Maximum resident'
+              echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/fused-out/distances.txt' | sha256sum -c
+            done
+          done

@@ -1,0 +1,82 @@
+name: Track D forward-probe comparison
+on:
+  push:
+    paths:
+      - .github/workflows/probe-tournament.yml
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Prepare official generator and exact candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          cat > /tmp/probe.py <<'PY'
+          import hashlib, json, os, pathlib, random, statistics, subprocess, time
+          root = pathlib.Path.cwd()
+          source = (root / 'track-d/d_traverse.cpp').read_text()
+          old = 'while (fs < 256)'
+          assert source.count(old) == 1
+          limits = (64, 128, 192, 256, 384, 512)
+          for limit in limits:
+              path = pathlib.Path(f'/tmp/probe_{limit}.cpp')
+              path.write_text(source.replace(old, f'while (fs < {limit})'))
+              subprocess.run(['g++', '-O3', '-std=c++17', '-pthread', '-flto', '-static', '-s',
+                              '-o', f'/tmp/probe_{limit}', str(path)], check=True)
+          expected = {}
+          for seed in (1, 7):
+              data = pathlib.Path(f'/tmp/dseed{seed}')
+              data.mkdir()
+              subprocess.run(['python3', '/tmp/official/generators/d_traverse.py',
+                              '--seed', str(seed), '--scale', 'full', '--out', str(data)], check=True)
+              out = pathlib.Path(f'/tmp/dout{seed}')
+              out.mkdir()
+              env = dict(os.environ, SD_DATA=str(data), SD_OUT=str(out), SD_THREADS='6')
+              subprocess.run(['/tmp/probe_256'], env=env, check=True)
+              expected[seed] = hashlib.sha256((out/'distances.txt').read_bytes()).hexdigest()
+          assert expected[1] == 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          print('BASELINE_HASHES', json.dumps(expected), flush=True)
+          rng = random.Random(20261102)
+          results = {}
+          for seed in (1, 7):
+              for workers in (4, 6, 12):
+                  out = pathlib.Path(f'/tmp/dout{seed}')
+                  env = dict(os.environ, SD_DATA=f'/tmp/dseed{seed}', SD_OUT=str(out),
+                             SD_THREADS=str(workers))
+                  samples = {limit: [] for limit in limits}
+                  for repeat in range(11):
+                      order = list(limits)
+                      rng.shuffle(order)
+                      for limit in order:
+                          start = time.perf_counter()
+                          subprocess.run([f'/tmp/probe_{limit}'], env=env, check=True,
+                                         stdout=subprocess.DEVNULL)
+                          elapsed = time.perf_counter() - start
+                          digest = hashlib.sha256((out/'distances.txt').read_bytes()).hexdigest()
+                          assert digest == expected[seed], (seed, workers, repeat, limit, digest)
+                          samples[limit].append(elapsed)
+                  baseline = statistics.median(samples[256])
+                  results[f'{seed}/{workers}'] = {
+                      str(limit): {
+                          'median_s': round(statistics.median(samples[limit]), 6),
+                          'delta_pct': round(100 * (statistics.median(samples[limit]) / baseline - 1), 3),
+                          'wins_of_11': sum(a < b for a, b in zip(samples[limit], samples[256]))
+                      } for limit in limits
+                  }
+                  print('RESULT', seed, workers, json.dumps(results[f'{seed}/{workers}']), flush=True)
+          print('TOURNAMENT_COMPLETE', flush=True)
+          PY
+          python3 /tmp/probe.py
+      - name: Differential exactness of strongest probe challenger
+        shell: bash
+        run: |
+          set -euo pipefail
+          SD_TEST_BINARY=/tmp/probe_128 python3 tests/test_d.py
+          SD_TEST_BINARY=/tmp/probe_192 python3 tests/test_d.py
+          SD_TEST_BINARY=/tmp/probe_384 python3 tests/test_d.py

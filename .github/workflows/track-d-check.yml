@@ -21,23 +21,20 @@ jobs:
           sha1sum bench/*.cpp
           git hash-object bench/*.cpp
           docker pull -q gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
-          for v in c2 a ac cx; do
+          for v in b vB4 vBp vBb4 vBx; do
             docker run --rm --network=none -v "$PWD/bench:/src:ro" -v /tmp:/out gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce \
               g++ -O3 -std=c++17 -pthread -flto -static -s -o "/out/d-$v" "/src/$v.cpp"
           done
-          docker run --rm --network=none -v "$PWD/bench:/src:ro" -v /tmp:/out gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce \
-            g++ -O3 -std=c++17 -pthread -flto -static -s -march=x86-64-v3 -o /out/d-a3 /src/a.cpp
           nproc; lscpu | grep -E 'Model name|Thread|Core'
       - name: Differential and boundary regression of the candidates
         shell: bash
         run: |
           set -euo pipefail
-          for v in a a3 ac; do
+          for v in vB4 vBp vBx; do
             SD_TEST_BINARY="/tmp/d-$v" python tests/test_d.py
             SD_TEST_BINARY="/tmp/d-$v" python tests/boundary_d.py
           done
-          SD_TEST_BINARY=/tmp/d-a python tests/stress_d.py 20
-          SD_TEST_BINARY=/tmp/d-ac python tests/stress_d.py 20
+          SD_TEST_BINARY=/tmp/d-vB4 python tests/stress_d.py 20
       - name: Organizer generator, full seeds 1 and 7
         shell: bash
         run: |
@@ -55,8 +52,8 @@ jobs:
           python - <<'PY'
           import hashlib, os, random, statistics, time
           from pathlib import Path
-          names = ('c2', 'a', 'a3', 'ac', 'cx')
-          rng = random.Random(20261102)
+          names = ('b', 'vB4', 'vBp', 'vBb4', 'vBx')
+          rng = random.Random(20261103)
           want = {1: 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e',
                   7: '66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646'}
           for seed in (1, 7):
@@ -77,12 +74,12 @@ jobs:
                           digest = hashlib.sha256((out / 'distances.txt').read_bytes()).hexdigest()
                           assert digest == want[seed], (n, seed, workers, r, digest)
                           wall[n].append(dt); rss[n].append(ru.ru_maxrss)
-                  base = statistics.median(wall['c2'])
-                  print(f'SEED={seed} WORKERS={workers} c2 median {base:.6f} s')
+                  base = statistics.median(wall['b'])
+                  print(f'SEED={seed} WORKERS={workers} b median {base:.6f} s')
                   for n in names:
                       med = statistics.median(wall[n])
-                      wins = sum(a < b for a, b in zip(wall[n], wall['c2']))
-                      print(f'  {n:7s} median {med:.6f} s ({(med / base - 1) * 100:+.2f}% vs c2, {wins}/11 paired wins) '
+                      wins = sum(a < b for a, b in zip(wall[n], wall['b']))
+                      print(f'  {n:7s} median {med:.6f} s ({(med / base - 1) * 100:+.2f}% vs b, {wins}/11 paired wins) '
                             f'min {min(wall[n]):.6f} max {max(wall[n]):.6f} maxrss {max(rss[n])} KiB', flush=True)
           print('ALL OUTPUTS EXACT')
           PY

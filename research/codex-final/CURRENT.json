@@ -1,5 +1,5 @@
 {
-  "at_utc": "2026-11-02T14:54:19.005605+00:00",
+  "at_utc": "2026-11-02T15:00:31.978353+00:00",
   "best_valid_K": 33.672416,
   "best_valid_run": "run-3cf937618e77",
   "official_commit": "6426b26362d036a1784498591de0fa4c9956285e",
@@ -15,8 +15,8 @@
   "D": 1,
   "rollback_solver": "5d56a5bebdf1d82633e6e643801213f5df987578",
   "older_atomic_solver": "4e45be05890b6228c8df88702da48f51a15fc712",
-  "leader_K": 38.090527,
-  "gap": 4.418111,
+  "leader_K": 38.256351,
+  "gap": 4.583935000000004,
   "active_candidates": [],
   "selected_commit": "6426b26362d036a1784498591de0fa4c9956285e",
   "remote_commit": "6426b26362d036a1784498591de0fa4c9956285e",
@@ -38,5 +38,38 @@
   "author": "vikyath <vikyath.vidiyala@gmail.com>",
   "selection": "FINAL: valid PR36 champion restored; no training helper",
   "handoff_deadline_missed": true,
-  "freeze_utc": "2026-11-02T15:00:00Z"
+  "freeze_utc": "2026-11-02T15:00:00Z",
+  "frozen": true,
+  "final_official_latest": {
+    "run_id": "run-91de32ae7f8e",
+    "commit": "6426b26362d036a1784498591de0fa4c9956285e",
+    "pushed_at": "2026-11-02T14:54:40Z",
+    "dispatched_at": "2026-11-02T14:57:24Z",
+    "started_at": "2026-11-02T14:58:24Z",
+    "ended_at": "2026-11-02T14:58:26Z",
+    "queue_latency_s": 223.9,
+    "ok": true,
+    "stage": "scored",
+    "gates": {
+      "check": true,
+      "build": true,
+      "correctness": true,
+      "timeout": true,
+      "sandbox": true
+    },
+    "T_s": 0.084402,
+    "M_bytes": 58626048,
+    "S": 683,
+    "D": 1,
+    "K": 33.417198,
+    "points": 76.198501,
+    "static_axes": "measured",
+    "timeout_s": 218.078,
+    "build_s": 1.095,
+    "image_bytes": 118952890,
+    "failure": null,
+    "lang": [
+      "C++"
+    ]
+  }
 }

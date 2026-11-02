@@ -1,0 +1,118 @@
+{
+  "at_utc": "2026-11-02T15:00:31.978353+00:00",
+  "freeze_utc": "2026-11-02T15:00:00Z",
+  "remote_commit": "6426b26362d036a1784498591de0fa4c9956285e",
+  "solver_blob": "02e0764ef534a8a6694006b12911776e0a9f2860",
+  "docker_blob": "8eabe09b96a60131ce5bfda3f098011e1f0863e6",
+  "no_training_helper": true,
+  "official_best": {
+    "run_id": "run-3cf937618e77",
+    "commit": "55bc81024955ea5dda6d289fb7d6192f13c4b92f",
+    "pushed_at": "2026-11-02T11:51:30Z",
+    "dispatched_at": "2026-11-02T11:51:54Z",
+    "started_at": "2026-11-02T11:52:54Z",
+    "ended_at": "2026-11-02T11:52:56Z",
+    "queue_latency_s": 83.4,
+    "ok": true,
+    "stage": "scored",
+    "gates": {
+      "check": true,
+      "build": true,
+      "correctness": true,
+      "timeout": true,
+      "sandbox": true
+    },
+    "T_s": 0.083599,
+    "M_bytes": 57802752,
+    "S": 683,
+    "D": 1,
+    "K": 33.672416,
+    "points": 76.363714,
+    "static_axes": "measured",
+    "timeout_s": 218.078,
+    "build_s": 7.772,
+    "image_bytes": 118952890,
+    "failure": null,
+    "lang": [
+      "C++"
+    ]
+  },
+  "official_latest": {
+    "run_id": "run-91de32ae7f8e",
+    "commit": "6426b26362d036a1784498591de0fa4c9956285e",
+    "pushed_at": "2026-11-02T14:54:40Z",
+    "dispatched_at": "2026-11-02T14:57:24Z",
+    "started_at": "2026-11-02T14:58:24Z",
+    "ended_at": "2026-11-02T14:58:26Z",
+    "queue_latency_s": 223.9,
+    "ok": true,
+    "stage": "scored",
+    "gates": {
+      "check": true,
+      "build": true,
+      "correctness": true,
+      "timeout": true,
+      "sandbox": true
+    },
+    "T_s": 0.084402,
+    "M_bytes": 58626048,
+    "S": 683,
+    "D": 1,
+    "K": 33.417198,
+    "points": 76.198501,
+    "static_axes": "measured",
+    "timeout_s": 218.078,
+    "build_s": 1.095,
+    "image_bytes": 118952890,
+    "failure": null,
+    "lang": [
+      "C++"
+    ]
+  },
+  "watch": {
+    "ok": true,
+    "error": null,
+    "head": "6426b26362d036a1784498591de0fa4c9956285e",
+    "checked_at": "2026-11-02T14:59:20Z"
+  },
+  "queue": {
+    "in_flight": null,
+    "queued": null
+  },
+  "leader": {
+    "team": "LippInc",
+    "run_id": "run-80257a1ba90b",
+    "commit": "8d723188f4a23ced09f5facc81b29c9cca2f845c",
+    "pushed_at": "2026-11-02T14:48:50Z",
+    "dispatched_at": "2026-11-02T14:51:53Z",
+    "started_at": "2026-11-02T14:52:59Z",
+    "ended_at": "2026-11-02T14:53:01Z",
+    "queue_latency_s": 248.9,
+    "ok": true,
+    "stage": "scored",
+    "gates": {
+      "check": true,
+      "build": true,
+      "correctness": true,
+      "timeout": true,
+      "sandbox": true
+    },
+    "T_s": 0.061369,
+    "M_bytes": 59465728,
+    "S": 787,
+    "D": 1,
+    "K": 38.256351,
+    "points": 79.135177,
+    "static_axes": "measured",
+    "timeout_s": 218.078,
+    "build_s": 3.151,
+    "image_bytes": 118908035,
+    "failure": null,
+    "lang": [
+      "C"
+    ]
+  },
+  "gap": 4.583935000000004,
+  "qualification": 41434298002,
+  "submission_mutations_stopped_at": "2026-11-02T14:53:42Z"
+}

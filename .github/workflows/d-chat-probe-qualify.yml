@@ -1,0 +1,70 @@
+name: Track D forward-probe tournament
+on:
+  push:
+    branches: ['d/chat-probe-tournament-20261102-10']
+    paths: ['track-d/d_traverse.cpp', '.github/workflows/d-chat-probe-qualify.yml']
+  workflow_dispatch:
+jobs:
+  tournament:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Compile pinned candidates and run differential tests
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/probe
+          git cat-file blob 24aff529703cb9aca78976b70682edcfd97ce6f0 > /tmp/probe/original.cpp
+          docker run --rm -v "$PWD/track-d:/src:ro" -v /tmp/probe:/out -w /src gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce bash -c 'set -e; g++ -O3 -std=c++17 -pthread -flto -static -s -o /out/original /out/original.cpp; for p in 0 64 128 256; do g++ -O3 -std=c++17 -pthread -flto -static -s -DSD_FORWARD_PROBE=$p -o /out/probe$p d_traverse.cpp; done'
+          for p in 0 64 128 256; do
+            export SD_TEST_BINARY=/tmp/probe/probe$p
+            python tests/test_d.py
+            python tests/boundary_d.py
+            python tests/saturation_d.py
+            python tests/stress_d.py 10
+          done
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+      - name: Matched full-seed exact tournament
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import hashlib, os, random, statistics, subprocess, time
+          from collections import defaultdict
+          expected={1:"a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e",7:"66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646",17:"ad7c211024014a4c21a50faab598dd19e730cbc0b4e8013a7d3b3306132913ba"}
+          names=["original","probe0","probe64","probe128","probe256"]
+          data={}
+          for seed in expected:
+              folder=f"/tmp/probe-data-{seed}"
+              subprocess.run(["python","/tmp/official/generators/d_traverse.py","--scale","full","--seed",str(seed),"--out",folder],check=True)
+              data[seed]=folder
+              print("GENERATED",seed,flush=True)
+          results=defaultdict(list)
+          out="/tmp/probe-out"
+          os.makedirs(out,exist_ok=True)
+          for seed in expected:
+              for workers in (6,12):
+                  env=os.environ.copy()
+                  env.update(SD_DATA=data[seed],SD_OUT=out,SD_THREADS=str(workers))
+                  for round_id in range(10):
+                      order=names[:]
+                      random.Random(100000*seed+100*workers+round_id).shuffle(order)
+                      for name in order:
+                          start=time.perf_counter()
+                          subprocess.run(["/tmp/probe/"+name],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.PIPE,check=True,timeout=30)
+                          elapsed=time.perf_counter()-start
+                          with open(out+"/distances.txt","rb") as f: digest=hashlib.sha256(f.read()).hexdigest()
+                          if digest!=expected[seed]:
+                              raise RuntimeError(f"mismatch {seed} {workers} {name} {digest}")
+                          if round_id: results[(seed,workers,name)].append(elapsed)
+                  base=statistics.median(results[(seed,workers,"original")])
+                  for name in names:
+                      vals=results[(seed,workers,name)]
+                      med=statistics.median(vals)
+                      print(f"RESULT seed={seed} workers={workers} name={name} median={med:.6f}s ratio={base/med:.5f} runs={len(vals)}",flush=True)
+          print("ALL EXACT: 270 measured full-seed executions plus 30 warmups",flush=True)
+          PY

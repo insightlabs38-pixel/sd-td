@@ -1,0 +1,104 @@
+name: Track D bypass-degree tournament
+on:
+  push:
+    branches: ['d/degree3-bypass-20261102-04']
+    paths: ['track-d/d_traverse.cpp']
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build baseline and challengers with pinned Dockerfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/base-context /tmp/degree4-context
+          git show 888e22648c0821e5fcdc0963e99dd38be512e496:track-d/d_traverse.cpp > /tmp/base-context/d_traverse.cpp
+          cp track-d/Dockerfile /tmp/base-context/Dockerfile
+          cp track-d/d_traverse.cpp /tmp/degree4-context/d_traverse.cpp
+          sed 's/g++ -O3/g++ -DBYPASS_MAX_DEGREE=4 -O3/' track-d/Dockerfile > /tmp/degree4-context/Dockerfile
+          for item in 'base /tmp/base-context' 'deg3 track-d' 'deg4 /tmp/degree4-context'; do
+            read -r tag ctx <<< "$item"
+            docker build --pull -t "sd-$tag" "$ctx"
+            id=$(docker create "sd-$tag")
+            docker cp "$id:/traverse" "/tmp/$tag"
+            docker rm "$id"
+            sha256sum "/tmp/$tag"
+          done
+      - name: Exact differential, boundary, saturation and claim schedules
+        shell: bash
+        run: |
+          set -euo pipefail
+          SD_TEST_BINARY=/tmp/deg3 python tests/test_d.py
+          SD_TEST_BINARY=/tmp/deg3 python tests/boundary_d.py
+          SD_TEST_BINARY=/tmp/deg3 python tests/saturation_d.py
+          SD_TEST_BINARY=/tmp/deg3 python tests/stress_d.py 30
+          SD_TEST_BINARY=/tmp/deg3 python tests/claim_schedule_d.py
+          SD_TEST_BINARY=/tmp/deg3 python tests/claim_capacity_d.py
+          if SD_TEST_BINARY=/tmp/deg4 python tests/test_d.py && SD_TEST_BINARY=/tmp/deg4 python tests/boundary_d.py; then
+            touch /tmp/deg4-ok
+          else
+            echo 'Degree 4 failed correctness, excluded from tournament'
+          fi
+      - name: Two full official seeds and randomized paired wall tournament
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          python - <<'PY'
+          import hashlib, os, random, statistics, subprocess, time
+          from pathlib import Path
+          variants = ['base', 'deg3'] + (['deg4'] if Path('/tmp/deg4-ok').exists() else [])
+          expected = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for seed in (1, 7):
+              data = Path(f'/tmp/dataset-{seed}')
+              data.mkdir(exist_ok=True)
+              subprocess.run(['python','/tmp/official/generators/d_traverse.py','--seed',str(seed),'--scale','full','--out',str(data)],check=True)
+              outdirs = {v:Path(f'/tmp/output-{seed}-{v}') for v in variants}
+              for d in outdirs.values(): d.mkdir(exist_ok=True)
+              for workers in (4,6,12):
+                  samples = {v:[] for v in variants}
+                  wins = {v:0 for v in variants if v != 'base'}
+                  reference = None
+                  for round_id in range(10):
+                      order = variants.copy()
+                      random.Random(80000+seed*1000+workers*20+round_id).shuffle(order)
+                      times = {}
+                      for v in order:
+                          env = dict(os.environ, SD_DATA=str(data), SD_OUT=str(outdirs[v]), SD_THREADS=str(workers))
+                          t0 = time.perf_counter_ns()
+                          subprocess.run([f'/tmp/{v}'], env=env, check=True, stdout=subprocess.DEVNULL)
+                          elapsed = (time.perf_counter_ns()-t0)/1e9
+                          result = (outdirs[v]/'distances.txt').read_bytes()
+                          if v == 'base':
+                              reference = result
+                          else:
+                              base_path = outdirs['base']/'distances.txt'
+                              if base_path.exists() and round_id==0:
+                                  pass
+                          if seed==1 and hashlib.sha256(result).hexdigest()!=expected:
+                              raise RuntimeError(f'wrong official hash {v} {workers}')
+                          times[v]=elapsed
+                          samples[v].append(elapsed)
+                      base_bytes=(outdirs['base']/'distances.txt').read_bytes()
+                      for v in variants:
+                          if (outdirs[v]/'distances.txt').read_bytes()!=base_bytes:
+                              raise RuntimeError(f'output mismatch {seed} {workers} {v}')
+                      if round_id:
+                          for v in wins:
+                              wins[v] += times[v] < times['base']
+                  print('SEED',seed,'WORKERS',workers,flush=True)
+                  for v in variants:
+                      med=statistics.median(samples[v][1:])
+                      ratio=med/statistics.median(samples['base'][1:])
+                      print(f'  {v}: median={med:.6f}s ratio={ratio:.4f} wins={wins.get(v,"baseline")}/9',flush=True)
+          PY
+          for v in base deg3; do
+            SD_DATA=/tmp/dataset-1 SD_OUT=/tmp/output-1-$v SD_THREADS=12 /usr/bin/time -f "$v peak_kib=%M wall=%e" /tmp/$v
+          done

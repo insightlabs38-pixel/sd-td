@@ -1,0 +1,9 @@
+1 prefix_twelve wall 0.454366 cpu 0.45395 maxrss 141536
+1 prefix12_stream_ssse3 wall 0.457296 cpu 0.455747 maxrss 141472
+1 prefix12_pair_decimal wall 0.460954 cpu 0.460571 maxrss 141536
+6 prefix_twelve wall 0.326707 cpu 0.615919 maxrss 141540
+6 prefix12_stream_ssse3 wall 0.315203 cpu 0.597914 maxrss 141464
+6 prefix12_pair_decimal wall 0.319467 cpu 0.606785 maxrss 141504
+12 prefix_twelve wall 0.324695 cpu 0.59722 maxrss 144784
+12 prefix12_stream_ssse3 wall 0.318305 cpu 0.577932 maxrss 144604
+12 prefix12_pair_decimal wall 0.347975 cpu 0.595568 maxrss 144488

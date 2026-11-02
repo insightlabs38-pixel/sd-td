@@ -1,0 +1,12 @@
+1 prefix_bins wall 0.466683 cpu 0.46618 maxrss 141536
+1 scratch_prefix_bins wall 0.47682 cpu 0.476353 maxrss 141476
+1 fix_atomic wall 0.496929 cpu 0.496327 maxrss 145164
+1 scratch_fix_atomic wall 0.495534 cpu 0.494681 maxrss 145096
+6 prefix_bins wall 0.320498 cpu 0.602304 maxrss 141448
+6 scratch_prefix_bins wall 0.324528 cpu 0.625977 maxrss 141580
+6 fix_atomic wall 0.364464 cpu 0.648225 maxrss 145872
+6 scratch_fix_atomic wall 0.371435 cpu 0.677005 maxrss 145908
+12 prefix_bins wall 0.351919 cpu 0.591948 maxrss 142068
+12 scratch_prefix_bins wall 0.326941 cpu 0.608648 maxrss 141992
+12 fix_atomic wall 0.33858 cpu 0.63021 maxrss 146712
+12 scratch_fix_atomic wall 0.374691 cpu 0.656549 maxrss 146608

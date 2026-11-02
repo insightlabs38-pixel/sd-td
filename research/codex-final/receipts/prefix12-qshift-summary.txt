@@ -1,0 +1,15 @@
+1 prefix_twelve wall 0.45114 cpu 0.450559 maxrss 141472
+1 prefix12_qshift4 wall 0.454133 cpu 0.453392 maxrss 141472
+1 prefix12_qshift5 wall 0.44928 cpu 0.448533 maxrss 141464
+1 prefix12_qshift6 wall 0.449019 cpu 0.448459 maxrss 141528
+1 prefix12_qshift8 wall 0.452966 cpu 0.452596 maxrss 141540
+6 prefix_twelve wall 0.322644 cpu 0.597353 maxrss 141392
+6 prefix12_qshift4 wall 0.322378 cpu 0.611669 maxrss 141512
+6 prefix12_qshift5 wall 0.319317 cpu 0.610751 maxrss 141520
+6 prefix12_qshift6 wall 0.318046 cpu 0.605668 maxrss 141460
+6 prefix12_qshift8 wall 0.319537 cpu 0.610387 maxrss 141496
+12 prefix_twelve wall 0.321045 cpu 0.588405 maxrss 144332
+12 prefix12_qshift4 wall 0.326395 cpu 0.59912 maxrss 145884
+12 prefix12_qshift5 wall 0.323874 cpu 0.590378 maxrss 144980
+12 prefix12_qshift6 wall 0.34996 cpu 0.588312 maxrss 144380
+12 prefix12_qshift8 wall 0.326204 cpu 0.601565 maxrss 144424

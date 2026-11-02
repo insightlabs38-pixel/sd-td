@@ -1,0 +1,15 @@
+1 prefix_bins wall 0.472557 cpu 0.472081 maxrss 141532
+1 prefix_prefetch2_0 wall 0.526809 cpu 0.526177 maxrss 141464
+1 prefix_prefetch2_1 wall 0.515505 cpu 0.515177 maxrss 141524
+1 prefix_prefetch4_0 wall 0.549394 cpu 0.548782 maxrss 141464
+1 prefix_prefetch4_1 wall 0.552436 cpu 0.552084 maxrss 141524
+6 prefix_bins wall 0.325591 cpu 0.616598 maxrss 141568
+6 prefix_prefetch2_0 wall 0.368916 cpu 0.682221 maxrss 141488
+6 prefix_prefetch2_1 wall 0.375182 cpu 0.683674 maxrss 141536
+6 prefix_prefetch4_0 wall 0.387108 cpu 0.722674 maxrss 141452
+6 prefix_prefetch4_1 wall 0.38684 cpu 0.718809 maxrss 141456
+12 prefix_bins wall 0.323147 cpu 0.591219 maxrss 141828
+12 prefix_prefetch2_0 wall 0.373772 cpu 0.658569 maxrss 141988
+12 prefix_prefetch2_1 wall 0.379459 cpu 0.675315 maxrss 141980
+12 prefix_prefetch4_0 wall 0.387586 cpu 0.696018 maxrss 141812
+12 prefix_prefetch4_1 wall 0.38638 cpu 0.689482 maxrss 141996

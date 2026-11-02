@@ -1,0 +1,12 @@
+1 prefix_twelve wall 0.46778 cpu 0.467149 maxrss 141532
+1 prefix12_page32 wall 0.47214 cpu 0.471857 maxrss 141528
+1 prefix12_page64 wall 0.4688 cpu 0.468357 maxrss 141472
+1 prefix12_page256 wall 0.452422 cpu 0.452081 maxrss 141472
+6 prefix_twelve wall 0.322365 cpu 0.610336 maxrss 141460
+6 prefix12_page32 wall 0.326946 cpu 0.623839 maxrss 143928
+6 prefix12_page64 wall 0.321653 cpu 0.619975 maxrss 141476
+6 prefix12_page256 wall 0.351143 cpu 0.610425 maxrss 141488
+12 prefix_twelve wall 0.353582 cpu 0.612573 maxrss 144668
+12 prefix12_page32 wall 0.356116 cpu 0.621695 maxrss 153124
+12 prefix12_page64 wall 0.361462 cpu 0.616997 maxrss 147608
+12 prefix12_page256 wall 0.329883 cpu 0.614329 maxrss 143968

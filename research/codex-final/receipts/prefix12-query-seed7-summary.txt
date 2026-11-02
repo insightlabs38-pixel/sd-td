@@ -1,0 +1,8 @@
+6 prefix_twelve wall 0.354546 cpu 0.640415 maxrss 141524
+6 prefix_coalesce1612 wall 0.336276 cpu 0.637368 maxrss 141504
+6 prefix_coalesce_high12 wall 0.335348 cpu 0.639967 maxrss 141436
+6 other_prefix_bins12 wall 0.325218 cpu 0.620397 maxrss 141500
+12 prefix_twelve wall 0.331466 cpu 0.606478 maxrss 144084
+12 prefix_coalesce1612 wall 0.354715 cpu 0.623046 maxrss 143780
+12 prefix_coalesce_high12 wall 0.331548 cpu 0.613512 maxrss 143988
+12 other_prefix_bins12 wall 0.356719 cpu 0.609137 maxrss 144352

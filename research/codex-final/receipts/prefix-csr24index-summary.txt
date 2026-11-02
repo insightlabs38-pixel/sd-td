@@ -1,0 +1,9 @@
+1 prefix_bins wall 0.439946 cpu 0.439541 maxrss 141472
+1 prefix_csr24index wall 0.738957 cpu 0.738051 maxrss 141472
+1 prefix_csr24indexw11 wall 1.310506 cpu 1.310177 maxrss 281596
+6 prefix_bins wall 0.322642 cpu 0.617631 maxrss 141504
+6 prefix_csr24index wall 0.484649 cpu 0.915583 maxrss 141492
+6 prefix_csr24indexw11 wall 0.526277 cpu 0.995164 maxrss 192828
+12 prefix_bins wall 0.321951 cpu 0.588837 maxrss 141952
+12 prefix_csr24index wall 0.489856 cpu 0.895557 maxrss 143520
+12 prefix_csr24indexw11 wall 0.489829 cpu 0.889817 maxrss 166632

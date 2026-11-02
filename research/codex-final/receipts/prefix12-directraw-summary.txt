@@ -1,0 +1,6 @@
+1 prefix_twelve wall 0.465571 cpu 0.46439 maxrss 141472
+1 prefix12_directraw wall 1.010768 cpu 1.010036 maxrss 141448
+6 prefix_twelve wall 0.321072 cpu 0.622867 maxrss 141504
+6 prefix12_directraw wall 0.615035 cpu 1.168287 maxrss 141992
+12 prefix_twelve wall 0.328708 cpu 0.609375 maxrss 144364
+12 prefix12_directraw wall 0.64725 cpu 1.161295 maxrss 144608

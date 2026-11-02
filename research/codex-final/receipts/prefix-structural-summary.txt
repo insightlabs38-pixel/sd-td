@@ -1,0 +1,15 @@
+1 prefix_bins wall 0.459892 cpu 0.459379 maxrss 141532
+1 prefix_trim wall 0.450321 cpu 0.449782 maxrss 141532
+1 prefix_cumulative wall 0.462984 cpu 0.462428 maxrss 144984
+1 prefix_serial wall 0.466983 cpu 0.466675 maxrss 141464
+1 prefix_huge wall 0.467868 cpu 0.467167 maxrss 141472
+6 prefix_bins wall 0.325045 cpu 0.612172 maxrss 141444
+6 prefix_trim wall 0.321232 cpu 0.613554 maxrss 141508
+6 prefix_cumulative wall 0.321221 cpu 0.603869 maxrss 144956
+6 prefix_serial wall 0.32616 cpu 0.630183 maxrss 141400
+6 prefix_huge wall 0.322991 cpu 0.614308 maxrss 141496
+12 prefix_bins wall 0.324709 cpu 0.601398 maxrss 141852
+12 prefix_trim wall 0.351634 cpu 0.614204 maxrss 141980
+12 prefix_cumulative wall 0.353772 cpu 0.609177 maxrss 145504
+12 prefix_serial wall 0.35865 cpu 0.61861 maxrss 142000
+12 prefix_huge wall 0.330485 cpu 0.606017 maxrss 141932

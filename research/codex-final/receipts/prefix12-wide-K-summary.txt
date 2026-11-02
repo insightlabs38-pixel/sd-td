@@ -1,0 +1,16 @@
+prefix12_noemptywide range 0.9683674718272828 1.0238321825655574 diagnostic geomean 0.9958431956650308 wins 5
+  1 T% 0.21 M% -1.29 Kratio 1.00134
+  7 T% 2.84 M% -0.56 Kratio 0.98698
+  17 T% 6.94 M% -0.82 Kratio 0.96837
+prefix12_query10 range 0.9752252984212435 1.0113591426243933 diagnostic geomean 0.9991847847813066 wins 7
+  1 T% 0.18 M% -3.46 Kratio 1.00596
+  7 T% 0.05 M% -3.81 Kratio 1.00735
+  17 T% 6.44 M% -3.11 Kratio 0.97523
+prefix12_wide128 range 0.9677438157361559 1.033540012130898 diagnostic geomean 0.998558486531358 wins 3
+  1 T% -5.71 M% -1.43 Kratio 1.03281
+  7 T% -5.74 M% -1.7 Kratio 1.03354
+  17 T% 6.97 M% -0.44 Kratio 0.96774
+prefix12_wide64_guard range 0.9742731785784045 1.0250182730386705 diagnostic geomean 0.9999307136217092 wins 4
+  1 T% -0.44 M% -1.7 Kratio 1.0054
+  7 T% -4.29 M% -1.5 Kratio 1.02502
+  17 T% 3.69 M% -2.28 Kratio 0.98634

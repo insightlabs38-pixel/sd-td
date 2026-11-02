@@ -1,0 +1,32 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 141B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+#2 DONE 0.6s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 5.65MB 0.1s done
+#5 DONE 0.1s
+
+#4 [1/2] FROM docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+#4 CACHED
+
+#6 [2/2] COPY bin/ /
+#6 DONE 0.8s
+
+#7 exporting to image
+#7 exporting layers
+#7 exporting layers 0.7s done
+#7 writing image sha256:33a58b40e60a6ffb0c783fc3a88aae694e4c3cae600719a6c0c822dccd8d14eb done
+#7 naming to docker.io/library/sd-codex-runtime:prefix12-wide done
+#7 DONE 0.7s

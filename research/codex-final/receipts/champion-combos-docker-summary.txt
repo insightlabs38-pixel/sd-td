@@ -1,0 +1,8 @@
+1 4 champion33672 trimmean 0.300401 median 0.304227 maxpeak 53698560
+1 4 champion_wide128 trimmean 0.312271 median 0.310681 maxpeak 53673984
+1 4 champion_query10 trimmean 0.32177 median 0.320694 maxpeak 53727232
+1 4 champion_wide128_query10 trimmean 0.291586 median 0.291996 maxpeak 53723136
+1 6 champion33672 trimmean 0.295188 median 0.288465 maxpeak 53960704
+1 6 champion_wide128 trimmean 0.285498 median 0.28554 maxpeak 53817344
+1 6 champion_query10 trimmean 0.300222 median 0.30005 maxpeak 53919744
+1 6 champion_wide128_query10 trimmean 0.304566 median 0.309094 maxpeak 53870592

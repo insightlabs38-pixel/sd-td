@@ -1,0 +1,9 @@
+{
+  "prefix_bins": 674,
+  "prefix_cumulative": 661,
+  "prefix_serial": 653,
+  "prefix_trim": 675,
+  "prefix_huge": 683,
+  "prefix_coalesce16": 680,
+  "prefix_csr24index_load": 721
+}

@@ -1,0 +1,25 @@
+{
+  "at_utc": "2026-11-02T12:05:00Z",
+  "best_valid_K": 33.672416,
+  "best_valid_run": "run-3cf937618e77",
+  "official_commit": "55bc81024955ea5dda6d289fb7d6192f13c4b92f",
+  "solver_blob": "02e0764ef534a8a6694006b12911776e0a9f2860",
+  "docker_blob": "8eabe09b96a60131ce5bfda3f098011e1f0863e6",
+  "developer_branch": "prize/d-codex-final-prefix-simd-pages",
+  "developer_commit": "9a28cc082325714126385578db85c6c1617bc617",
+  "qualification": 41434298002,
+  "binary_sha256": "0927ee891e16dc991f20aac9ff27235bf4b2f4957d55c799fc67f26963a027d6",
+  "T_s": 0.083599,
+  "M_bytes": 57802752,
+  "S": 683,
+  "D": 1,
+  "rollback_solver": "5d56a5bebdf1d82633e6e643801213f5df987578",
+  "older_atomic_solver": "4e45be05890b6228c8df88702da48f51a15fc712",
+  "leader_K": 34.168125,
+  "gap": 0.495709,
+  "active_candidates": [
+    "prize/d-codex-final-champion-wide128",
+    "prize/d-codex-final-champion-query10",
+    "prize/d-codex-final-champion-wide128-query10"
+  ]
+}

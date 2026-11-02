@@ -1,0 +1,6 @@
+1 prefix_twelve wall 0.465322 cpu 0.464721 maxrss 141532
+1 prefix12_lowlabels wall 0.460967 cpu 0.460005 maxrss 141536
+6 prefix_twelve wall 0.318592 cpu 0.60105 maxrss 141520
+6 prefix12_lowlabels wall 0.322259 cpu 0.601901 maxrss 141500
+12 prefix_twelve wall 0.330865 cpu 0.600079 maxrss 144380
+12 prefix12_lowlabels wall 0.32922 cpu 0.604858 maxrss 144080

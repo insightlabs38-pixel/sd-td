@@ -1,0 +1,76 @@
+phase=start wall_ms=0.000 cpu_ms=1.337 rss=812
+phase=parse wall_ms=47.424 cpu_ms=117.947 rss=121772
+phase=raw wall_ms=17.311 cpu_ms=49.232 rss=122772
+phase=grow wall_ms=90.773 cpu_ms=178.517 rss=141268
+phase=rename wall_ms=23.812 cpu_ms=40.999 rss=141268
+phase=reverse wall_ms=7.816 cpu_ms=13.680 rss=141268
+graph n=1199079 m=4039190 esc=4764 hist 1248449 2109308 3539988 3995379 4015016 4017098 3888121 4764
+phase=stats wall_ms=37.767 cpu_ms=18.474 rss=141268
+pops=970566 stale=129275 arcs=2867080 changes=1126255
+expensive q=526 pops=54925
+expensive q=1755 pops=47005
+expensive q=685 pops=43969
+expensive q=1361 pops=41355
+expensive q=782 pops=38496
+expensive q=734 pops=32643
+expensive q=1538 pops=31533
+expensive q=1422 pops=31179
+expensive q=885 pops=30040
+expensive q=1233 pops=29663
+pops=818880 stale=106199 arcs=2432418 changes=966499
+expensive q=1242 pops=58806
+expensive q=1985 pops=43925
+expensive q=1138 pops=39815
+expensive q=1461 pops=33665
+expensive q=945 pops=27542
+expensive q=334 pops=26172
+expensive q=7 pops=25362
+expensive q=1047 pops=25005
+expensive q=1023 pops=23108
+expensive q=1297 pops=22775
+pops=2672849 stale=351592 arcs=7917300 changes=3129686
+expensive q=1658 pops=61342
+expensive q=1650 pops=52064
+expensive q=1070 pops=51872
+expensive q=200 pops=51152
+expensive q=701 pops=47429
+expensive q=763 pops=47132
+expensive q=678 pops=42918
+expensive q=845 pops=42745
+expensive q=1670 pops=41661
+expensive q=1974 pops=40625
+pops=554188 stale=74093 arcs=1635525 changes=640373
+pops=505841 stale=65819 arcs=1501545 changes=596002
+expensive q=238 pops=32412
+expensive q=753 pops=31996
+expensive q=976 pops=31034
+expensive q=674 pops=28855
+expensive q=940 pops=28344
+expensive q=1821 pops=25799
+expensive q=1628 pops=25097
+expensive q=1271 pops=22933
+expensive q=414 pops=21825
+expensive q=49 pops=20301
+pops=553786 stale=73364 arcs=1638421 changes=646572
+expensive q=941 pops=53836
+expensive q=244 pops=42720
+expensive q=273 pops=35627
+expensive q=86 pops=28714
+expensive q=953 pops=28435
+expensive q=1224 pops=28199
+expensive q=621 pops=25697
+expensive q=478 pops=23699
+expensive q=260 pops=22081
+expensive q=432 pops=18815
+expensive q=1573 pops=52295
+expensive q=713 pops=50309
+expensive q=547 pops=37997
+expensive q=1072 pops=34795
+expensive q=114 pops=29922
+expensive q=523 pops=27751
+expensive q=1492 pops=26801
+expensive q=898 pops=24864
+expensive q=157 pops=23257
+expensive q=1817 pops=20226
+phase=queries wall_ms=112.979 cpu_ms=251.555 rss=141268
+phase=output wall_ms=0.148 cpu_ms=0.147 rss=141268

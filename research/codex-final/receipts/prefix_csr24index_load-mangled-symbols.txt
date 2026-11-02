@@ -1,0 +1,6 @@
+000000000040afe0 t _ZN4SideImE10drain_bitsILj0EEEvRKS0_Rm
+00000000004011dc t _ZN4SideImE10drain_bitsILj0EEEvRKS0_Rm.cold
+0000000000459a30 T _dl_runtime_resolve_fxsave
+0000000000459ab0 T _dl_runtime_resolve_xsave
+0000000000459b80 T _dl_runtime_resolve_xsavec
+00000000004f4ff8 B _dl_x86_64_runtime_resolve

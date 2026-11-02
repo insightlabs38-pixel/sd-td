@@ -1,0 +1,21 @@
+phase=start wall_ms=0.000 cpu_ms=1.177 rss=812
+phase=parse wall_ms=84.939 cpu_ms=84.572 rss=120620
+phase=raw wall_ms=30.760 cpu_ms=30.761 rss=121140
+phase=grow wall_ms=118.560 cpu_ms=118.551 rss=141476
+phase=rename wall_ms=32.380 cpu_ms=32.381 rss=141476
+phase=reverse wall_ms=15.156 cpu_ms=15.076 rss=141476
+graph n=1199079 m=4039190 esc=4764 hist 941606 1106638 1638798 3979569 4018427 4038555 3799517 4764
+phase=stats wall_ms=17.941 cpu_ms=17.941 rss=141476
+pops=6076215 stale=800341 arcs=17992699 changes=7105708
+expensive q=1658 pops=61353
+expensive q=1242 pops=58796
+expensive q=526 pops=54922
+expensive q=941 pops=53830
+expensive q=1573 pops=52338
+expensive q=1650 pops=52052
+expensive q=1070 pops=51907
+expensive q=200 pops=51152
+expensive q=713 pops=50320
+expensive q=701 pops=47437
+phase=queries wall_ms=174.810 cpu_ms=174.818 rss=141476
+phase=output wall_ms=0.128 cpu_ms=0.127 rss=141476

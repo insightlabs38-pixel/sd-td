@@ -681,12 +681,14 @@ template <class L> struct Side {
         continue;
       for (u32 i = g.off[u]; i < g.off[u + 1]; ++i) {
         u32 v = g.adj[i] >> (W ? W : g.wbits);
-        L *x = dist.slot(v);
         u32 mask = W ? (1u << W) - 1 : g.mask;
         u64 w = g.adj[i] & mask;
-        u64 nd = d + (w == mask ? g.weight(i) : w), old = *x;
-        *x = L(std::min(nd, old));
-        queue.push(nd, v, nd < old);
+        u64 nd = d + (w == mask ? g.weight(i) : w);
+        u64 old = dist.get(v);
+        if (nd < old) {
+          *dist.slot(v) = L(nd);
+          queue.push(nd, v);
+        }
         best = std::min(best, nd + other.dist.get(v));
       }
     }

@@ -1,7 +1,7 @@
 name: D Codex final qualification
 on:
   push:
-    branches: ['prize/d-codex-final-bounded-six']
+    branches: ['prize/d-codex-final-prefix-bins']
     paths: ['track-d/d_traverse.cpp', '.github/workflows/d-codex-final-qualify.yml']
   workflow_dispatch:
 jobs:
@@ -34,6 +34,7 @@ jobs:
           python tests/boundary_d.py | tee /tmp/receipts/boundary.txt
           python tests/saturation_d.py | tee /tmp/receipts/saturation.txt
           python tests/stress_d.py 30 | tee /tmp/receipts/stress.txt
+          python tests/skew_bins_d.py | tee /tmp/receipts/skew-bins.txt
       - name: Organizer references and restricted Docker worker matrix
         shell: bash
         run: |
@@ -92,3 +93,4 @@ jobs:
           python tests/boundary_d.py
           python tests/saturation_d.py
           python tests/stress_d.py 20
+          python tests/skew_bins_d.py --small

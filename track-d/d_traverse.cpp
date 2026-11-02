@@ -566,8 +566,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
 // ---------------------------------------------------------------- queries
 
 // Monotone queue: a ring of buckets 2^shift wide; larger jumps wait in a heap.
-// push always writes the entry but counts it only when `take`, so relaxations
-// need no branch.
+// Entries are packed into width-128 buckets; only accepted labels enqueue.
 template <bool BOUNDED> struct Queue {
   static constexpr u32 B = BOUNDED ? 512 : 2048;
   struct Bucket {
@@ -664,9 +663,8 @@ template <class L> struct Side {
     dist.reset(), queue.clear();
     *dist.slot(s) = 0, queue.push(0, s);
   }
-  // Settles the current bucket in FIFO order, prefetching rows and labels of
-  // the entries ahead; returns the number of vertices settled. Relaxations are
-  // branch-free: nd + other(v) is a real path length either way.
+  // Settles the current bucket in FIFO order, prefetching rows and labels.
+// A meeting needs evaluation only when either direction improves its label.
   template <unsigned W = 0> void drain_bits(const Side &other, u64 &best) {
     typename QueueType::Bucket &bk = queue.bucket[queue.cur % QueueType::B];
     u32 mask = (1u << queue.node_bits) - 1;
@@ -684,12 +682,14 @@ template <class L> struct Side {
         u32 mask = W ? (1u << W) - 1 : g.mask;
         u64 w = g.adj[i] & mask;
         u64 nd = d + (w == mask ? g.weight(i) : w);
-        u64 old = dist.get(v);
-        if (nd < old) {
-          *dist.slot(v) = L(nd);
+        L *x = dist.at(v);
+        if (nd < *x) {
+          if (x == dist.blank + (v & 127))
+            x = dist.slot(v);
+          *x = L(nd);
           queue.push(nd, v);
+          best = std::min(best, nd + other.dist.get(v));
         }
-        best = std::min(best, nd + other.dist.get(v));
       }
     }
     queue.near -= bk.size, bk.size = 0;
@@ -703,10 +703,8 @@ template <class L> struct Side {
   }
 };
 
-// An exact forward probe settles up to 256 vertices; then bidirectional
-// Dijkstra balances settled counts until the two queue fronts sum to at least
-// the best meeting. Returns the distance, INF when there is no path, or NONE
-// or more when the distance may not fit L.
+// Bidirectional Dijkstra balances queue fronts and stops at the best meeting.
+// Narrow labels saturate; uncertain results are rerun with exact wide labels.
 template <class L> struct Worker {
   Side<L> fwd, bwd;
   u64 solve(u32 s, u32 t) {

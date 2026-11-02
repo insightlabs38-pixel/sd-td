@@ -687,7 +687,8 @@ template <class L> struct Side {
         u64 nd = d + (w == mask ? g.weight(i) : w), old = *x;
         *x = L(std::min(nd, old));
         queue.push(nd, v, nd < old);
-        best = std::min(best, nd + other.dist.get(v));
+        if (nd < old)
+          best = std::min(best, nd + other.dist.get(v));
       }
     }
     queue.near -= bk.size, bk.size = 0;

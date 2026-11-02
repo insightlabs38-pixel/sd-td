@@ -1,0 +1,68 @@
+name: Track D pinned forward-probe qualification
+on:
+  push:
+    paths:
+      - .github/workflows/probe-pinned.yml
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Pinned compiler, exact full-seed paired comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          python3 - <<'PY'
+          from pathlib import Path
+          source=Path('track-d/d_traverse.cpp').read_text()
+          assert source.count('while (fs < 256)') == 1
+          for n in (128,192,256):
+              Path(f'/tmp/probe_{n}.cpp').write_text(source.replace('while (fs < 256)',f'while (fs < {n})'))
+          PY
+          docker pull -q gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+          for n in 128 192 256; do
+            docker run --rm --network none -v /tmp:/out gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce \
+              g++ -O3 -std=c++17 -pthread -flto -static -s -o "/out/probe_$n" "/out/probe_$n.cpp"
+          done
+          cat > /tmp/paired.py <<'PY'
+          import hashlib, json, os, pathlib, random, statistics, subprocess, time
+          limits=(128,192,256)
+          want={1:'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e',
+                7:'66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646'}
+          for seed in (1,7):
+              data=pathlib.Path(f'/tmp/dseed{seed}')
+              data.mkdir()
+              subprocess.run(['python3','/tmp/official/generators/d_traverse.py',
+                              '--seed',str(seed),'--scale','full','--out',str(data)],check=True)
+              pathlib.Path(f'/tmp/dout{seed}').mkdir()
+          rng=random.Random(2026110211)
+          for seed in (1,7):
+              for workers in (6,12):
+                  env=dict(os.environ,SD_DATA=f'/tmp/dseed{seed}',
+                           SD_OUT=f'/tmp/dout{seed}',SD_THREADS=str(workers))
+                  samples={n:[] for n in limits}
+                  for round in range(21):
+                      order=list(limits)
+                      rng.shuffle(order)
+                      for n in order:
+                          t0=time.perf_counter()
+                          subprocess.run([f'/tmp/probe_{n}'],env=env,check=True,stdout=subprocess.DEVNULL)
+                          dt=time.perf_counter()-t0
+                          digest=hashlib.sha256(pathlib.Path(f'/tmp/dout{seed}/distances.txt').read_bytes()).hexdigest()
+                          assert digest==want[seed],(seed,workers,n,round,digest)
+                          samples[n].append(dt)
+                  base=statistics.median(samples[256])
+                  summary={str(n):{'median_s':round(statistics.median(samples[n]),6),
+                       'delta_pct':round(100*(statistics.median(samples[n])/base-1),3),
+                       'wins_of_21':sum(a<b for a,b in zip(samples[n],samples[256]))} for n in limits}
+                  print('PINNED_RESULT',seed,workers,json.dumps(summary),flush=True)
+          print('PINNED_TOURNAMENT_COMPLETE',flush=True)
+          PY
+          python3 /tmp/paired.py
+          SD_TEST_BINARY=/tmp/probe_128 python3 tests/test_d.py
+          SD_TEST_BINARY=/tmp/probe_192 python3 tests/test_d.py

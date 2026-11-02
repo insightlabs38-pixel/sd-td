@@ -1,0 +1,30 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 141B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+#2 DONE 0.7s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 4.66MB 0.1s done
+#4 DONE 0.1s
+
+#5 [1/2] FROM docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+#5 CACHED
+
+#6 [2/2] COPY bin/ /
+#6 DONE 0.6s
+
+#7 exporting to image
+#7 exporting layers
+#7 exporting layers 0.6s done
+#7 writing image sha256:03c334222b0c8a57b3d64a5c347d7227685725adb699dbb2e0f005cfcabe2a32
+#7 writing image sha256:03c334222b0c8a57b3d64a5c347d7227685725adb699dbb2e0f005cfcabe2a32 done
+#7 naming to docker.io/library/sd-codex-runtime:champion-retire done
+#7 DONE 0.6s

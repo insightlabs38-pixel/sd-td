@@ -1,0 +1,6 @@
+6 champion33672 wall 0.313381 cpu 0.594077 maxrss 141456
+6 champion_pgo_plain wall 0.31241 cpu 0.584808 maxrss 141512
+6 champion_pgo_partial wall 0.311429 cpu 0.596306 maxrss 141604
+12 champion33672 wall 0.316956 cpu 0.579948 maxrss 143212
+12 champion_pgo_plain wall 0.317388 cpu 0.576371 maxrss 143436
+12 champion_pgo_partial wall 0.314471 cpu 0.572594 maxrss 143364

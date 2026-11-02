@@ -1,0 +1,15 @@
+1 champion33672 wall 0.440822 cpu 0.439575 maxrss 141472
+1 champion_retire0 wall 0.439438 cpu 0.438772 maxrss 141472
+1 champion_retire64 wall 0.448642 cpu 0.448167 maxrss 141528
+1 champion_retire128 wall 0.445009 cpu 0.444372 maxrss 141528
+1 champion_retire256 wall 0.444583 cpu 0.443398 maxrss 141468
+6 champion33672 wall 0.311481 cpu 0.591175 maxrss 141592
+6 champion_retire0 wall 0.315904 cpu 0.59645 maxrss 141464
+6 champion_retire64 wall 0.324577 cpu 0.618008 maxrss 141504
+6 champion_retire128 wall 0.317135 cpu 0.599155 maxrss 141532
+6 champion_retire256 wall 0.31579 cpu 0.596974 maxrss 141524
+12 champion33672 wall 0.317518 cpu 0.575273 maxrss 143624
+12 champion_retire0 wall 0.319988 cpu 0.584259 maxrss 143532
+12 champion_retire64 wall 0.336446 cpu 0.610929 maxrss 142064
+12 champion_retire128 wall 0.323684 cpu 0.587162 maxrss 143316
+12 champion_retire256 wall 0.321865 cpu 0.583007 maxrss 143640

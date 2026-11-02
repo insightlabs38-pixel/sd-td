@@ -1,0 +1,12 @@
+1 champion33672 wall 0.444146 cpu 0.443088 maxrss 141476
+1 champion_restrict_local wall 0.440554 cpu 0.440061 maxrss 141532
+1 champion_restrict_member wall 0.436899 cpu 0.436559 maxrss 141536
+1 champion_restrict_helper wall 0.442501 cpu 0.442042 maxrss 141472
+6 champion33672 wall 0.311959 cpu 0.594529 maxrss 141456
+6 champion_restrict_local wall 0.341828 cpu 0.592451 maxrss 141536
+6 champion_restrict_member wall 0.310748 cpu 0.574943 maxrss 141396
+6 champion_restrict_helper wall 0.310271 cpu 0.581252 maxrss 141480
+12 champion33672 wall 0.321248 cpu 0.583398 maxrss 143596
+12 champion_restrict_local wall 0.324339 cpu 0.580595 maxrss 143856
+12 champion_restrict_member wall 0.319725 cpu 0.579032 maxrss 144132
+12 champion_restrict_helper wall 0.32007 cpu 0.576677 maxrss 143892

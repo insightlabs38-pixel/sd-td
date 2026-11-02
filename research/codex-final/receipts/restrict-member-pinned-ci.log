@@ -1,0 +1,417 @@
+﻿2026-11-02T13:37:54.3126039Z Current runner version: '2.338.2'
+2026-11-02T13:37:54.3151007Z ##[group]Runner Image Provisioner
+2026-11-02T13:37:54.3151951Z Hosted Compute Agent
+2026-11-02T13:37:54.3152572Z Version: 20261021.618
+2026-11-02T13:37:54.3153325Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-02T13:37:54.3154069Z Build Date: 2026-10-21T00:45:21Z
+2026-11-02T13:37:54.3154784Z Worker ID: {15a6fca2-a7ad-4144-99f6-f55325090d11}
+2026-11-02T13:37:54.3155547Z Region: westus
+2026-11-02T13:37:54.3156095Z Cloud: Azure
+2026-11-02T13:37:54.3156675Z ##[endgroup]
+2026-11-02T13:37:54.3158470Z ##[group]Operating System
+2026-11-02T13:37:54.3159119Z Ubuntu
+2026-11-02T13:37:54.3159790Z 24.04.5
+2026-11-02T13:37:54.3160309Z LTS
+2026-11-02T13:37:54.3160908Z ##[endgroup]
+2026-11-02T13:37:54.3161473Z ##[group]Runner Image
+2026-11-02T13:37:54.3162066Z Image: ubuntu-24.04
+2026-11-02T13:37:54.3162734Z Version: 20261025.353.1
+2026-11-02T13:37:54.3163981Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-02T13:37:54.3165608Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+2026-11-02T13:37:54.3166589Z ##[endgroup]
+2026-11-02T13:37:54.3168277Z ##[group]GITHUB_TOKEN Permissions
+2026-11-02T13:37:54.3170213Z Contents: read
+2026-11-02T13:37:54.3171386Z Metadata: read
+2026-11-02T13:37:54.3171962Z Packages: read
+2026-11-02T13:37:54.3172580Z ##[endgroup]
+2026-11-02T13:37:54.3175032Z Secret source: Actions
+2026-11-02T13:37:54.3176092Z Cache mode: write
+2026-11-02T13:37:54.3176819Z Prepare workflow directory
+2026-11-02T13:37:54.3531686Z Prepare all required actions
+2026-11-02T13:37:54.3605122Z Getting action download info
+2026-11-02T13:37:54.7466837Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-02T13:37:54.8544160Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-02T13:37:54.9295330Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-02T13:37:55.1445036Z Complete job name: pinned
+2026-11-02T13:37:55.2293995Z ##[group]Run actions/checkout@v4
+2026-11-02T13:37:55.2294875Z with:
+2026-11-02T13:37:55.2295340Z   repository: insightlabs38-pixel/sd-td
+2026-11-02T13:37:55.2299362Z   token: ***
+2026-11-02T13:37:55.2299796Z   ssh-strict: true
+2026-11-02T13:37:55.2300231Z   ssh-user: git
+2026-11-02T13:37:55.2300670Z   persist-credentials: true
+2026-11-02T13:37:55.2301144Z   clean: true
+2026-11-02T13:37:55.2301576Z   sparse-checkout-cone-mode: true
+2026-11-02T13:37:55.2302087Z   fetch-depth: 1
+2026-11-02T13:37:55.2302507Z   fetch-tags: false
+2026-11-02T13:37:55.2302953Z   show-progress: true
+2026-11-02T13:37:55.2303385Z   lfs: false
+2026-11-02T13:37:55.2303791Z   submodules: false
+2026-11-02T13:37:55.2304244Z   set-safe-directory: true
+2026-11-02T13:37:55.2304742Z   allow-unsafe-pr-checkout: false
+2026-11-02T13:37:55.2305513Z ##[endgroup]
+2026-11-02T13:37:55.5426391Z Syncing repository: insightlabs38-pixel/sd-td
+2026-11-02T13:37:55.5428831Z ##[group]Getting Git version info
+2026-11-02T13:37:55.5430050Z Working directory is '/home/runner/work/sd-td/sd-td'
+2026-11-02T13:37:55.5431582Z [command]/usr/bin/git version
+2026-11-02T13:37:55.5539562Z git version 2.56.0
+2026-11-02T13:37:55.5562695Z ##[endgroup]
+2026-11-02T13:37:55.5581058Z Temporarily overriding HOME='/home/runner/work/_temp/a4857744-b224-4a3d-8403-7597491ab236' before making global git config changes
+2026-11-02T13:37:55.5583469Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T13:37:55.5587559Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+2026-11-02T13:37:55.5644686Z Deleting the contents of '/home/runner/work/sd-td/sd-td'
+2026-11-02T13:37:55.5651014Z ##[group]Initializing the repository
+2026-11-02T13:37:55.5654967Z [command]/usr/bin/git init /home/runner/work/sd-td/sd-td
+2026-11-02T13:37:55.5767990Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-02T13:37:55.5770469Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-02T13:37:55.5772184Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-02T13:37:55.5773378Z hint: call:
+2026-11-02T13:37:55.5774056Z hint:
+2026-11-02T13:37:55.5775058Z hint: 	git config --global init.defaultBranch <name>
+2026-11-02T13:37:55.5776615Z hint:
+2026-11-02T13:37:55.5778108Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-02T13:37:55.5780008Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-02T13:37:55.5781256Z hint:
+2026-11-02T13:37:55.5782004Z hint: 	git branch -m <name>
+2026-11-02T13:37:55.5782839Z hint:
+2026-11-02T13:37:55.5783976Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-02T13:37:55.5785533Z Initialized empty Git repository in /home/runner/work/sd-td/sd-td/.git/
+2026-11-02T13:37:55.5794866Z [command]/usr/bin/git remote add origin https://github.com/insightlabs38-pixel/sd-td
+2026-11-02T13:37:55.5846163Z ##[endgroup]
+2026-11-02T13:37:55.5847799Z ##[group]Disabling automatic garbage collection
+2026-11-02T13:37:55.5851569Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-02T13:37:55.5888695Z ##[endgroup]
+2026-11-02T13:37:55.5890071Z ##[group]Setting up auth
+2026-11-02T13:37:55.5898046Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T13:37:55.5954938Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-02T13:37:55.6375701Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T13:37:55.6430735Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-02T13:37:55.6680712Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T13:37:55.6726093Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-02T13:37:55.6971571Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-02T13:37:55.7022039Z ##[endgroup]
+2026-11-02T13:37:55.7023206Z ##[group]Fetching the repository
+2026-11-02T13:37:55.7036133Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c32c7946b9cd506f93c4c997f52274c2ac97e5a3:refs/remotes/origin/prize/d-codex-final-champion-restrict-member
+2026-11-02T13:37:56.1579092Z From https://github.com/insightlabs38-pixel/sd-td
+2026-11-02T13:37:56.1589967Z  * [new ref]         c32c7946b9cd506f93c4c997f52274c2ac97e5a3 -> origin/prize/d-codex-final-champion-restrict-member
+2026-11-02T13:37:56.1597340Z ##[endgroup]
+2026-11-02T13:37:56.1599651Z ##[group]Determining the checkout info
+2026-11-02T13:37:56.1601598Z ##[endgroup]
+2026-11-02T13:37:56.1602847Z [command]/usr/bin/git sparse-checkout disable
+2026-11-02T13:37:56.1669907Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-02T13:37:56.1714439Z ##[group]Checking out the ref
+2026-11-02T13:37:56.1719717Z [command]/usr/bin/git checkout --progress --force -B prize/d-codex-final-champion-restrict-member refs/remotes/origin/prize/d-codex-final-champion-restrict-member
+2026-11-02T13:37:56.1817883Z Switched to a new branch 'prize/d-codex-final-champion-restrict-member'
+2026-11-02T13:37:56.1825638Z branch 'prize/d-codex-final-champion-restrict-member' set up to track 'origin/prize/d-codex-final-champion-restrict-member'.
+2026-11-02T13:37:56.1833402Z ##[endgroup]
+2026-11-02T13:37:56.1883841Z [command]/usr/bin/git log -1 --format=%H
+2026-11-02T13:37:56.1918036Z c32c7946b9cd506f93c4c997f52274c2ac97e5a3
+2026-11-02T13:37:56.2324550Z ##[group]Run actions/setup-python@v5
+2026-11-02T13:37:56.2325810Z with:
+2026-11-02T13:37:56.2326715Z   python-version: 3.13
+2026-11-02T13:37:56.2328096Z   check-latest: false
+2026-11-02T13:37:56.2337238Z   token: ***
+2026-11-02T13:37:56.2338545Z   update-environment: true
+2026-11-02T13:37:56.2339665Z   allow-prereleases: false
+2026-11-02T13:37:56.2340746Z   freethreaded: false
+2026-11-02T13:37:56.2341738Z ##[endgroup]
+2026-11-02T13:37:56.3849828Z ##[group]Installed versions
+2026-11-02T13:37:56.3998994Z (node:2287) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T13:37:56.4000363Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T13:37:56.4001156Z Successfully set up CPython (3.13.17)
+2026-11-02T13:37:56.4002067Z ##[endgroup]
+2026-11-02T13:37:56.4136109Z ##[group]Run set -euo pipefail
+2026-11-02T13:37:56.4136586Z [36;1mset -euo pipefail[0m
+2026-11-02T13:37:56.4136995Z [36;1mdocker build --pull -t d-codex-final track-d[0m
+2026-11-02T13:37:56.4138083Z [36;1mid=$(docker create d-codex-final)[0m
+2026-11-02T13:37:56.4138527Z [36;1mdocker cp "$id:/traverse" /tmp/traverse[0m
+2026-11-02T13:37:56.4138882Z [36;1mdocker rm "$id"[0m
+2026-11-02T13:37:56.4139181Z [36;1mmkdir -p /tmp/receipts[0m
+2026-11-02T13:37:56.4139719Z [36;1mgit rev-parse HEAD:track-d/d_traverse.cpp HEAD:track-d/Dockerfile | tee /tmp/receipts/blobs.txt[0m
+2026-11-02T13:37:56.4140332Z [36;1msha256sum /tmp/traverse | tee /tmp/receipts/binary.txt[0m
+2026-11-02T13:37:56.4177881Z shell: /usr/bin/bash -e {0}
+2026-11-02T13:37:56.4178238Z env:
+2026-11-02T13:37:56.4178571Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:37:56.4179085Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:37:56.4179626Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:37:56.4180091Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:37:56.4180548Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:37:56.4180997Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:37:56.4181373Z ##[endgroup]
+2026-11-02T13:37:57.0646882Z #0 building with "default" instance using docker driver
+2026-11-02T13:37:57.0647700Z 
+2026-11-02T13:37:57.0647958Z #1 [internal] load build definition from Dockerfile
+2026-11-02T13:37:57.0648792Z #1 transferring dockerfile: 395B done
+2026-11-02T13:37:57.0649361Z #1 DONE 0.0s
+2026-11-02T13:37:57.0649625Z 
+2026-11-02T13:37:57.0650359Z #2 [internal] load metadata for docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:37:57.2919491Z #2 ...
+2026-11-02T13:37:57.2919851Z 
+2026-11-02T13:37:57.2920218Z #3 [auth] library/gcc:pull token for registry-1.docker.io
+2026-11-02T13:37:57.2920855Z #3 DONE 0.0s
+2026-11-02T13:37:57.2921055Z 
+2026-11-02T13:37:57.2921290Z #4 [auth] library/debian:pull token for registry-1.docker.io
+2026-11-02T13:37:57.2921817Z #4 DONE 0.0s
+2026-11-02T13:37:57.4420277Z 
+2026-11-02T13:37:57.4421363Z #5 [internal] load metadata for docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+2026-11-02T13:37:57.6908850Z #5 DONE 0.8s
+2026-11-02T13:37:57.6909254Z 
+2026-11-02T13:37:57.6909787Z #2 [internal] load metadata for docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:37:57.7920831Z #2 DONE 0.9s
+2026-11-02T13:37:57.7923273Z 
+2026-11-02T13:37:57.7924389Z #6 [internal] load .dockerignore
+2026-11-02T13:37:57.7924969Z #6 transferring context: 2B done
+2026-11-02T13:37:57.7925414Z #6 DONE 0.0s
+2026-11-02T13:37:57.7925630Z 
+2026-11-02T13:37:57.7925802Z #7 [internal] load build context
+2026-11-02T13:37:57.7926249Z #7 DONE 0.0s
+2026-11-02T13:37:57.7926448Z 
+2026-11-02T13:37:57.7927165Z #8 [build 1/3] FROM docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:37:57.7929288Z #8 resolve docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce done
+2026-11-02T13:37:57.8976945Z #8 ...
+2026-11-02T13:37:57.8977906Z 
+2026-11-02T13:37:57.8978114Z #7 [internal] load build context
+2026-11-02T13:37:57.8978666Z #7 transferring context: 30.48kB done
+2026-11-02T13:37:57.8978994Z #7 DONE 0.0s
+2026-11-02T13:37:57.8979119Z 
+2026-11-02T13:37:57.8979492Z #8 [build 1/3] FROM docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:37:57.8980756Z #8 sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce 7.63kB / 7.63kB done
+2026-11-02T13:37:57.8981960Z #8 sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 0B / 25.64MB 0.1s
+2026-11-02T13:37:57.8983107Z #8 sha256:df8a4d9d058f59c2a4ee8cca45e59cea987f442fdb348aa6258357886a13afa8 2.49kB / 2.49kB done
+2026-11-02T13:37:57.8984164Z #8 sha256:43f51138b1cd8113a36a0a38d89243debb9da1dc64dff2d3f10e945f15eab0bd 7.46kB / 7.46kB done
+2026-11-02T13:37:57.8984979Z #8 sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 5.24MB / 49.39MB 0.1s
+2026-11-02T13:37:57.8986040Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 0B / 67.82MB 0.1s
+2026-11-02T13:37:57.9981078Z #8 sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 40.89MB / 49.39MB 0.2s
+2026-11-02T13:37:57.9982681Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 11.53MB / 67.82MB 0.2s
+2026-11-02T13:37:58.1031147Z #8 sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 22.02MB / 25.64MB 0.3s
+2026-11-02T13:37:58.1034939Z #8 sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 49.39MB / 49.39MB 0.2s done
+2026-11-02T13:37:58.1036684Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 34.60MB / 67.82MB 0.3s
+2026-11-02T13:37:58.1038565Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 0B / 237.00MB 0.3s
+2026-11-02T13:37:58.1040166Z #8 extracting sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91
+2026-11-02T13:37:58.2146138Z #8 sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 25.64MB / 25.64MB 0.3s done
+2026-11-02T13:37:58.2148447Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 63.96MB / 67.82MB 0.4s
+2026-11-02T13:37:58.2150665Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 16.78MB / 237.00MB 0.4s
+2026-11-02T13:37:58.2166769Z #8 sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b 0B / 4.59MB 0.4s
+2026-11-02T13:37:58.3233562Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 67.82MB / 67.82MB 0.4s done
+2026-11-02T13:37:58.3237294Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 41.94MB / 237.00MB 0.5s
+2026-11-02T13:37:58.3239094Z #8 sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b 4.59MB / 4.59MB 0.4s done
+2026-11-02T13:37:58.3240286Z #8 sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb 0B / 10.64kB 0.5s
+2026-11-02T13:37:58.3241380Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 0B / 168.16MB 0.5s
+2026-11-02T13:37:58.4481083Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 77.59MB / 237.00MB 0.6s
+2026-11-02T13:37:58.4484767Z #8 sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb 10.64kB / 10.64kB 0.5s done
+2026-11-02T13:37:58.4486527Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 20.97MB / 168.16MB 0.6s
+2026-11-02T13:37:58.4488181Z #8 sha256:7141354ffcf765a5454476c2d38c2318eba54cc13a3fc5b6a04430064b940c2c 0B / 2.00kB 0.6s
+2026-11-02T13:37:58.5488910Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 112.20MB / 237.00MB 0.7s
+2026-11-02T13:37:58.5491905Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 52.43MB / 168.16MB 0.7s
+2026-11-02T13:37:58.5495313Z #8 sha256:7141354ffcf765a5454476c2d38c2318eba54cc13a3fc5b6a04430064b940c2c 2.00kB / 2.00kB 0.6s done
+2026-11-02T13:37:58.6549108Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 145.75MB / 237.00MB 0.8s
+2026-11-02T13:37:58.6552944Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 78.64MB / 168.16MB 0.8s
+2026-11-02T13:37:58.7676998Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 181.40MB / 237.00MB 0.9s
+2026-11-02T13:37:58.7682592Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 114.29MB / 168.16MB 0.9s
+2026-11-02T13:37:58.8758542Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 211.81MB / 237.00MB 1.0s
+2026-11-02T13:37:58.8761926Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 144.70MB / 168.16MB 1.0s
+2026-11-02T13:37:58.9972743Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 237.00MB / 237.00MB 1.2s
+2026-11-02T13:37:58.9973969Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 168.16MB / 168.16MB 1.2s
+2026-11-02T13:37:59.7311846Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 237.00MB / 237.00MB 1.8s done
+2026-11-02T13:37:59.7313229Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 168.16MB / 168.16MB 1.8s done
+2026-11-02T13:38:00.5620237Z #8 ...
+2026-11-02T13:38:00.5622175Z 
+2026-11-02T13:38:00.5623073Z #9 [stage-1 1/2] FROM docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+2026-11-02T13:38:00.5624404Z #9 resolve docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad done
+2026-11-02T13:38:00.5625350Z #9 sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad 8.97kB / 8.97kB done
+2026-11-02T13:38:00.5626214Z #9 sha256:4876fdea29cac1a33a3195f1eb1952feb1fca7dd6dd00be3e2f1879cf20d34d2 1.02kB / 1.02kB done
+2026-11-02T13:38:00.5626984Z #9 sha256:133aec7ab1411181567fef7fc3f4512123e1f9660090b49851de4b698b4ff772 451B / 451B done
+2026-11-02T13:38:00.5628311Z #9 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 29.84MB / 29.84MB 0.8s done
+2026-11-02T13:38:00.5629243Z #9 extracting sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 1.7s done
+2026-11-02T13:38:00.5629677Z #9 DONE 2.7s
+2026-11-02T13:38:00.5629794Z 
+2026-11-02T13:38:00.5630126Z #8 [build 1/3] FROM docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:38:00.7074315Z #8 extracting sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 2.5s done
+2026-11-02T13:38:00.7075777Z #8 extracting sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4
+2026-11-02T13:38:01.4473296Z #8 extracting sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 0.6s done
+2026-11-02T13:38:02.1075833Z #8 extracting sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309
+2026-11-02T13:38:04.4411622Z #8 extracting sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 2.2s done
+2026-11-02T13:38:04.6440440Z #8 extracting sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4
+2026-11-02T13:38:09.7474639Z #8 extracting sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 5.1s
+2026-11-02T13:38:10.8009196Z #8 extracting sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 6.0s done
+2026-11-02T13:38:12.1816057Z #8 extracting sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b
+2026-11-02T13:38:12.4378546Z #8 extracting sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b 0.1s done
+2026-11-02T13:38:12.4379486Z #8 extracting sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 0.1s
+2026-11-02T13:38:15.0425605Z #8 extracting sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 2.6s done
+2026-11-02T13:38:15.8769848Z #8 extracting sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb
+2026-11-02T13:38:16.0857889Z #8 extracting sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb done
+2026-11-02T13:38:16.0859322Z #8 extracting sha256:7141354ffcf765a5454476c2d38c2318eba54cc13a3fc5b6a04430064b940c2c done
+2026-11-02T13:38:16.0860155Z #8 DONE 18.1s
+2026-11-02T13:38:16.0860363Z 
+2026-11-02T13:38:16.0860560Z #10 [build 2/3] COPY d_traverse.cpp /src/
+2026-11-02T13:38:16.0861036Z #10 DONE 0.0s
+2026-11-02T13:38:16.0861233Z 
+2026-11-02T13:38:16.0861712Z #11 [build 3/3] RUN g++ -O3 -std=c++17 -pthread -flto -static -s -o /traverse /src/d_traverse.cpp
+2026-11-02T13:38:19.0680336Z #11 DONE 3.1s
+2026-11-02T13:38:19.6681552Z 
+2026-11-02T13:38:19.6682311Z #12 [stage-1 2/2] COPY --from=build /traverse /traverse
+2026-11-02T13:38:19.8310985Z #12 DONE 0.0s
+2026-11-02T13:38:19.8311222Z 
+2026-11-02T13:38:19.8311356Z #13 exporting to image
+2026-11-02T13:38:19.8311650Z #13 exporting layers
+2026-11-02T13:38:20.0043446Z #13 exporting layers 0.3s done
+2026-11-02T13:38:20.0215314Z #13 writing image sha256:fff97bc86304eb7abe03ed84f955be0a58c537f239561ccac6635698caa004ca done
+2026-11-02T13:38:20.0220396Z #13 naming to docker.io/library/d-codex-final done
+2026-11-02T13:38:20.0222596Z #13 DONE 0.3s
+2026-11-02T13:38:20.1109030Z 494c486702edb04d56f0627337be8bce97d17d8eefcb59ba0c80dae1b69badfd
+2026-11-02T13:38:20.1151019Z 8fe0643256d5771f27e5805530a6d1df10c69f27
+2026-11-02T13:38:20.1151579Z 8eabe09b96a60131ce5bfda3f098011e1f0863e6
+2026-11-02T13:38:20.1185167Z f83dc4f04bcd420ad0e9a4de63c86335b404b661e62446c005ba731b83d4ea8c  /tmp/traverse
+2026-11-02T13:38:20.1251045Z ##[group]Run set -euo pipefail
+2026-11-02T13:38:20.1251546Z [36;1mset -euo pipefail[0m
+2026-11-02T13:38:20.1252186Z [36;1mpython tests/claim_schedule_d.py | tee /tmp/receipts/claim-schedule.txt[0m
+2026-11-02T13:38:20.1253097Z [36;1mpython tests/claim_capacity_d.py | tee /tmp/receipts/claim-capacity.txt[0m
+2026-11-02T13:38:20.1253920Z [36;1mpython tests/test_d.py | tee /tmp/receipts/fixtures.txt[0m
+2026-11-02T13:38:20.1254668Z [36;1mpython tests/boundary_d.py | tee /tmp/receipts/boundary.txt[0m
+2026-11-02T13:38:20.1255450Z [36;1mpython tests/saturation_d.py | tee /tmp/receipts/saturation.txt[0m
+2026-11-02T13:38:20.1256218Z [36;1mpython tests/stress_d.py 30 | tee /tmp/receipts/stress.txt[0m
+2026-11-02T13:38:20.1256968Z [36;1mpython tests/skew_bins_d.py | tee /tmp/receipts/skew-bins.txt[0m
+2026-11-02T13:38:20.1285523Z shell: /usr/bin/bash -e {0}
+2026-11-02T13:38:20.1285912Z env:
+2026-11-02T13:38:20.1286332Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:38:20.1287134Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:38:20.1288120Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:38:20.1288763Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:38:20.1289404Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:38:20.1290066Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:38:20.1290633Z   SD_TEST_BINARY: /tmp/traverse
+2026-11-02T13:38:20.1291019Z ##[endgroup]
+2026-11-02T13:38:22.8288138Z fast region already contains 999 of 1000 vertices; releasing stale claim
+2026-11-02T13:38:22.8289254Z completed fast region len=999 edges=3998 (capacities 1000,4000)
+2026-11-02T13:38:22.8290742Z child_signal=0 exit_code=0
+2026-11-02T13:38:22.9885480Z fast region already contains 1740511 of 1740512 vertices; releasing stale claim
+2026-11-02T13:38:22.9886277Z completed fast region len=1740511 edges=4999998 (capacities 1740512,5000000)
+2026-11-02T13:38:22.9976334Z child_signal=0 exit_code=0
+2026-11-02T13:38:23.0451261Z PASS forced stale-claim schedule: small and full dimensions
+2026-11-02T13:38:25.3484417Z forward vertices=4 edges=4000 capacities n=1000 m=4000 answers=1,4611686018427387904
+2026-11-02T13:38:25.3486718Z child_signal=0 exit_code=0
+2026-11-02T13:38:25.5502314Z forward vertices=4 edges=5000000 capacities n=1740512 m=5000000 answers=1,4611686018427387904
+2026-11-02T13:38:25.5531991Z child_signal=0 exit_code=0
+2026-11-02T13:38:25.5643183Z PASS simultaneous-hub capacity schedule: small and full dimensions
+2026-11-02T13:38:30.4230100Z PASS 88 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed 4.82s
+2026-11-02T13:38:32.0709466Z PASS boundary 60
+2026-11-02T13:38:40.5003315Z PASS saturation 110
+2026-11-02T13:38:44.0895425Z PASS stress 30
+2026-11-02T13:38:49.9500829Z PASS skewed high-bin overflow 1740512 5000000
+2026-11-02T13:38:49.9608281Z ##[group]Run set -euo pipefail
+2026-11-02T13:38:49.9608658Z [36;1mset -euo pipefail[0m
+2026-11-02T13:38:49.9609134Z [36;1mgit clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official[0m
+2026-11-02T13:38:49.9609729Z [36;1mfor item in 'tiny 2' 'sample 1' 'sample 2' 'full 1' 'full 7' 'full 17'; do[0m
+2026-11-02T13:38:49.9610124Z [36;1m  read -r scale seed <<< "$item"[0m
+2026-11-02T13:38:49.9610477Z [36;1m  data="/tmp/data-$scale-$seed"; ref="/tmp/ref-$scale-$seed"[0m
+2026-11-02T13:38:49.9610846Z [36;1m  mkdir -p "$data" "$ref"[0m
+2026-11-02T13:38:49.9611301Z [36;1m  python /tmp/official/generators/d_traverse.py --scale "$scale" --seed "$seed" --out "$data"[0m
+2026-11-02T13:38:49.9611902Z [36;1m  python /tmp/official/reference/d_traverse.py --data "$data" --out "$ref"[0m
+2026-11-02T13:38:49.9612519Z [36;1m  sha256sum "$data/graph.txt" "$data/queries.txt" "$ref/distances.txt" | tee -a /tmp/receipts/hashes.txt[0m
+2026-11-02T13:38:49.9613072Z [36;1m  for threads in 4 6 12; do[0m
+2026-11-02T13:38:49.9613448Z [36;1m    out="/tmp/out-$scale-$seed-$threads"; mkdir -p "$out"; chmod 777 "$out"[0m
+2026-11-02T13:38:49.9614424Z [36;1m    docker run --rm --network none --read-only --memory 8g --pids-limit 512 --user 65534:65534 --cap-drop ALL --security-opt no-new-privileges -e SD_THREADS="$threads" -v "$data:/data:ro" -v "$out:/out:rw" d-codex-final[0m
+2026-11-02T13:38:49.9615318Z [36;1m    cmp "$ref/distances.txt" "$out/distances.txt"[0m
+2026-11-02T13:38:49.9615825Z [36;1m    echo "PASS $scale seed=$seed threads=$threads" | tee -a /tmp/receipts/matrix.txt[0m
+2026-11-02T13:38:49.9616236Z [36;1m  done[0m
+2026-11-02T13:38:49.9616425Z [36;1mdone[0m
+2026-11-02T13:38:49.9616928Z [36;1mecho 'a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/ref-sample-1/distances.txt' | sha256sum -c[0m
+2026-11-02T13:38:49.9618124Z [36;1mecho 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/ref-full-1/distances.txt' | sha256sum -c[0m
+2026-11-02T13:38:49.9640554Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-02T13:38:49.9640896Z env:
+2026-11-02T13:38:49.9641164Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:38:49.9641609Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:38:49.9642048Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:38:49.9642555Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:38:49.9642959Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:38:49.9643347Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:38:49.9643669Z ##[endgroup]
+2026-11-02T13:38:49.9698423Z Cloning into '/tmp/official'...
+2026-11-02T13:38:50.5538082Z e7b9b0ffd504edeb15d02c1b6ee199cefe67312e30a0ed8030b44a63d01ac586  /tmp/data-tiny-2/graph.txt
+2026-11-02T13:38:50.5539078Z af1099c10b88b2df3949120ab9d60c07a35d5f4357c1c3cf2813bf73efa767f8  /tmp/data-tiny-2/queries.txt
+2026-11-02T13:38:50.5540031Z 686519de01b6c28cc2bb73423152b0636e0e2c1b9a0cb90cda8b0f21673a3474  /tmp/ref-tiny-2/distances.txt
+2026-11-02T13:38:50.7481269Z PASS tiny seed=2 threads=4
+2026-11-02T13:38:50.8876691Z PASS tiny seed=2 threads=6
+2026-11-02T13:38:51.0329954Z PASS tiny seed=2 threads=12
+2026-11-02T13:39:01.9117556Z 16351d408f1f94a6bcf66de5c5762abede111c07a4a38306253504a6c9c9b7cd  /tmp/data-sample-1/graph.txt
+2026-11-02T13:39:01.9118764Z fb4065ffe94d2dd51c924f389bd0c6afa58d42534391aa5b0fe5edfaa33988a5  /tmp/data-sample-1/queries.txt
+2026-11-02T13:39:01.9120233Z a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/ref-sample-1/distances.txt
+2026-11-02T13:39:02.0768556Z PASS sample seed=1 threads=4
+2026-11-02T13:39:02.2361980Z PASS sample seed=1 threads=6
+2026-11-02T13:39:02.3988055Z PASS sample seed=1 threads=12
+2026-11-02T13:39:14.8389141Z 614f55156fc95e301f8a27d6d7ab89f7354710de57cbc8b04a6ebc081ed99a2d  /tmp/data-sample-2/graph.txt
+2026-11-02T13:39:14.8392592Z cce224a9c00a0c9bbcf59a2d2d4090ed9d990b54f85feb1db7bee6d11782a71d  /tmp/data-sample-2/queries.txt
+2026-11-02T13:39:14.8393998Z 70e94813fc6fbee12c22cc040bc4a4629c70508d13eaab2bfabbdd75e1d51aed  /tmp/ref-sample-2/distances.txt
+2026-11-02T13:39:15.0043125Z PASS sample seed=2 threads=4
+2026-11-02T13:39:15.1652018Z PASS sample seed=2 threads=6
+2026-11-02T13:39:15.3292925Z PASS sample seed=2 threads=12
+2026-11-02T13:41:52.6690127Z fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/data-full-1/graph.txt
+2026-11-02T13:41:52.6693564Z 160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/data-full-1/queries.txt
+2026-11-02T13:41:52.6694968Z a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/ref-full-1/distances.txt
+2026-11-02T13:41:52.9837697Z PASS full seed=1 threads=4
+2026-11-02T13:41:53.3073992Z PASS full seed=1 threads=6
+2026-11-02T13:41:53.6392332Z PASS full seed=1 threads=12
+2026-11-02T13:44:37.6941155Z 925139d08965c0b9fa9d73ebdb64a51e2ad71dd26a7926fb2848c55a5e03bf49  /tmp/data-full-7/graph.txt
+2026-11-02T13:44:37.6944953Z b9266e6df0c5a054c33b1165db04b5fcd75bd6e9a64a87f2170158fb1cf43832  /tmp/data-full-7/queries.txt
+2026-11-02T13:44:37.6946452Z 66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646  /tmp/ref-full-7/distances.txt
+2026-11-02T13:44:38.0187677Z PASS full seed=7 threads=4
+2026-11-02T13:44:38.3481086Z PASS full seed=7 threads=6
+2026-11-02T13:44:38.6757830Z PASS full seed=7 threads=12
+2026-11-02T13:47:18.9127619Z cf1f804da4c8f7283004d89340229cbe7147d516d8da712dde7a64b519d615ff  /tmp/data-full-17/graph.txt
+2026-11-02T13:47:18.9129132Z edebd2d34844eee26dcd19e8ea5cca313cbc152025001fb060c124771282a8ff  /tmp/data-full-17/queries.txt
+2026-11-02T13:47:18.9130575Z ad7c211024014a4c21a50faab598dd19e730cbc0b4e8013a7d3b3306132913ba  /tmp/ref-full-17/distances.txt
+2026-11-02T13:47:19.2361055Z PASS full seed=17 threads=4
+2026-11-02T13:47:19.5666476Z PASS full seed=17 threads=6
+2026-11-02T13:47:19.8950475Z PASS full seed=17 threads=12
+2026-11-02T13:47:19.8968776Z /tmp/ref-sample-1/distances.txt: OK
+2026-11-02T13:47:19.8986968Z /tmp/ref-full-1/distances.txt: OK
+2026-11-02T13:47:19.9059076Z ##[group]Run actions/upload-artifact@v4
+2026-11-02T13:47:19.9059395Z with:
+2026-11-02T13:47:19.9059605Z   name: pinned-correctness
+2026-11-02T13:47:19.9059850Z   path: /tmp/receipts
+2026-11-02T13:47:19.9060073Z   if-no-files-found: warn
+2026-11-02T13:47:19.9060313Z   compression-level: 6
+2026-11-02T13:47:19.9060527Z   overwrite: false
+2026-11-02T13:47:19.9060747Z   include-hidden-files: false
+2026-11-02T13:47:19.9060994Z env:
+2026-11-02T13:47:19.9061245Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:47:19.9061672Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:47:19.9062087Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:47:19.9062465Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:47:19.9062848Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:47:19.9063238Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:47:19.9063591Z ##[endgroup]
+2026-11-02T13:47:20.0795891Z (node:176817) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T13:47:20.0796802Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T13:47:20.0886869Z With the provided path, there will be 11 files uploaded
+2026-11-02T13:47:20.0894127Z Artifact name is valid!
+2026-11-02T13:47:20.0895028Z Root directory input is valid!
+2026-11-02T13:47:20.4843711Z Beginning upload of artifact content to blob storage
+2026-11-02T13:47:20.5221165Z (node:176817) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-02T13:47:20.7764192Z Uploaded bytes 2669
+2026-11-02T13:47:20.8462380Z Finished uploading artifact content to blob storage!
+2026-11-02T13:47:20.8463556Z SHA256 digest of uploaded artifact zip is 38566af07600a0145ded4fd30ff657ab779dd36bed57f7adaa3f675ca6580362
+2026-11-02T13:47:20.8465299Z Finalizing artifact upload
+2026-11-02T13:47:21.3298632Z Artifact pinned-correctness.zip successfully finalized. Artifact ID 13146063675
+2026-11-02T13:47:21.3300309Z Artifact pinned-correctness has been successfully uploaded! Final size is 2669 bytes. Artifact ID is 13146063675
+2026-11-02T13:47:21.3306846Z Artifact download URL: https://github.com/insightlabs38-pixel/sd-td/actions/runs/41454634557/artifacts/13146063675
+2026-11-02T13:47:21.3503436Z Post job cleanup.
+2026-11-02T13:47:21.4714384Z (node:176829) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T13:47:21.4715338Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T13:47:21.4900671Z Post job cleanup.
+2026-11-02T13:47:21.5898204Z [command]/usr/bin/git version
+2026-11-02T13:47:21.5942624Z git version 2.56.0
+2026-11-02T13:47:21.5989370Z Temporarily overriding HOME='/home/runner/work/_temp/789cd1e1-2a34-4aca-b345-f3a7d3944e25' before making global git config changes
+2026-11-02T13:47:21.5990994Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T13:47:21.5995598Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+2026-11-02T13:47:21.6051110Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T13:47:21.6118875Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-02T13:47:21.6485896Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T13:47:21.6529487Z http.https://github.com/.extraheader
+2026-11-02T13:47:21.6539903Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-02T13:47:21.6591059Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-02T13:47:21.6939100Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T13:47:21.6997360Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-02T13:47:21.7516003Z Cleaning up orphan processes
+2026-11-02T13:47:21.8048175Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

@@ -1,0 +1,664 @@
+﻿2026-11-02T13:11:29.9859765Z Current runner version: '2.338.2'
+2026-11-02T13:11:29.9879687Z ##[group]Runner Image Provisioner
+2026-11-02T13:11:29.9880445Z Hosted Compute Agent
+2026-11-02T13:11:29.9881005Z Version: 20261021.618
+2026-11-02T13:11:29.9881559Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-02T13:11:29.9882219Z Build Date: 2026-10-21T00:45:21Z
+2026-11-02T13:11:29.9882850Z Worker ID: {d4b06b2c-dbe3-4d5c-a8f6-e14994da29b1}
+2026-11-02T13:11:29.9883473Z Region: westus3
+2026-11-02T13:11:29.9883997Z Cloud: Azure
+2026-11-02T13:11:29.9884469Z ##[endgroup]
+2026-11-02T13:11:29.9885603Z ##[group]Operating System
+2026-11-02T13:11:29.9886140Z Ubuntu
+2026-11-02T13:11:29.9886586Z 24.04.5
+2026-11-02T13:11:29.9887122Z LTS
+2026-11-02T13:11:29.9887576Z ##[endgroup]
+2026-11-02T13:11:29.9888220Z ##[group]Runner Image
+2026-11-02T13:11:29.9888807Z Image: ubuntu-24.04
+2026-11-02T13:11:29.9889299Z Version: 20261025.353.1
+2026-11-02T13:11:29.9890499Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-02T13:11:29.9891770Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+2026-11-02T13:11:29.9892647Z ##[endgroup]
+2026-11-02T13:11:29.9893955Z ##[group]GITHUB_TOKEN Permissions
+2026-11-02T13:11:29.9895774Z Contents: read
+2026-11-02T13:11:29.9896264Z Metadata: read
+2026-11-02T13:11:29.9896835Z Packages: read
+2026-11-02T13:11:29.9897313Z ##[endgroup]
+2026-11-02T13:11:29.9899502Z Secret source: Actions
+2026-11-02T13:11:29.9900334Z Cache mode: write
+2026-11-02T13:11:29.9900940Z Prepare workflow directory
+2026-11-02T13:11:30.0192643Z Prepare all required actions
+2026-11-02T13:11:30.0242789Z Getting action download info
+2026-11-02T13:11:30.3418313Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-02T13:11:30.5262509Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-02T13:11:30.6511272Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-11-02T13:11:30.9011939Z Complete job name: pinned
+2026-11-02T13:11:30.9721827Z ##[group]Run actions/checkout@v4
+2026-11-02T13:11:30.9722482Z with:
+2026-11-02T13:11:30.9722826Z   fetch-depth: 0
+2026-11-02T13:11:30.9723211Z   repository: insightlabs38-pixel/sd-td
+2026-11-02T13:11:30.9726166Z   token: ***
+2026-11-02T13:11:30.9726522Z   ssh-strict: true
+2026-11-02T13:11:30.9726883Z   ssh-user: git
+2026-11-02T13:11:30.9727247Z   persist-credentials: true
+2026-11-02T13:11:30.9727636Z   clean: true
+2026-11-02T13:11:30.9727996Z   sparse-checkout-cone-mode: true
+2026-11-02T13:11:30.9728676Z   fetch-tags: false
+2026-11-02T13:11:30.9729035Z   show-progress: true
+2026-11-02T13:11:30.9729394Z   lfs: false
+2026-11-02T13:11:30.9729732Z   submodules: false
+2026-11-02T13:11:30.9730092Z   set-safe-directory: true
+2026-11-02T13:11:30.9730497Z   allow-unsafe-pr-checkout: false
+2026-11-02T13:11:30.9731096Z ##[endgroup]
+2026-11-02T13:11:31.2539138Z Syncing repository: insightlabs38-pixel/sd-td
+2026-11-02T13:11:31.2541272Z ##[group]Getting Git version info
+2026-11-02T13:11:31.2542085Z Working directory is '/home/runner/work/sd-td/sd-td'
+2026-11-02T13:11:31.2543228Z [command]/usr/bin/git version
+2026-11-02T13:11:31.2592385Z git version 2.56.0
+2026-11-02T13:11:31.2607663Z ##[endgroup]
+2026-11-02T13:11:31.2619049Z Temporarily overriding HOME='/home/runner/work/_temp/7cd90c80-8983-4dc6-bf6b-28ca540f0f52' before making global git config changes
+2026-11-02T13:11:31.2621357Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T13:11:31.2623142Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+2026-11-02T13:11:31.2843693Z Deleting the contents of '/home/runner/work/sd-td/sd-td'
+2026-11-02T13:11:31.2849720Z ##[group]Initializing the repository
+2026-11-02T13:11:31.2852210Z [command]/usr/bin/git init /home/runner/work/sd-td/sd-td
+2026-11-02T13:11:31.4872637Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-02T13:11:31.4874728Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-02T13:11:31.4876212Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-02T13:11:31.4877217Z hint: call:
+2026-11-02T13:11:31.4877626Z hint:
+2026-11-02T13:11:31.4878286Z hint: 	git config --global init.defaultBranch <name>
+2026-11-02T13:11:31.4879392Z hint:
+2026-11-02T13:11:31.4879986Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-02T13:11:31.4881146Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-02T13:11:31.4882195Z hint:
+2026-11-02T13:11:31.4890339Z hint: 	git branch -m <name>
+2026-11-02T13:11:31.4891469Z hint:
+2026-11-02T13:11:31.4892846Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-02T13:11:31.4894540Z Initialized empty Git repository in /home/runner/work/sd-td/sd-td/.git/
+2026-11-02T13:11:31.4897319Z [command]/usr/bin/git remote add origin https://github.com/insightlabs38-pixel/sd-td
+2026-11-02T13:11:31.4974639Z ##[endgroup]
+2026-11-02T13:11:31.4975867Z ##[group]Disabling automatic garbage collection
+2026-11-02T13:11:31.4977159Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-02T13:11:31.5015785Z ##[endgroup]
+2026-11-02T13:11:31.5017196Z ##[group]Setting up auth
+2026-11-02T13:11:31.5020292Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T13:11:31.5057739Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-02T13:11:31.7124075Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T13:11:31.7161567Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-02T13:11:31.7364377Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T13:11:31.7400576Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-02T13:11:31.7600335Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-02T13:11:31.7641416Z ##[endgroup]
+2026-11-02T13:11:31.7642588Z ##[group]Fetching the repository
+2026-11-02T13:11:31.7652797Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+2026-11-02T13:11:32.9891669Z From https://github.com/insightlabs38-pixel/sd-td
+2026-11-02T13:11:32.9893027Z  * [new branch]      branch/intelligent-ride-tbqpdz -> origin/branch/intelligent-ride-tbqpdz
+2026-11-02T13:11:32.9893721Z  * [new branch]      d/adjacency-order-20261031 -> origin/d/adjacency-order-20261031
+2026-11-02T13:11:32.9894480Z  * [new branch]      d/adjacency-prefetch-final-20261101 -> origin/d/adjacency-prefetch-final-20261101
+2026-11-02T13:11:32.9895239Z  * [new branch]      d/adjacency-prefetch-pipeline-20261101 -> origin/d/adjacency-prefetch-pipeline-20261101
+2026-11-02T13:11:32.9895938Z  * [new branch]      d/avx2-build-pgo-20261101 -> origin/d/avx2-build-pgo-20261101
+2026-11-02T13:11:32.9896591Z  * [new branch]      d/avx2-separator-tournament-20261101 -> origin/d/avx2-separator-tournament-20261101
+2026-11-02T13:11:32.9897286Z  * [new branch]      d/balanced-settles-confirm -> origin/d/balanced-settles-confirm
+2026-11-02T13:11:32.9897942Z  * [new branch]      d/batch-small-tournament-20261101 -> origin/d/batch-small-tournament-20261101
+2026-11-02T13:11:32.9899043Z  * [new branch]      d/batch8-promote-20261101 -> origin/d/batch8-promote-20261101
+2026-11-02T13:11:32.9899871Z  * [new branch]      d/bfs-seed-multiplicity-20261031-11 -> origin/d/bfs-seed-multiplicity-20261031-11
+2026-11-02T13:11:32.9901100Z  * [new branch]      d/bidirectional-best-bound-prune -> origin/d/bidirectional-best-bound-prune
+2026-11-02T13:11:32.9901736Z  * [new branch]      d/bidirectional-edge-work -> origin/d/bidirectional-edge-work
+2026-11-02T13:11:32.9902229Z  * [new branch]      d/bin-chunk-tournament  -> origin/d/bin-chunk-tournament
+2026-11-02T13:11:32.9902891Z  * [new branch]      d/binner-chunk-tournament-20261101 -> origin/d/binner-chunk-tournament-20261101
+2026-11-02T13:11:32.9903514Z  * [new branch]      d/binner-progressive-page-reclaim -> origin/d/binner-progressive-page-reclaim
+2026-11-02T13:11:32.9904091Z  * [new branch]      d/build-cap-tournament-20261101 -> origin/d/build-cap-tournament-20261101
+2026-11-02T13:11:32.9904649Z  * [new branch]      d/build-cap-tournament-20261101-22 -> origin/d/build-cap-tournament-20261101-22
+2026-11-02T13:11:32.9905199Z  * [new branch]      d/build-thread-pgo-sweep-20261031 -> origin/d/build-thread-pgo-sweep-20261031
+2026-11-02T13:11:32.9905894Z  * [new branch]      d/bypass-threshold-20261031-11 -> origin/d/bypass-threshold-20261031-11
+2026-11-02T13:11:32.9906505Z  * [new branch]      d/chat-bounded-stream-20261102-07 -> origin/d/chat-bounded-stream-20261102-07
+2026-11-02T13:11:32.9907192Z  * [new branch]      d/chat-bts-claims-20261102-03 -> origin/d/chat-bts-claims-20261102-03
+2026-11-02T13:11:32.9907694Z  * [new branch]      d/chat-byte-exchange-20261102-02 -> origin/d/chat-byte-exchange-20261102-02
+2026-11-02T13:11:32.9908542Z  * [new branch]      d/chat-claim-tournament-20261102-02 -> origin/d/chat-claim-tournament-20261102-02
+2026-11-02T13:11:32.9909267Z  * [new branch]      d/chat-conditional-bound-20261102-08 -> origin/d/chat-conditional-bound-20261102-08
+2026-11-02T13:11:32.9909841Z  * [new branch]      d/chat-conditional-meet-20261102-08 -> origin/d/chat-conditional-meet-20261102-08
+2026-11-02T13:11:32.9910376Z  * [new branch]      d/chat-local-claim-cache-20261102 -> origin/d/chat-local-claim-cache-20261102
+2026-11-02T13:11:32.9910881Z  * [new branch]      d/chat-owner-claims-20261102-03 -> origin/d/chat-owner-claims-20261102-03
+2026-11-02T13:11:32.9911614Z  * [new branch]      d/chat-pr32-readme-accuracy-20261102-10 -> origin/d/chat-pr32-readme-accuracy-20261102-10
+2026-11-02T13:11:32.9912213Z  * [new branch]      d/chat-pr33-docs-20261102-11 -> origin/d/chat-pr33-docs-20261102-11
+2026-11-02T13:11:32.9912793Z  * [new branch]      d/chat-pr36-docs-20261102-12 -> origin/d/chat-pr36-docs-20261102-12
+2026-11-02T13:11:32.9913294Z  * [new branch]      d/chat-probe-tournament-20261102-10 -> origin/d/chat-probe-tournament-20261102-10
+2026-11-02T13:11:32.9913834Z  * [new branch]      d/chat-stream-frontier-20261102-06 -> origin/d/chat-stream-frontier-20261102-06
+2026-11-02T13:11:32.9914385Z  * [new branch]      d/chat-successful-relax-20261102-08 -> origin/d/chat-successful-relax-20261102-08
+2026-11-02T13:11:32.9915002Z  * [new branch]      d/chat-worker-cap-tournament-20261102-10 -> origin/d/chat-worker-cap-tournament-20261102-10
+2026-11-02T13:11:32.9915531Z  * [new branch]      d/claude-donation-12t   -> origin/d/claude-donation-12t
+2026-11-02T13:11:32.9915978Z  * [new branch]      d/compact-distance-overflow -> origin/d/compact-distance-overflow
+2026-11-02T13:11:32.9916436Z  * [new branch]      d/conditional-meet-20261101 -> origin/d/conditional-meet-20261101
+2026-11-02T13:11:32.9916892Z  * [new branch]      d/conditional-relax-20261101 -> origin/d/conditional-relax-20261101
+2026-11-02T13:11:32.9917397Z  * [new branch]      d/contraction-survivor-correctness -> origin/d/contraction-survivor-correctness
+2026-11-02T13:11:32.9917982Z  * [new branch]      d/csr-inplace-cursors   -> origin/d/csr-inplace-cursors
+2026-11-02T13:11:32.9918683Z  * [new branch]      d/csr-inplace-stable-order -> origin/d/csr-inplace-stable-order
+2026-11-02T13:11:32.9919171Z  * [new branch]      d/decouple-build-query-workers -> origin/d/decouple-build-query-workers
+2026-11-02T13:11:32.9919651Z  * [new branch]      d/degree3-bypass-20261102-04 -> origin/d/degree3-bypass-20261102-04
+2026-11-02T13:11:32.9920271Z  * [new branch]      d/direct-csr-two-pass-20261031 -> origin/d/direct-csr-two-pass-20261031
+2026-11-02T13:11:32.9920787Z  * [new branch]      d/direction-policy-tournament -> origin/d/direction-policy-tournament
+2026-11-02T13:11:32.9921329Z  * [new branch]      d/distance-page-prefetch-20261101 -> origin/d/distance-page-prefetch-20261101
+2026-11-02T13:11:32.9921811Z  * [new branch]      d/distance-slab-1031    -> origin/d/distance-slab-1031
+2026-11-02T13:11:32.9922256Z  * [new branch]      d/duplicate-query-20261101 -> origin/d/duplicate-query-20261101
+2026-11-02T13:11:32.9922753Z  * [new branch]      d/duplicate-query-reuse-20261031 -> origin/d/duplicate-query-reuse-20261031
+2026-11-02T13:11:32.9923228Z  * [new branch]      d/epoch16-score-probe   -> origin/d/epoch16-score-probe
+2026-11-02T13:11:32.9923743Z  * [new branch]      d/epoch8-radix-mask-qualification -> origin/d/epoch8-radix-mask-qualification
+2026-11-02T13:11:32.9924230Z  * [new branch]      d/epoch8-score-probe    -> origin/d/epoch8-score-probe
+2026-11-02T13:11:32.9924657Z  * [new branch]      d/escape-page-index     -> origin/d/escape-page-index
+2026-11-02T13:11:32.9925064Z  * [new branch]      d/escape-rank64         -> origin/d/escape-rank64
+2026-11-02T13:11:32.9925501Z  * [new branch]      d/fast-common-weight-parse -> origin/d/fast-common-weight-parse
+2026-11-02T13:11:32.9926036Z  * [new branch]      d/forward-probe-tournament-20261102 -> origin/d/forward-probe-tournament-20261102
+2026-11-02T13:11:32.9926642Z  * [new branch]      d/frontier-independent-qualification -> origin/d/frontier-independent-qualification
+2026-11-02T13:11:32.9927199Z  * [new branch]      d/frontier-thread-probe-sweep -> origin/d/frontier-thread-probe-sweep
+2026-11-02T13:11:32.9927739Z  * [new branch]      d/frontier2-matched-qualification -> origin/d/frontier2-matched-qualification
+2026-11-02T13:11:32.9928407Z  * [new branch]      d/fused-build-worker-sweep-20261101 -> origin/d/fused-build-worker-sweep-20261101
+2026-11-02T13:11:32.9928948Z  * [new branch]      d/fused-owner-probe-20261101 -> origin/d/fused-owner-probe-20261101
+2026-11-02T13:11:32.9929596Z  * [new branch]      d/fused-region-partition-20261101 -> origin/d/fused-region-partition-20261101
+2026-11-02T13:11:32.9930136Z  * [new branch]      d/graph-cache-release-20261101 -> origin/d/graph-cache-release-20261101
+2026-11-02T13:11:32.9930636Z  * [new branch]      d/grow-batch8-final-20261101 -> origin/d/grow-batch8-final-20261101
+2026-11-02T13:11:32.9931143Z  * [new branch]      d/grow-mini-20261101    -> origin/d/grow-mini-20261101
+2026-11-02T13:11:32.9931573Z  * [new branch]      d/grower-batch-20261101 -> origin/d/grower-batch-20261101
+2026-11-02T13:11:32.9932069Z  * [new branch]      d/grower-batch16-champion-20261101 -> origin/d/grower-batch16-champion-20261101
+2026-11-02T13:11:32.9932733Z  * [new branch]      d/grower-batch16-final-qualification-20261101 -> origin/d/grower-batch16-final-qualification-20261101
+2026-11-02T13:11:32.9933302Z  * [new branch]      d/inline-bucket-1031-11 -> origin/d/inline-bucket-1031-11
+2026-11-02T13:11:32.9933792Z  * [new branch]      d/intrabucket-minheap-20261031 -> origin/d/intrabucket-minheap-20261031
+2026-11-02T13:11:32.9934283Z  * [new branch]      d/lean-binner-512-20261101 -> origin/d/lean-binner-512-20261101
+2026-11-02T13:11:32.9934788Z  * [new branch]      d/lean-build-cap4-promote-20261101 -> origin/d/lean-build-cap4-promote-20261101
+2026-11-02T13:11:32.9935365Z  * [new branch]      d/lean-construction-workers-20261101 -> origin/d/lean-construction-workers-20261101
+2026-11-02T13:11:32.9935931Z  * [new branch]      d/lean-prefetch-locality-20261101 -> origin/d/lean-prefetch-locality-20261101
+2026-11-02T13:11:32.9936464Z  * [new branch]      d/lifo-frontier-layout-20261031 -> origin/d/lifo-frontier-layout-20261031
+2026-11-02T13:11:32.9936923Z  * [new branch]      d/memory-tournament     -> origin/d/memory-tournament
+2026-11-02T13:11:32.9937388Z  * [new branch]      d/next-bucket-prefetch-20261031 -> origin/d/next-bucket-prefetch-20261031
+2026-11-02T13:11:32.9937990Z  * [new branch]      d/official-parameter-sweep -> origin/d/official-parameter-sweep
+2026-11-02T13:11:32.9938649Z  * [new branch]      d/page-granularity-tournament -> origin/d/page-granularity-tournament
+2026-11-02T13:11:32.9939138Z  * [new branch]      d/paged-distance-slab   -> origin/d/paged-distance-slab
+2026-11-02T13:11:32.9939603Z  * [new branch]      d/pgo-full-training-20261031 -> origin/d/pgo-full-training-20261031
+2026-11-02T13:11:32.9940142Z  * [new branch]      d/pgo-training-diversity-20261031 -> origin/d/pgo-training-diversity-20261031
+2026-11-02T13:11:32.9940657Z  * [new branch]      d/prefetch-locality-20261101 -> origin/d/prefetch-locality-20261101
+2026-11-02T13:11:32.9941151Z  * [new branch]      d/prefetch-nta-final-20261101 -> origin/d/prefetch-nta-final-20261101
+2026-11-02T13:11:32.9941662Z  * [new branch]      d/prefetch-nta-promote-20261101 -> origin/d/prefetch-nta-promote-20261101
+2026-11-02T13:11:32.9942183Z  * [new branch]      d/probe-after-balanced-20261031 -> origin/d/probe-after-balanced-20261031
+2026-11-02T13:11:32.9942661Z  * [new branch]      d/probe-gap-adaptive    -> origin/d/probe-gap-adaptive
+2026-11-02T13:11:32.9943112Z  * [new branch]      d/probe-skip-unneeded-meets -> origin/d/probe-skip-unneeded-meets
+2026-11-02T13:11:32.9943592Z  * [new branch]      d/probe-unilateral-fastpath -> origin/d/probe-unilateral-fastpath
+2026-11-02T13:11:32.9944054Z  * [new branch]      d/query-batch-locality  -> origin/d/query-batch-locality
+2026-11-02T13:11:32.9944490Z  * [new branch]      d/query-priority-1031-11 -> origin/d/query-priority-1031-11
+2026-11-02T13:11:32.9944937Z  * [new branch]      d/query-seeded-bfs-20261101 -> origin/d/query-seeded-bfs-20261101
+2026-11-02T13:11:32.9945387Z  * [new branch]      d/query-tail-lpt-20261031 -> origin/d/query-tail-lpt-20261031
+2026-11-02T13:11:32.9945868Z  * [new branch]      d/query-tail-scheduling-20261101 -> origin/d/query-tail-scheduling-20261101
+2026-11-02T13:11:32.9946401Z  * [new branch]      d/queue-push-fast-reject-20261101 -> origin/d/queue-push-fast-reject-20261101
+2026-11-02T13:11:32.9946993Z  * [new branch]      d/queue-width-tournament -> origin/d/queue-width-tournament
+2026-11-02T13:11:32.9947459Z  * [new branch]      d/radix-inplace-candidate -> origin/d/radix-inplace-candidate
+2026-11-02T13:11:32.9947897Z  * [new branch]      d/radix-nonempty-mask   -> origin/d/radix-nonempty-mask
+2026-11-02T13:11:32.9948546Z  * [new branch]      d/release-indegree      -> origin/d/release-indegree
+2026-11-02T13:11:32.9948976Z  * [new branch]      d/release-parse-scratch -> origin/d/release-parse-scratch
+2026-11-02T13:11:32.9949460Z  * [new branch]      d/reorder-region-gather-no-copy -> origin/d/reorder-region-gather-no-copy
+2026-11-02T13:11:32.9949949Z  * [new branch]      d/reuse-forward-probe   -> origin/d/reuse-forward-probe
+2026-11-02T13:11:32.9950385Z  * [new branch]      d/reverse-barrier-20261101 -> origin/d/reverse-barrier-20261101
+2026-11-02T13:11:32.9950891Z  * [new branch]      d/reverse-count-prefetch-20261101 -> origin/d/reverse-count-prefetch-20261101
+2026-11-02T13:11:32.9951425Z  * [new branch]      d/reverse-csr-inplace-cursor -> origin/d/reverse-csr-inplace-cursor
+2026-11-02T13:11:32.9951893Z  * [new branch]      d/reverse-sharded-noatomic -> origin/d/reverse-sharded-noatomic
+2026-11-02T13:11:32.9952389Z  * [new branch]      d/search-frontier-policy-20261101 -> origin/d/search-frontier-policy-20261101
+2026-11-02T13:11:32.9953002Z  * [new branch]      d/slab-probe-combined   -> origin/d/slab-probe-combined
+2026-11-02T13:11:32.9953693Z  * [new branch]      d/terminal-bitset-query-dedup -> origin/d/terminal-bitset-query-dedup
+2026-11-02T13:11:32.9954439Z  * [new branch]      d/three-slot-rows-20261101 -> origin/d/three-slot-rows-20261101
+2026-11-02T13:11:32.9954980Z  * [new branch]      d/two-level-bucket-bitmap-20261101 -> origin/d/two-level-bucket-bitmap-20261101
+2026-11-02T13:11:32.9955509Z  * [new branch]      d/vertex-best-bound-20261031 -> origin/d/vertex-best-bound-20261031
+2026-11-02T13:11:33.0025580Z  * [new branch]      d/walk-block-tournament-1031 -> origin/d/walk-block-tournament-1031
+2026-11-02T13:11:33.0026747Z  * [new branch]      d/wcc-guard-search-20261031 -> origin/d/wcc-guard-search-20261031
+2026-11-02T13:11:33.0027554Z  * [new branch]      d/x86-v3-build-20261031 -> origin/d/x86-v3-build-20261031
+2026-11-02T13:11:33.0028482Z  * [new branch]      frontier/d-claude-architecture -> origin/frontier/d-claude-architecture
+2026-11-02T13:11:33.0029242Z  * [new branch]      frontier/d-claude-architecture-2 -> origin/frontier/d-claude-architecture-2
+2026-11-02T13:11:33.0030016Z  * [new branch]      frontier/d-claude-architecture-3 -> origin/frontier/d-claude-architecture-3
+2026-11-02T13:11:33.0030864Z  * [new branch]      frontier/d-claude-architecture-4 -> origin/frontier/d-claude-architecture-4
+2026-11-02T13:11:33.0031644Z  * [new branch]      frontier/d-claude-architecture-5 -> origin/frontier/d-claude-architecture-5
+2026-11-02T13:11:33.0032468Z  * [new branch]      frontier/d-claude-architecture-6 -> origin/frontier/d-claude-architecture-6
+2026-11-02T13:11:33.0033175Z  * [new branch]      main                    -> origin/main
+2026-11-02T13:11:33.0033831Z  * [new branch]      prize/d-codex-final-bounded -> origin/prize/d-codex-final-bounded
+2026-11-02T13:11:33.0034685Z  * [new branch]      prize/d-codex-final-bounded-probe -> origin/prize/d-codex-final-bounded-probe
+2026-11-02T13:11:33.0035563Z  * [new branch]      prize/d-codex-final-bounded-six -> origin/prize/d-codex-final-bounded-six
+2026-11-02T13:11:33.0036494Z  * [new branch]      prize/d-codex-final-champion-bmi32 -> origin/prize/d-codex-final-champion-bmi32
+2026-11-02T13:11:33.0037507Z  * [new branch]      prize/d-codex-final-champion-codegen-screen -> origin/prize/d-codex-final-champion-codegen-screen
+2026-11-02T13:11:33.0038858Z  * [new branch]      prize/d-codex-final-champion-drop-self -> origin/prize/d-codex-final-champion-drop-self
+2026-11-02T13:11:33.0039754Z  * [new branch]      prize/d-codex-final-champion-pgo -> origin/prize/d-codex-final-champion-pgo
+2026-11-02T13:11:33.0040798Z  * [new branch]      prize/d-codex-final-champion-pgo-bmi32 -> origin/prize/d-codex-final-champion-pgo-bmi32
+2026-11-02T13:11:33.0041433Z  * [new branch]      prize/d-codex-final-champion-query10 -> origin/prize/d-codex-final-champion-query10
+2026-11-02T13:11:33.0042020Z  * [new branch]      prize/d-codex-final-champion-wide128 -> origin/prize/d-codex-final-champion-wide128
+2026-11-02T13:11:33.0042652Z  * [new branch]      prize/d-codex-final-champion-wide128-query10 -> origin/prize/d-codex-final-champion-wide128-query10
+2026-11-02T13:11:33.0043242Z  * [new branch]      prize/d-codex-final-claim-atomic -> origin/prize/d-codex-final-claim-atomic
+2026-11-02T13:11:33.0043763Z  * [new branch]      prize/d-codex-final-claim-bytes -> origin/prize/d-codex-final-claim-bytes
+2026-11-02T13:11:33.0044250Z  * [new branch]      prize/d-codex-final-clipped -> origin/prize/d-codex-final-clipped
+2026-11-02T13:11:33.0044738Z  * [new branch]      prize/d-codex-final-control-six -> origin/prize/d-codex-final-control-six
+2026-11-02T13:11:33.0045241Z  * [new branch]      prize/d-codex-final-frontier -> origin/prize/d-codex-final-frontier
+2026-11-02T13:11:33.0045763Z  * [new branch]      prize/d-codex-final-frontier-bytes -> origin/prize/d-codex-final-frontier-bytes
+2026-11-02T13:11:33.0046311Z  * [new branch]      prize/d-codex-final-frontier-cap6 -> origin/prize/d-codex-final-frontier-cap6
+2026-11-02T13:11:33.0046854Z  * [new branch]      prize/d-codex-final-frontier-cap8 -> origin/prize/d-codex-final-frontier-cap8
+2026-11-02T13:11:33.0047371Z  * [new branch]      prize/d-codex-final-phase-six -> origin/prize/d-codex-final-phase-six
+2026-11-02T13:11:33.0047872Z  * [new branch]      prize/d-codex-final-prefix-bins -> origin/prize/d-codex-final-prefix-bins
+2026-11-02T13:11:33.0048598Z  * [new branch]      prize/d-codex-final-prefix-eight -> origin/prize/d-codex-final-prefix-eight
+2026-11-02T13:11:33.0049321Z  * [new branch]      prize/d-codex-final-prefix-pages -> origin/prize/d-codex-final-prefix-pages
+2026-11-02T13:11:33.0050469Z  * [new branch]      prize/d-codex-final-prefix-query10 -> origin/prize/d-codex-final-prefix-query10
+2026-11-02T13:11:33.0051349Z  * [new branch]      prize/d-codex-final-prefix-simd -> origin/prize/d-codex-final-prefix-simd
+2026-11-02T13:11:33.0052262Z  * [new branch]      prize/d-codex-final-prefix-simd-pages -> origin/prize/d-codex-final-prefix-simd-pages
+2026-11-02T13:11:33.0053219Z  * [new branch]      prize/d-codex-final-prefix-twelve -> origin/prize/d-codex-final-prefix-twelve
+2026-11-02T13:11:33.0054116Z  * [new branch]      prize/d-codex-final-prefix-wide128 -> origin/prize/d-codex-final-prefix-wide128
+2026-11-02T13:11:33.0054934Z  * [new branch]      prize/d-codex-final-query -> origin/prize/d-codex-final-query
+2026-11-02T13:11:33.0055698Z  * [new branch]      prize/d-codex-final-saturated -> origin/prize/d-codex-final-saturated
+2026-11-02T13:11:33.0056557Z  * [new branch]      prize/d-codex-final-saturated-cap4 -> origin/prize/d-codex-final-saturated-cap4
+2026-11-02T13:11:33.0057167Z  * [new branch]      prize/d-codex-final-sparse-screen -> origin/prize/d-codex-final-sparse-screen
+2026-11-02T13:11:33.0057710Z  * [new branch]      prize/d-codex-final-stream-parser -> origin/prize/d-codex-final-stream-parser
+2026-11-02T13:11:33.0058427Z  * [new branch]      prize/d-opus-final-bench -> origin/prize/d-opus-final-bench
+2026-11-02T13:11:33.0058880Z  * [new branch]      prize/d-opus-final-c1   -> origin/prize/d-opus-final-c1
+2026-11-02T13:11:33.0059295Z  * [new branch]      prize/d-opus-final-c2   -> origin/prize/d-opus-final-c2
+2026-11-02T13:11:33.0059730Z  * [new branch]      prize/d-opus-final-c2-cap4 -> origin/prize/d-opus-final-c2-cap4
+2026-11-02T13:11:33.0060169Z  * [new branch]      prize/d-opus-last-a     -> origin/prize/d-opus-last-a
+2026-11-02T13:11:33.0060575Z  * [new branch]      prize/d-opus-last-a3    -> origin/prize/d-opus-last-a3
+2026-11-02T13:11:33.0060975Z  * [new branch]      prize/d-opus-last-b     -> origin/prize/d-opus-last-b
+2026-11-02T13:11:33.0061392Z  * [new branch]      prize/d-opus-last-bench -> origin/prize/d-opus-last-bench
+2026-11-02T13:11:33.0061969Z  * [new branch]      prize/d-opus-lean       -> origin/prize/d-opus-lean
+2026-11-02T13:11:33.0062584Z  * [new branch]      research/d-breakthrough-20261101-compact-multiround -> origin/research/d-breakthrough-20261101-compact-multiround
+2026-11-02T13:11:33.0063301Z  * [new branch]      research/d-breakthrough-20261101-direct-raw -> origin/research/d-breakthrough-20261101-direct-raw
+2026-11-02T13:11:33.0063970Z  * [new branch]      research/d-breakthrough-20261101-directed-alt -> origin/research/d-breakthrough-20261101-directed-alt
+2026-11-02T13:11:33.0064623Z  * [new branch]      research/d-breakthrough-20261101-dual-bin -> origin/research/d-breakthrough-20261101-dual-bin
+2026-11-02T13:11:33.0065411Z  * [new branch]      research/d-breakthrough-20261101-evidence -> origin/research/d-breakthrough-20261101-evidence
+2026-11-02T13:11:33.0066083Z  * [new branch]      research/d-breakthrough-20261101-forward-only -> origin/research/d-breakthrough-20261101-forward-only
+2026-11-02T13:11:33.0066792Z  * [new branch]      research/d-breakthrough-20261101-fused-degree34 -> origin/research/d-breakthrough-20261101-fused-degree34
+2026-11-02T13:11:33.0067509Z  * [new branch]      research/d-breakthrough-20261101-fused-diagnostics -> origin/research/d-breakthrough-20261101-fused-diagnostics
+2026-11-02T13:11:33.0068407Z  * [new branch]      research/d-breakthrough-20261101-fused-hierarchy -> origin/research/d-breakthrough-20261101-fused-hierarchy
+2026-11-02T13:11:33.0069187Z  * [new branch]      research/d-breakthrough-20261101-fused-hierarchy-refined -> origin/research/d-breakthrough-20261101-fused-hierarchy-refined
+2026-11-02T13:11:33.0069939Z  * [new branch]      research/d-breakthrough-20261101-input-cgroup -> origin/research/d-breakthrough-20261101-input-cgroup
+2026-11-02T13:11:33.0070610Z  * [new branch]      research/d-breakthrough-20261101-input-handoff -> origin/research/d-breakthrough-20261101-input-handoff
+2026-11-02T13:11:33.0071424Z  * [new branch]      research/d-breakthrough-20261101-input-lifetime -> origin/research/d-breakthrough-20261101-input-lifetime
+2026-11-02T13:11:33.0072095Z  * [new branch]      research/d-breakthrough-20261101-input-tsan -> origin/research/d-breakthrough-20261101-input-tsan
+2026-11-02T13:11:33.0072771Z  * [new branch]      research/d-breakthrough-20261101-lazy-shortcuts -> origin/research/d-breakthrough-20261101-lazy-shortcuts
+2026-11-02T13:11:33.0073487Z  * [new branch]      research/d-breakthrough-20261101-native-directed-alt -> origin/research/d-breakthrough-20261101-native-directed-alt
+2026-11-02T13:11:33.0074259Z  * [new branch]      research/d-breakthrough-20261101-overlap-query-reverse -> origin/research/d-breakthrough-20261101-overlap-query-reverse
+2026-11-02T13:11:33.0074967Z  * [new branch]      research/d-breakthrough-20261101-partial-ch -> origin/research/d-breakthrough-20261101-partial-ch
+2026-11-02T13:11:33.0075670Z  * [new branch]      research/d-breakthrough-20261101-phase-profile -> origin/research/d-breakthrough-20261101-phase-profile
+2026-11-02T13:11:33.0076665Z  * [new branch]      research/d-breakthrough-20261101-phases -> origin/research/d-breakthrough-20261101-phases
+2026-11-02T13:11:33.0077699Z  * [new branch]      research/d-breakthrough-20261101-query-anatomy-chat -> origin/research/d-breakthrough-20261101-query-anatomy-chat
+2026-11-02T13:11:33.0078881Z  * [new branch]      research/d-breakthrough-20261101-quotient-astar -> origin/research/d-breakthrough-20261101-quotient-astar
+2026-11-02T13:11:33.0079617Z  * [new branch]      research/d-breakthrough-20261101-quotient-diagnostics -> origin/research/d-breakthrough-20261101-quotient-diagnostics
+2026-11-02T13:11:33.0080317Z  * [new branch]      research/d-breakthrough-20261101-sanitizers -> origin/research/d-breakthrough-20261101-sanitizers
+2026-11-02T13:11:33.0081029Z  * [new branch]      research/d-breakthrough-20261101-stage-attribution-chat -> origin/research/d-breakthrough-20261101-stage-attribution-chat
+2026-11-02T13:11:33.0081900Z  * [new branch]      research/d-exact-shortcut-probes-20261031 -> origin/research/d-exact-shortcut-probes-20261031
+2026-11-02T13:11:33.0083109Z [command]/usr/bin/git branch --list --remote origin/prize/d-codex-final-champion-pgo
+2026-11-02T13:11:33.0083562Z   origin/prize/d-codex-final-champion-pgo
+2026-11-02T13:11:33.0084406Z [command]/usr/bin/git rev-parse refs/remotes/origin/prize/d-codex-final-champion-pgo
+2026-11-02T13:11:33.0084797Z 64cbbc597ed84c9db6a9da2ae70fbe65b6e98c96
+2026-11-02T13:11:33.0085472Z ##[endgroup]
+2026-11-02T13:11:33.0085829Z ##[group]Determining the checkout info
+2026-11-02T13:11:33.0086212Z ##[endgroup]
+2026-11-02T13:11:33.0086448Z [command]/usr/bin/git sparse-checkout disable
+2026-11-02T13:11:33.0087248Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-02T13:11:33.0089126Z ##[group]Checking out the ref
+2026-11-02T13:11:33.0092571Z [command]/usr/bin/git checkout --progress --force -B prize/d-codex-final-champion-pgo refs/remotes/origin/prize/d-codex-final-champion-pgo
+2026-11-02T13:11:33.0162260Z Switched to a new branch 'prize/d-codex-final-champion-pgo'
+2026-11-02T13:11:33.0167277Z branch 'prize/d-codex-final-champion-pgo' set up to track 'origin/prize/d-codex-final-champion-pgo'.
+2026-11-02T13:11:33.0171900Z ##[endgroup]
+2026-11-02T13:11:33.0212085Z [command]/usr/bin/git log -1 --format=%H
+2026-11-02T13:11:33.0240850Z 64cbbc597ed84c9db6a9da2ae70fbe65b6e98c96
+2026-11-02T13:11:33.0460735Z ##[group]Run actions/setup-python@v5
+2026-11-02T13:11:33.0461008Z with:
+2026-11-02T13:11:33.0461215Z   python-version: 3.13
+2026-11-02T13:11:33.0461442Z   check-latest: false
+2026-11-02T13:11:33.0463301Z   token: ***
+2026-11-02T13:11:33.0463513Z   update-environment: true
+2026-11-02T13:11:33.0463748Z   allow-prereleases: false
+2026-11-02T13:11:33.0463973Z   freethreaded: false
+2026-11-02T13:11:33.0464187Z ##[endgroup]
+2026-11-02T13:11:33.1521054Z ##[group]Installed versions
+2026-11-02T13:11:33.1848575Z (node:2076) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T13:11:33.1850037Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T13:11:33.1850589Z Successfully set up CPython (3.13.17)
+2026-11-02T13:11:33.1851271Z ##[endgroup]
+2026-11-02T13:11:33.2065378Z ##[group]Run set -euo pipefail
+2026-11-02T13:11:33.2065769Z [36;1mset -euo pipefail[0m
+2026-11-02T13:11:33.2066067Z [36;1mdocker build --pull -t d-codex-final track-d[0m
+2026-11-02T13:11:33.2066396Z [36;1mid=$(docker create d-codex-final)[0m
+2026-11-02T13:11:33.2066709Z [36;1mdocker cp "$id:/traverse" /tmp/traverse[0m
+2026-11-02T13:11:33.2066986Z [36;1mdocker rm "$id"[0m
+2026-11-02T13:11:33.2067221Z [36;1mmkdir -p /tmp/receipts[0m
+2026-11-02T13:11:33.2067626Z [36;1mgit rev-parse HEAD:track-d/d_traverse.cpp HEAD:track-d/Dockerfile | tee /tmp/receipts/blobs.txt[0m
+2026-11-02T13:11:33.2068278Z [36;1msha256sum /tmp/traverse | tee /tmp/receipts/binary.txt[0m
+2026-11-02T13:11:33.2138817Z shell: /usr/bin/bash -e {0}
+2026-11-02T13:11:33.2139170Z env:
+2026-11-02T13:11:33.2139510Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:11:33.2139978Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:11:33.2140460Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:11:33.2140818Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:11:33.2141167Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:11:33.2141517Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:11:33.2141825Z ##[endgroup]
+2026-11-02T13:11:36.3978537Z #0 building with "default" instance using docker driver
+2026-11-02T13:11:36.3978920Z 
+2026-11-02T13:11:36.3979090Z #1 [internal] load build definition from Dockerfile
+2026-11-02T13:11:36.3979529Z #1 transferring dockerfile: 929B 0.0s done
+2026-11-02T13:11:36.3979872Z #1 DONE 0.0s
+2026-11-02T13:11:36.3980011Z 
+2026-11-02T13:11:36.3980546Z #2 [internal] load metadata for docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:11:36.6246601Z #2 ...
+2026-11-02T13:11:36.6246779Z 
+2026-11-02T13:11:36.6246950Z #3 [auth] library/debian:pull token for registry-1.docker.io
+2026-11-02T13:11:36.6247407Z #3 DONE 0.0s
+2026-11-02T13:11:36.6247533Z 
+2026-11-02T13:11:36.6247702Z #4 [auth] library/gcc:pull token for registry-1.docker.io
+2026-11-02T13:11:36.6248029Z #4 DONE 0.0s
+2026-11-02T13:11:36.7735340Z 
+2026-11-02T13:11:36.7735899Z #5 [internal] load metadata for docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+2026-11-02T13:11:37.6379055Z #5 DONE 1.4s
+2026-11-02T13:11:37.6379266Z 
+2026-11-02T13:11:37.6379803Z #2 [internal] load metadata for docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:11:37.8093269Z #2 DONE 1.6s
+2026-11-02T13:11:37.9315696Z 
+2026-11-02T13:11:37.9316418Z #6 [internal] load .dockerignore
+2026-11-02T13:11:37.9317314Z #6 transferring context: 2B done
+2026-11-02T13:11:37.9318966Z #6 DONE 0.0s
+2026-11-02T13:11:37.9319301Z 
+2026-11-02T13:11:37.9319528Z #7 [internal] load build context
+2026-11-02T13:11:37.9319911Z #7 transferring context: 31.79kB done
+2026-11-02T13:11:37.9320292Z #7 DONE 0.0s
+2026-11-02T13:11:37.9320439Z 
+2026-11-02T13:11:37.9320979Z #8 [stage-1 1/2] FROM docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+2026-11-02T13:11:37.9322024Z #8 resolve docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad done
+2026-11-02T13:11:37.9322950Z #8 sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad 8.97kB / 8.97kB done
+2026-11-02T13:11:37.9323765Z #8 sha256:4876fdea29cac1a33a3195f1eb1952feb1fca7dd6dd00be3e2f1879cf20d34d2 1.02kB / 1.02kB done
+2026-11-02T13:11:37.9324570Z #8 sha256:133aec7ab1411181567fef7fc3f4512123e1f9660090b49851de4b698b4ff772 451B / 451B done
+2026-11-02T13:11:37.9325766Z #8 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 4.19MB / 29.84MB 0.1s
+2026-11-02T13:11:38.0436612Z #8 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 29.84MB / 29.84MB 0.2s
+2026-11-02T13:11:38.5427064Z #8 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 29.84MB / 29.84MB 0.4s done
+2026-11-02T13:11:38.5427730Z #8 extracting sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034
+2026-11-02T13:11:40.1234367Z #8 extracting sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 1.5s done
+2026-11-02T13:11:41.1632065Z #8 DONE 3.3s
+2026-11-02T13:11:41.1632283Z 
+2026-11-02T13:11:41.1632757Z #9 [build 1/3] FROM docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:11:41.1633705Z #9 resolve docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce done
+2026-11-02T13:11:41.1634391Z #9 sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce 7.63kB / 7.63kB done
+2026-11-02T13:11:41.1634991Z #9 sha256:43f51138b1cd8113a36a0a38d89243debb9da1dc64dff2d3f10e945f15eab0bd 7.46kB / 7.46kB done
+2026-11-02T13:11:41.1635848Z #9 sha256:df8a4d9d058f59c2a4ee8cca45e59cea987f442fdb348aa6258357886a13afa8 2.49kB / 2.49kB done
+2026-11-02T13:11:41.1636696Z #9 sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 49.39MB / 49.39MB 0.7s done
+2026-11-02T13:11:41.1637223Z #9 sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 25.64MB / 25.64MB 0.7s done
+2026-11-02T13:11:41.1637747Z #9 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 67.82MB / 67.82MB 1.2s done
+2026-11-02T13:11:41.1638579Z #9 sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b 4.59MB / 4.59MB 0.8s done
+2026-11-02T13:11:41.1639411Z #9 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 237.00MB / 237.00MB 3.3s
+2026-11-02T13:11:41.1640241Z #9 extracting sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 2.0s done
+2026-11-02T13:11:41.1641062Z #9 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 168.16MB / 168.16MB 3.2s
+2026-11-02T13:11:41.1641864Z #9 sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb 10.64kB / 10.64kB 1.5s done
+2026-11-02T13:11:41.1642678Z #9 sha256:7141354ffcf765a5454476c2d38c2318eba54cc13a3fc5b6a04430064b940c2c 2.00kB / 2.00kB 2.1s done
+2026-11-02T13:11:41.2910945Z #9 extracting sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 0.1s
+2026-11-02T13:11:41.7897340Z #9 extracting sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 0.4s done
+2026-11-02T13:11:46.1004761Z #9 extracting sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309
+2026-11-02T13:11:47.9828501Z #9 extracting sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 1.7s done
+2026-11-02T13:11:49.1111845Z #9 extracting sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4
+2026-11-02T13:11:53.8484651Z #9 extracting sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 4.6s done
+2026-11-02T13:12:00.2317643Z #9 extracting sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b
+2026-11-02T13:12:00.4111959Z #9 extracting sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b 0.1s done
+2026-11-02T13:12:00.4112740Z #9 extracting sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea
+2026-11-02T13:12:02.6240302Z #9 extracting sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 2.1s done
+2026-11-02T13:12:05.2561270Z #9 extracting sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb
+2026-11-02T13:12:05.4653815Z #9 extracting sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb done
+2026-11-02T13:12:05.4654724Z #9 extracting sha256:7141354ffcf765a5454476c2d38c2318eba54cc13a3fc5b6a04430064b940c2c done
+2026-11-02T13:12:05.4655995Z #9 DONE 27.5s
+2026-11-02T13:12:05.4656204Z 
+2026-11-02T13:12:05.4656465Z #10 [build 2/3] COPY d_traverse.cpp pgo_train_graph.cpp /src/
+2026-11-02T13:12:05.4656871Z #10 DONE 0.0s
+2026-11-02T13:12:05.4657001Z 
+2026-11-02T13:12:05.4659847Z #11 [build 3/3] RUN mkdir -p /mnt/champion-train /tmp/pgo /tmp/train-out &&     g++ -O2 -std=c++17 -o /tmp/train-gen /src/pgo_train_graph.cpp &&     /tmp/train-gen &&     g++ -O3 -std=c++17 -pthread -flto -static -s -fprofile-generate=/tmp/pgo -fprofile-update=atomic -o /traverse /src/d_traverse.cpp &&     SD_DATA=/mnt/champion-train SD_OUT=/tmp/train-out SD_THREADS=12 /traverse &&     test -n "$(find /tmp/pgo -name '*.gcda' -print -quit)" &&     g++ -O3 -std=c++17 -pthread -flto -static -s -fprofile-use=/tmp/pgo -fprofile-correction -fprofile-partial-training -o /traverse /src/d_traverse.cpp
+2026-11-02T13:12:07.7802307Z #11 2.465 lto-wrapper: warning: using serial compilation of 3 LTRANS jobs
+2026-11-02T13:12:07.7803004Z #11 2.465 lto-wrapper: note: see the '-flto' option documentation for more information
+2026-11-02T13:12:17.7618474Z #11 DONE 12.4s
+2026-11-02T13:12:18.2656720Z 
+2026-11-02T13:12:18.2657272Z #12 [stage-1 2/2] COPY --from=build /traverse /traverse
+2026-11-02T13:12:18.4266487Z #12 DONE 0.0s
+2026-11-02T13:12:18.4266685Z 
+2026-11-02T13:12:18.4266777Z #13 exporting to image
+2026-11-02T13:12:18.4266988Z #13 exporting layers
+2026-11-02T13:12:19.1493568Z #13 exporting layers 0.9s done
+2026-11-02T13:12:19.1894022Z #13 writing image sha256:653ca8c7bb897b6327cba1ecbc4de1c9aea92c380d93ac21eaf56a9704b1fae5 done
+2026-11-02T13:12:19.1894620Z #13 naming to docker.io/library/d-codex-final done
+2026-11-02T13:12:19.1894990Z #13 DONE 0.9s
+2026-11-02T13:12:19.2765301Z 40b4dfe1aeb68a3d6026154afe34e10baa8546a3e94d968e4744010ae4265174
+2026-11-02T13:12:19.2811412Z 02e0764ef534a8a6694006b12911776e0a9f2860
+2026-11-02T13:12:19.2811829Z 018fdea0b307a4beee4dcb8c68f903258a64e2d1
+2026-11-02T13:12:19.2836533Z f6acc5599067add4e9a643bff504453ab395e49e754d5658298f6f438843b948  /tmp/traverse
+2026-11-02T13:12:19.2879847Z ##[group]Run set -euo pipefail
+2026-11-02T13:12:19.2880118Z [36;1mset -euo pipefail[0m
+2026-11-02T13:12:19.2880422Z [36;1mpython tests/claim_schedule_d.py | tee /tmp/receipts/claim-schedule.txt[0m
+2026-11-02T13:12:19.2880826Z [36;1mpython tests/claim_capacity_d.py | tee /tmp/receipts/claim-capacity.txt[0m
+2026-11-02T13:12:19.2881193Z [36;1mpython tests/test_d.py | tee /tmp/receipts/fixtures.txt[0m
+2026-11-02T13:12:19.2881524Z [36;1mpython tests/boundary_d.py | tee /tmp/receipts/boundary.txt[0m
+2026-11-02T13:12:19.2881873Z [36;1mpython tests/saturation_d.py | tee /tmp/receipts/saturation.txt[0m
+2026-11-02T13:12:19.2882216Z [36;1mpython tests/stress_d.py 30 | tee /tmp/receipts/stress.txt[0m
+2026-11-02T13:12:19.2882544Z [36;1mpython tests/skew_bins_d.py | tee /tmp/receipts/skew-bins.txt[0m
+2026-11-02T13:12:19.2901006Z shell: /usr/bin/bash -e {0}
+2026-11-02T13:12:19.2901214Z env:
+2026-11-02T13:12:19.2901429Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:12:19.2901828Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:12:19.2902175Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:12:19.2902469Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:12:19.2902759Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:12:19.2903053Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:12:19.2903319Z   SD_TEST_BINARY: /tmp/traverse
+2026-11-02T13:12:19.2903514Z ##[endgroup]
+2026-11-02T13:12:22.2712060Z fast region already contains 999 of 1000 vertices; releasing stale claim
+2026-11-02T13:12:22.2713126Z completed fast region len=999 edges=3998 (capacities 1000,4000)
+2026-11-02T13:12:22.2713634Z child_signal=0 exit_code=0
+2026-11-02T13:12:22.4061849Z fast region already contains 1740511 of 1740512 vertices; releasing stale claim
+2026-11-02T13:12:22.4062480Z completed fast region len=1740511 edges=4999998 (capacities 1740512,5000000)
+2026-11-02T13:12:22.4138755Z child_signal=0 exit_code=0
+2026-11-02T13:12:22.4373132Z PASS forced stale-claim schedule: small and full dimensions
+2026-11-02T13:12:24.3326701Z forward vertices=4 edges=4000 capacities n=1000 m=4000 answers=1,4611686018427387904
+2026-11-02T13:12:24.3328295Z child_signal=0 exit_code=0
+2026-11-02T13:12:24.4967650Z forward vertices=4 edges=5000000 capacities n=1740512 m=5000000 answers=1,4611686018427387904
+2026-11-02T13:12:24.4993930Z child_signal=0 exit_code=0
+2026-11-02T13:12:24.5484607Z PASS simultaneous-hub capacity schedule: small and full dimensions
+2026-11-02T13:12:29.1714565Z PASS 88 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed 4.56s
+2026-11-02T13:12:30.6831971Z PASS boundary 60
+2026-11-02T13:12:37.5983012Z PASS saturation 110
+2026-11-02T13:12:40.6705092Z PASS stress 30
+2026-11-02T13:12:45.3798767Z PASS skewed high-bin overflow 1740512 5000000
+2026-11-02T13:12:45.3885347Z ##[group]Run set -euo pipefail
+2026-11-02T13:12:45.3885640Z [36;1mset -euo pipefail[0m
+2026-11-02T13:12:45.3886014Z [36;1mgit clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official[0m
+2026-11-02T13:12:45.3886470Z [36;1mfor item in 'tiny 2' 'sample 1' 'sample 2' 'full 1' 'full 7' 'full 17'; do[0m
+2026-11-02T13:12:45.3886788Z [36;1m  read -r scale seed <<< "$item"[0m
+2026-11-02T13:12:45.3887076Z [36;1m  data="/tmp/data-$scale-$seed"; ref="/tmp/ref-$scale-$seed"[0m
+2026-11-02T13:12:45.3887351Z [36;1m  mkdir -p "$data" "$ref"[0m
+2026-11-02T13:12:45.3887701Z [36;1m  python /tmp/official/generators/d_traverse.py --scale "$scale" --seed "$seed" --out "$data"[0m
+2026-11-02T13:12:45.3888384Z [36;1m  python /tmp/official/reference/d_traverse.py --data "$data" --out "$ref"[0m
+2026-11-02T13:12:45.3888857Z [36;1m  sha256sum "$data/graph.txt" "$data/queries.txt" "$ref/distances.txt" | tee -a /tmp/receipts/hashes.txt[0m
+2026-11-02T13:12:45.3889269Z [36;1m  for threads in 4 6 12; do[0m
+2026-11-02T13:12:45.3889559Z [36;1m    out="/tmp/out-$scale-$seed-$threads"; mkdir -p "$out"; chmod 777 "$out"[0m
+2026-11-02T13:12:45.3890293Z [36;1m    docker run --rm --network none --read-only --memory 8g --pids-limit 512 --user 65534:65534 --cap-drop ALL --security-opt no-new-privileges -e SD_THREADS="$threads" -v "$data:/data:ro" -v "$out:/out:rw" d-codex-final[0m
+2026-11-02T13:12:45.3890950Z [36;1m    cmp "$ref/distances.txt" "$out/distances.txt"[0m
+2026-11-02T13:12:45.3891305Z [36;1m    echo "PASS $scale seed=$seed threads=$threads" | tee -a /tmp/receipts/matrix.txt[0m
+2026-11-02T13:12:45.3891624Z [36;1m  done[0m
+2026-11-02T13:12:45.3891782Z [36;1mdone[0m
+2026-11-02T13:12:45.3892177Z [36;1mecho 'a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/ref-sample-1/distances.txt' | sha256sum -c[0m
+2026-11-02T13:12:45.3892937Z [36;1mecho 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/ref-full-1/distances.txt' | sha256sum -c[0m
+2026-11-02T13:12:45.3930657Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-02T13:12:45.3930944Z env:
+2026-11-02T13:12:45.3931162Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:12:45.3931502Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:12:45.3931820Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:12:45.3932114Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:12:45.3932408Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:12:45.3932703Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:12:45.3932974Z ##[endgroup]
+2026-11-02T13:12:45.3982176Z Cloning into '/tmp/official'...
+2026-11-02T13:12:46.2219080Z e7b9b0ffd504edeb15d02c1b6ee199cefe67312e30a0ed8030b44a63d01ac586  /tmp/data-tiny-2/graph.txt
+2026-11-02T13:12:46.2219716Z af1099c10b88b2df3949120ab9d60c07a35d5f4357c1c3cf2813bf73efa767f8  /tmp/data-tiny-2/queries.txt
+2026-11-02T13:12:46.2220252Z 686519de01b6c28cc2bb73423152b0636e0e2c1b9a0cb90cda8b0f21673a3474  /tmp/ref-tiny-2/distances.txt
+2026-11-02T13:12:46.4196276Z PASS tiny seed=2 threads=4
+2026-11-02T13:12:46.5789158Z PASS tiny seed=2 threads=6
+2026-11-02T13:12:46.7692961Z PASS tiny seed=2 threads=12
+2026-11-02T13:12:56.7604813Z 16351d408f1f94a6bcf66de5c5762abede111c07a4a38306253504a6c9c9b7cd  /tmp/data-sample-1/graph.txt
+2026-11-02T13:12:56.7605745Z fb4065ffe94d2dd51c924f389bd0c6afa58d42534391aa5b0fe5edfaa33988a5  /tmp/data-sample-1/queries.txt
+2026-11-02T13:12:56.7606461Z a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/ref-sample-1/distances.txt
+2026-11-02T13:12:56.9557607Z PASS sample seed=1 threads=4
+2026-11-02T13:12:57.1091496Z PASS sample seed=1 threads=6
+2026-11-02T13:12:57.2651344Z PASS sample seed=1 threads=12
+2026-11-02T13:13:09.1505977Z 614f55156fc95e301f8a27d6d7ab89f7354710de57cbc8b04a6ebc081ed99a2d  /tmp/data-sample-2/graph.txt
+2026-11-02T13:13:09.1507152Z cce224a9c00a0c9bbcf59a2d2d4090ed9d990b54f85feb1db7bee6d11782a71d  /tmp/data-sample-2/queries.txt
+2026-11-02T13:13:09.1510916Z 70e94813fc6fbee12c22cc040bc4a4629c70508d13eaab2bfabbdd75e1d51aed  /tmp/ref-sample-2/distances.txt
+2026-11-02T13:13:09.5369644Z PASS sample seed=2 threads=4
+2026-11-02T13:13:09.6790910Z PASS sample seed=2 threads=6
+2026-11-02T13:13:09.8978318Z PASS sample seed=2 threads=12
+2026-11-02T13:15:38.5828546Z fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/data-full-1/graph.txt
+2026-11-02T13:15:38.5829410Z 160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/data-full-1/queries.txt
+2026-11-02T13:15:38.5830283Z a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/ref-full-1/distances.txt
+2026-11-02T13:15:38.9557705Z PASS full seed=1 threads=4
+2026-11-02T13:15:39.2308295Z PASS full seed=1 threads=6
+2026-11-02T13:15:39.7109904Z PASS full seed=1 threads=12
+2026-11-02T13:18:15.8950053Z 925139d08965c0b9fa9d73ebdb64a51e2ad71dd26a7926fb2848c55a5e03bf49  /tmp/data-full-7/graph.txt
+2026-11-02T13:18:15.8951071Z b9266e6df0c5a054c33b1165db04b5fcd75bd6e9a64a87f2170158fb1cf43832  /tmp/data-full-7/queries.txt
+2026-11-02T13:18:15.8951949Z 66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646  /tmp/ref-full-7/distances.txt
+2026-11-02T13:18:16.1809298Z PASS full seed=7 threads=4
+2026-11-02T13:18:16.4633730Z PASS full seed=7 threads=6
+2026-11-02T13:18:16.7623476Z PASS full seed=7 threads=12
+2026-11-02T13:20:50.6869430Z cf1f804da4c8f7283004d89340229cbe7147d516d8da712dde7a64b519d615ff  /tmp/data-full-17/graph.txt
+2026-11-02T13:20:50.6870337Z edebd2d34844eee26dcd19e8ea5cca313cbc152025001fb060c124771282a8ff  /tmp/data-full-17/queries.txt
+2026-11-02T13:20:50.6870914Z ad7c211024014a4c21a50faab598dd19e730cbc0b4e8013a7d3b3306132913ba  /tmp/ref-full-17/distances.txt
+2026-11-02T13:20:51.1072684Z PASS full seed=17 threads=4
+2026-11-02T13:20:51.4619770Z PASS full seed=17 threads=6
+2026-11-02T13:20:51.8327053Z PASS full seed=17 threads=12
+2026-11-02T13:20:51.8343220Z /tmp/ref-sample-1/distances.txt: OK
+2026-11-02T13:20:51.8358891Z /tmp/ref-full-1/distances.txt: OK
+2026-11-02T13:20:51.8393907Z ##[group]Run set -euo pipefail
+2026-11-02T13:20:51.8394186Z [36;1mset -euo pipefail[0m
+2026-11-02T13:20:51.8394403Z [36;1mmkdir -p /tmp/compare[0m
+2026-11-02T13:20:51.8394752Z [36;1mgit cat-file blob 02e0764ef534a8a6694006b12911776e0a9f2860 >/tmp/compare/control.cpp[0m
+2026-11-02T13:20:51.8395507Z [36;1mdocker run --rm -v /tmp/compare:/work -w /work gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce g++ -O3 -std=c++17 -pthread -flto -static -s -o control control.cpp[0m
+2026-11-02T13:20:51.8396140Z [36;1mcp /tmp/traverse /tmp/compare/candidate[0m
+2026-11-02T13:20:51.8396551Z [36;1msha256sum /tmp/compare/control /tmp/compare/candidate | tee /tmp/receipts/comparison-binaries.txt[0m
+2026-11-02T13:20:51.8397011Z [36;1mpython tests/stream_compare.py | tee /tmp/receipts/summary.txt[0m
+2026-11-02T13:20:51.8397353Z [36;1mcp /tmp/traverse /tmp/receipts/qualified-traverse[0m
+2026-11-02T13:20:51.8397708Z [36;1mdocker build --target build -t d-pgo-build track-d[0m
+2026-11-02T13:20:51.8398355Z [36;1mid=$(docker create d-pgo-build)[0m
+2026-11-02T13:20:51.8398621Z [36;1mdocker cp "$id:/tmp/pgo" /tmp/receipts/profile[0m
+2026-11-02T13:20:51.8398868Z [36;1mdocker rm "$id"[0m
+2026-11-02T13:20:51.8417358Z shell: /usr/bin/bash -e {0}
+2026-11-02T13:20:51.8417560Z env:
+2026-11-02T13:20:51.8417781Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:20:51.8418750Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:20:51.8419086Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:20:51.8419380Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:20:51.8419689Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:20:51.8419993Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:20:51.8420249Z ##[endgroup]
+2026-11-02T13:20:51.8618226Z Unable to find image 'gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce' locally
+2026-11-02T13:20:52.4008005Z docker.io/library/gcc@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce: Pulling from library/gcc
+2026-11-02T13:20:52.6292398Z 8d0037029946: Already exists
+2026-11-02T13:20:52.6306374Z 63040bd9752a: Already exists
+2026-11-02T13:20:52.6317103Z 7046f4e749f0: Already exists
+2026-11-02T13:20:52.6327968Z 992d9e06c2e8: Already exists
+2026-11-02T13:20:52.6337726Z 50bc7c381382: Already exists
+2026-11-02T13:20:52.6349505Z 89609dd4f248: Already exists
+2026-11-02T13:20:52.6361018Z 6d00483150ff: Already exists
+2026-11-02T13:20:52.6371810Z 7141354ffcf7: Already exists
+2026-11-02T13:20:52.8168579Z Digest: sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:20:52.8173656Z Status: Downloaded newer image for gcc@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:20:55.3720225Z 0927ee891e16dc991f20aac9ff27235bf4b2f4957d55c799fc67f26963a027d6  /tmp/compare/control
+2026-11-02T13:20:55.3725473Z f6acc5599067add4e9a643bff504453ab395e49e754d5658298f6f438843b948  /tmp/compare/candidate
+2026-11-02T13:21:00.5582392Z 1 4 control wall 0.14871871799994096 cpu 0.562869 rss 141356
+2026-11-02T13:21:00.5582805Z 1 4 candidate wall 0.14590550100001565 cpu 0.550759 rss 141456
+2026-11-02T13:21:05.8412619Z 1 6 control wall 0.15566202999991674 cpu 0.5575619999999999 rss 141472
+2026-11-02T13:21:05.8413115Z 1 6 candidate wall 0.15383774800000083 cpu 0.546276 rss 141492
+2026-11-02T13:21:11.2449679Z 1 12 candidate wall 0.1562668469999835 cpu 0.561961 rss 144032
+2026-11-02T13:21:11.2450140Z 1 12 control wall 0.15972084499992434 cpu 0.569206 rss 144128
+2026-11-02T13:21:16.3693831Z 7 4 candidate wall 0.1470743830000174 cpu 0.555814 rss 141472
+2026-11-02T13:21:16.3694291Z 7 4 control wall 0.1506196649999083 cpu 0.569379 rss 141400
+2026-11-02T13:21:21.6291957Z 7 6 control wall 0.15580280900007892 cpu 0.5650149999999999 rss 141460
+2026-11-02T13:21:21.6292877Z 7 6 candidate wall 0.1533202309999524 cpu 0.553694 rss 141480
+2026-11-02T13:21:27.0418190Z 7 12 candidate wall 0.15687864500000614 cpu 0.56829 rss 143312
+2026-11-02T13:21:27.0418687Z 7 12 control wall 0.1594770609999614 cpu 0.579468 rss 143452
+2026-11-02T13:21:32.1551837Z 17 4 control wall 0.14959523799996077 cpu 0.560546 rss 141412
+2026-11-02T13:21:32.1552323Z 17 4 candidate wall 0.1478127760000234 cpu 0.555499 rss 141468
+2026-11-02T13:21:37.4130328Z 17 6 control wall 0.1550615570000673 cpu 0.5616669999999999 rss 141488
+2026-11-02T13:21:37.4130796Z 17 6 candidate wall 0.15344876900007876 cpu 0.553319 rss 141508
+2026-11-02T13:21:42.8137728Z 17 12 control wall 0.15921339099998022 cpu 0.58077 rss 143308
+2026-11-02T13:21:42.8138397Z 17 12 candidate wall 0.1565056880000384 cpu 0.568404 rss 143280
+2026-11-02T13:21:43.1779646Z #0 building with "default" instance using docker driver
+2026-11-02T13:21:43.1780019Z 
+2026-11-02T13:21:43.1780190Z #1 [internal] load build definition from Dockerfile
+2026-11-02T13:21:43.1780575Z #1 transferring dockerfile: 929B done
+2026-11-02T13:21:43.1781366Z #1 DONE 0.0s
+2026-11-02T13:21:43.1781500Z 
+2026-11-02T13:21:43.1782001Z #2 [internal] load metadata for docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:21:43.1782800Z #2 DONE 0.0s
+2026-11-02T13:21:43.1782936Z 
+2026-11-02T13:21:43.1783052Z #3 [internal] load .dockerignore
+2026-11-02T13:21:43.1783365Z #3 transferring context: 2B done
+2026-11-02T13:21:43.1783639Z #3 DONE 0.0s
+2026-11-02T13:21:43.1783770Z 
+2026-11-02T13:21:43.1784183Z #4 [build 1/3] FROM docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+2026-11-02T13:21:43.1784795Z #4 DONE 0.0s
+2026-11-02T13:21:43.1784921Z 
+2026-11-02T13:21:43.1785037Z #5 [internal] load build context
+2026-11-02T13:21:43.1785373Z #5 transferring context: 76B done
+2026-11-02T13:21:43.1785662Z #5 DONE 0.0s
+2026-11-02T13:21:43.1785796Z 
+2026-11-02T13:21:43.1785977Z #6 [build 2/3] COPY d_traverse.cpp pgo_train_graph.cpp /src/
+2026-11-02T13:21:43.1786375Z #6 CACHED
+2026-11-02T13:21:43.1786509Z 
+2026-11-02T13:21:43.1788948Z #7 [build 3/3] RUN mkdir -p /mnt/champion-train /tmp/pgo /tmp/train-out &&     g++ -O2 -std=c++17 -o /tmp/train-gen /src/pgo_train_graph.cpp &&     /tmp/train-gen &&     g++ -O3 -std=c++17 -pthread -flto -static -s -fprofile-generate=/tmp/pgo -fprofile-update=atomic -o /traverse /src/d_traverse.cpp &&     SD_DATA=/mnt/champion-train SD_OUT=/tmp/train-out SD_THREADS=12 /traverse &&     test -n "$(find /tmp/pgo -name '*.gcda' -print -quit)" &&     g++ -O3 -std=c++17 -pthread -flto -static -s -fprofile-use=/tmp/pgo -fprofile-correction -fprofile-partial-training -o /traverse /src/d_traverse.cpp
+2026-11-02T13:21:43.1791468Z #7 CACHED
+2026-11-02T13:21:43.1791608Z 
+2026-11-02T13:21:43.1791717Z #8 exporting to image
+2026-11-02T13:21:43.1791981Z #8 exporting layers
+2026-11-02T13:21:44.2009460Z #8 exporting layers 1.2s done
+2026-11-02T13:21:44.2138720Z #8 writing image sha256:35d2286941b960071d5e62539fdce2fee6a9f48a4518cc33658cf7417a55b977 done
+2026-11-02T13:21:44.2139488Z #8 naming to docker.io/library/d-pgo-build done
+2026-11-02T13:21:44.2139877Z #8 DONE 1.2s
+2026-11-02T13:21:44.2763597Z 8005d6f28f82abacf88484e545c59d6a8954fc04a061a630cbb17994c2c6ee39
+2026-11-02T13:21:44.2839823Z ##[group]Run actions/upload-artifact@v4
+2026-11-02T13:21:44.2840073Z with:
+2026-11-02T13:21:44.2840243Z   name: pinned-correctness
+2026-11-02T13:21:44.2840435Z   path: /tmp/receipts
+2026-11-02T13:21:44.2840615Z   if-no-files-found: warn
+2026-11-02T13:21:44.2840804Z   compression-level: 6
+2026-11-02T13:21:44.2840980Z   overwrite: false
+2026-11-02T13:21:44.2841152Z   include-hidden-files: false
+2026-11-02T13:21:44.2841338Z env:
+2026-11-02T13:21:44.2841561Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:21:44.2841893Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T13:21:44.2842224Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:21:44.2842516Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:21:44.2842823Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T13:21:44.2843111Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T13:21:44.2843398Z ##[endgroup]
+2026-11-02T13:21:44.4251518Z (node:190713) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T13:21:44.4252107Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T13:21:44.4353810Z With the provided path, there will be 16 files uploaded
+2026-11-02T13:21:44.4355281Z Artifact name is valid!
+2026-11-02T13:21:44.4355626Z Root directory input is valid!
+2026-11-02T13:21:44.8098720Z Beginning upload of artifact content to blob storage
+2026-11-02T13:21:44.8747812Z (node:190713) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-11-02T13:21:45.4230840Z Uploaded bytes 456667
+2026-11-02T13:21:45.4867317Z Finished uploading artifact content to blob storage!
+2026-11-02T13:21:45.4868020Z SHA256 digest of uploaded artifact zip is 2a59e133e2a93c8dbc522f2d57c9811b207d319d2b7befb6baf5e8f27fa00e32
+2026-11-02T13:21:45.4869940Z Finalizing artifact upload
+2026-11-02T13:21:45.9420291Z Artifact pinned-correctness.zip successfully finalized. Artifact ID 13145062302
+2026-11-02T13:21:45.9420964Z Artifact pinned-correctness has been successfully uploaded! Final size is 456667 bytes. Artifact ID is 13145062302
+2026-11-02T13:21:45.9427021Z Artifact download URL: https://github.com/insightlabs38-pixel/sd-td/actions/runs/41450823873/artifacts/13145062302
+2026-11-02T13:21:45.9668539Z Post job cleanup.
+2026-11-02T13:21:46.0664777Z (node:190726) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T13:21:46.0665693Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T13:21:46.0821440Z Post job cleanup.
+2026-11-02T13:21:46.1569473Z [command]/usr/bin/git version
+2026-11-02T13:21:46.1618729Z git version 2.56.0
+2026-11-02T13:21:46.1682223Z Temporarily overriding HOME='/home/runner/work/_temp/079ce557-160d-4713-a560-1e97b650b043' before making global git config changes
+2026-11-02T13:21:46.1683444Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T13:21:46.1684359Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+2026-11-02T13:21:46.1730173Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T13:21:46.1814263Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-02T13:21:46.2120060Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T13:21:46.2144734Z http.https://github.com/.extraheader
+2026-11-02T13:21:46.2157523Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-02T13:21:46.2202735Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-02T13:21:46.2448553Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T13:21:46.2493572Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-02T13:21:46.2854077Z Cleaning up orphan processes
+2026-11-02T13:21:46.3162450Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

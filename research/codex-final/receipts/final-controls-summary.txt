@@ -1,0 +1,9 @@
+1 12 champion33672 trimmean 0.313237 median 0.308047 maxpeak 56586240
+1 12 final_pr33_control trimmean 0.325054 median 0.327234 maxpeak 57065472
+1 12 final_pr24_control trimmean 0.352468 median 0.352172 maxpeak 59289600
+7 12 champion33672 trimmean 0.306446 median 0.307756 maxpeak 55828480
+7 12 final_pr33_control trimmean 0.332917 median 0.336956 maxpeak 56266752
+7 12 final_pr24_control trimmean 0.339612 median 0.338689 maxpeak 59510784
+17 12 champion33672 trimmean 0.308009 median 0.312115 maxpeak 55824384
+17 12 final_pr33_control trimmean 0.319689 median 0.318464 maxpeak 56442880
+17 12 final_pr24_control trimmean 0.339784 median 0.340577 maxpeak 59133952

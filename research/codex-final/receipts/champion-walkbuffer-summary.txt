@@ -1,0 +1,6 @@
+1 champion33672 wall 0.446585 cpu 0.44586 maxrss 141536
+1 champion_walkbuffer wall 0.460192 cpu 0.459484 maxrss 140960
+6 champion33672 wall 0.313592 cpu 0.591816 maxrss 141488
+6 champion_walkbuffer wall 0.336204 cpu 0.603637 maxrss 141076
+12 champion33672 wall 0.323331 cpu 0.587941 maxrss 143648
+12 champion_walkbuffer wall 0.319934 cpu 0.594507 maxrss 142804

@@ -1,0 +1,12 @@
+1 12 champion33672 trimmean 0.315587 median 0.315167 maxpeak 56320000
+1 12 champion_retire0 trimmean 0.320294 median 0.321264 maxpeak 56528896
+1 12 champion_retire128 trimmean 0.313708 median 0.313128 maxpeak 55996416
+1 12 champion_retire256 trimmean 0.311442 median 0.310629 maxpeak 56111104
+7 12 champion33672 trimmean 0.312789 median 0.320404 maxpeak 56233984
+7 12 champion_retire0 trimmean 0.311122 median 0.305141 maxpeak 56041472
+7 12 champion_retire128 trimmean 0.310754 median 0.30909 maxpeak 55631872
+7 12 champion_retire256 trimmean 0.311121 median 0.301363 maxpeak 55816192
+17 12 champion33672 trimmean 0.306457 median 0.307207 maxpeak 55775232
+17 12 champion_retire0 trimmean 0.306149 median 0.299908 maxpeak 55672832
+17 12 champion_retire128 trimmean 0.319958 median 0.315587 maxpeak 55480320
+17 12 champion_retire256 trimmean 0.320405 median 0.323695 maxpeak 55635968

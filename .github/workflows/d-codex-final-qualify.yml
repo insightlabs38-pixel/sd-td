@@ -1,7 +1,7 @@
 name: D Codex final qualification
 on:
   push:
-    branches: ['prize/d-codex-final-claim-atomic', 'prize/d-codex-final-claim-bytes']
+    branches: ['prize/d-codex-final-frontier-bytes']
     paths: ['track-d/d_traverse.cpp', '.github/workflows/d-codex-final-qualify.yml']
   workflow_dispatch:
 jobs:

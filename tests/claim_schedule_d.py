@@ -17,6 +17,8 @@ b = text.index('  void put(', a)
 body = text[a:b].replace('__atomic_load_n(', 'claim_load(').replace('__atomic_store_n(', 'claim_store(').replace('__atomic_fetch_or(', 'claim_or(')
 text = text[:a] + body + text[b:]
 harness = (here / 'claim_schedule_d.cpp').read_text().replace('"b_instrumented.cpp"', '"solver.cpp"')
+if 'uint8_t *ends;' in text:
+    harness = harness.replace('r->ends=guarded<u32>(n)', 'r->ends=guarded<uint8_t>(n)')
 if not args.expect_fault:
     harness = '#define EXPECT_FIXED\n' + harness
 if 'std::vector<uint8_t> &claimed' in text:

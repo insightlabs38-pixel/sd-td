@@ -46,7 +46,7 @@ jobs:
                   env=dict(os.environ,SD_DATA=f'/tmp/dseed{seed}',
                            SD_OUT=f'/tmp/dout{seed}',SD_THREADS=str(workers))
                   samples={n:[] for n in limits}
-                  for round in range(21):
+                  for repeat in range(21):
                       order=list(limits)
                       rng.shuffle(order)
                       for n in order:
@@ -54,7 +54,7 @@ jobs:
                           subprocess.run([f'/tmp/probe_{n}'],env=env,check=True,stdout=subprocess.DEVNULL)
                           dt=time.perf_counter()-t0
                           digest=hashlib.sha256(pathlib.Path(f'/tmp/dout{seed}/distances.txt').read_bytes()).hexdigest()
-                          assert digest==want[seed],(seed,workers,n,round,digest)
+                          assert digest==want[seed],(seed,workers,n,repeat,digest)
                           samples[n].append(dt)
                   base=statistics.median(samples[256])
                   summary={str(n):{'median_s':round(statistics.median(samples[n]),6),

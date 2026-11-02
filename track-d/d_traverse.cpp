@@ -499,8 +499,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
              (size_t(n) + total + edges[threads] + 1) * 4 + 64,
              0) == MAP_FAILED)
     exit(2);
-  // Raw id -> new id. A vertex claimed twice is named by the entry that lands
-  // last, the same for every head.
+  // Raw id -> new id; atomic claims give each vertex one owner.
   parallel(threads, [&](unsigned k) {
     each(k, [&](unsigned t, u32 lo, u32 hi) {
       for (u32 i = lo; i < hi; ++i)
@@ -565,9 +564,8 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
 
 // ---------------------------------------------------------------- queries
 
-// Monotone queue: a ring of buckets 2^shift wide; larger jumps wait in a heap.
-// push always writes the entry but counts it only when `take`, so relaxations
-// need no branch.
+// Monotone width-128 buckets; wide searches use a ring and far heap.
+// Rejected relaxations write but do not enqueue, avoiding a hot-loop branch.
 template <bool BOUNDED> struct Queue {
   static constexpr u32 B = BOUNDED ? 512 : 2048;
   struct Bucket {
@@ -664,9 +662,8 @@ template <class L> struct Side {
     dist.reset(), queue.clear();
     *dist.slot(s) = 0, queue.push(0, s);
   }
-  // Settles the current bucket in FIFO order, prefetching rows and labels of
-  // the entries ahead; returns the number of vertices settled. Relaxations are
-  // branch-free: nd + other(v) is a real path length either way.
+  // Drains a bucket in FIFO order, prefetching upcoming rows and labels.
+  // Each relaxation updates a valid tentative meeting upper bound.
   template <unsigned W = 0> void drain_bits(const Side &other, u64 &best) {
     typename QueueType::Bucket &bk = queue.bucket[queue.cur % QueueType::B];
     u32 mask = (1u << queue.node_bits) - 1;
@@ -701,10 +698,8 @@ template <class L> struct Side {
   }
 };
 
-// An exact forward probe settles up to 256 vertices; then bidirectional
-// Dijkstra balances settled counts until the two queue fronts sum to at least
-// the best meeting. Returns the distance, INF when there is no path, or NONE
-// or more when the distance may not fit L.
+// Bidirectional Dijkstra balances frontiers until their lower bounds meet
+// the best known path. Narrow uncertainty is rerun with exact wide labels.
 template <class L> struct Worker {
   Side<L> fwd, bwd;
   u64 solve(u32 s, u32 t) {

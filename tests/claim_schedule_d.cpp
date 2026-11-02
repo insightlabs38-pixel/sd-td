@@ -82,14 +82,16 @@ void reproduce(bool full) {
   std::thread other([&]{role=2;slow.grow(seed);});
   while(phase.load()!=1)std::this_thread::yield();
   role=1;fast.grow(0);
+  if(phase.load()==1) { phase.store(2); while(phase.load()!=3)std::this_thread::yield(); }
   fprintf(stderr,"completed fast region len=%u edges=%u (capacities %u,%u)\n",a.len,a.edges,n,m);
   phase.store(4);other.join();
+  if(a.len>n || a.edges>m || b.len>n || b.edges>m)_exit(6);
 }
 int main(int argc,char**) {
   pid_t child=fork();
   if(!child){reproduce(argc>1);_exit(0);}
   int status=0;waitpid(child,&status,0);
-  printf("child_signal=%d expected_guard_failure=%d\n",WIFSIGNALED(status)?WTERMSIG(status):0,SIGSEGV);
+  printf("child_signal=%d exit_code=%d\n",WIFSIGNALED(status)?WTERMSIG(status):0,WIFEXITED(status)?WEXITSTATUS(status):-1);
 #ifdef EXPECT_FIXED
   return WIFEXITED(status)&&WEXITSTATUS(status)==0?0:1;
 #else

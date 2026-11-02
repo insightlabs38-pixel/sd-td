@@ -29,6 +29,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/claim_schedule_d.py | tee /tmp/receipts/claim-schedule.txt
+          python tests/claim_capacity_d.py | tee /tmp/receipts/claim-capacity.txt
           python tests/test_d.py | tee /tmp/receipts/fixtures.txt
           python tests/boundary_d.py | tee /tmp/receipts/boundary.txt
           python tests/saturation_d.py | tee /tmp/receipts/saturation.txt

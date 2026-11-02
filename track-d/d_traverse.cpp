@@ -502,8 +502,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
              (size_t(n) + total + edges[threads] + 1) * 4 + 64,
              0) == MAP_FAILED)
     exit(2);
-  // Raw id -> new id. A vertex claimed twice is named by the entry that lands
-  // last, the same for every head.
+  // Atomic claims give each survivor a unique owner and therefore one new id.
   parallel(threads, [&](unsigned k) {
     each(k, [&](unsigned t, u32 lo, u32 hi) {
       for (u32 i = lo; i < hi; ++i)
@@ -577,8 +576,7 @@ template <bool BOUNDED> struct Queue {
     u32 *data = nullptr, size = 0, cap = 0;
   } bucket[B];
   u64 occupied[B / 64] = {}, cur = 0, near = 0;
-  // Claims are globally unique, so legal vertex ids fit in 25 bits,
-  // leaving seven bits for the key remainder.
+  // Contracted vertex ids fit in 25 bits; seven bits remain for the key.
   static constexpr u32 shift = 7, node_bits = 25;
   using Far = std::pair<u64, u32>;
   std::priority_queue<Far, std::vector<Far>, std::greater<Far>> far;
@@ -667,9 +665,8 @@ template <class L> struct Side {
     dist.reset(), queue.clear();
     *dist.slot(s) = 0, queue.push(0, s);
   }
-  // Settles the current bucket in FIFO order, prefetching rows and labels of
-  // the entries ahead; returns the number of vertices settled. Relaxations are
-  // branch-free: nd + other(v) is a real path length either way.
+  // Drain the current bucket FIFO with lookahead prefetch. Relaxations are
+  // branch-free; a missing opposite label cannot improve a narrow exact answer.
   template <unsigned W = 0> void drain_bits(const Side &other, u64 &best) {
     typename QueueType::Bucket &bk = queue.bucket[queue.cur % QueueType::B];
     u32 mask = (1u << queue.node_bits) - 1;
@@ -705,10 +702,9 @@ template <class L> struct Side {
   }
 };
 
-// An exact forward probe settles up to 256 vertices; then bidirectional
-// Dijkstra balances settled counts until the two queue fronts sum to at least
-// the best meeting. Returns the distance, INF when there is no path, or NONE
-// or more when the distance may not fit L.
+// Exact bidirectional Dijkstra balances pending queue sizes and stops when
+// the two queue fronts bound the best meeting. Narrow answers at or above
+// NONE are retried with 64-bit labels.
 template <class L> struct Worker {
   Side<L> fwd, bwd;
   u64 solve(u32 s, u32 t) {

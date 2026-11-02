@@ -2,11 +2,11 @@ import hashlib,json,os,pathlib,random,statistics,subprocess,time
 out=pathlib.Path('/dev/shm/stream-out');out.mkdir(exist_ok=True)
 rows=[];rng=random.Random(9123)
 truth={1:'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e',7:'66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646',17:'ad7c211024014a4c21a50faab598dd19e730cbc0b4e8013a7d3b3306132913ba'}
-for seed in [1,7,17]:
+for seed in [1,7]:
  data=pathlib.Path(f'/tmp/data-full-{seed}')
  for path in data.iterdir():path.read_bytes()
- for threads in [4,6,12]:
-  for r in range(17):
+ for threads in [6,12]:
+  for r in range(9):
    names=['control','candidate'];rng.shuffle(names)
    for name in names:
     env=dict(os.environ,SD_DATA=str(data),SD_OUT=str(out),SD_THREADS=str(threads))

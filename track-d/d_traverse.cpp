@@ -565,8 +565,8 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
 // Monotone queue: a ring of buckets 2^shift wide; larger jumps wait in a heap.
 // push always writes the entry but counts it only when `take`, so relaxations
 // need no branch.
-struct Queue {
-  static constexpr u32 B = 2048;
+template <bool BOUNDED> struct Queue {
+  static constexpr u32 B = BOUNDED ? 512 : 2048;
   struct Bucket {
     u32 *data = nullptr, size = 0, cap = 0;
   } bucket[B];
@@ -584,7 +584,7 @@ struct Queue {
     far = {}, cur = near = 0;
   }
   void push(u64 d, u32 v, bool take = true) {
-    if ((d >> shift) - cur >= B) {
+    if (!BOUNDED && (d >> shift) - cur >= B) {
       if (take)
         far.push({d, v});
       return;
@@ -604,14 +604,16 @@ struct Queue {
       u32 b = cur % B, w = b / 64;
       u64 bits = occupied[w] & (~u64(0) << b % 64);
       while (!bits)
-        bits = occupied[w = (w + 1) % (B / 64)];
-      cur += (w * 64 + __builtin_ctzll(bits) - b) % B;
-    } else if (!far.empty()) {
+        bits = occupied[w = BOUNDED ? w + 1 : (w + 1) % (B / 64)];
+      cur = BOUNDED ? w * 64 + __builtin_ctzll(bits)
+                    : cur + (w * 64 + __builtin_ctzll(bits) - b) % B;
+    } else if (!BOUNDED && !far.empty()) {
       cur = far.top().first >> shift;
     } else {
       return INF;
     }
-    for (; !far.empty() && (far.top().first >> shift) - cur < B; far.pop())
+    for (; !BOUNDED && !far.empty() && (far.top().first >> shift) - cur < B;
+         far.pop())
       push(far.top().first, far.top().second);
     return cur << shift;
   }
@@ -652,7 +654,8 @@ template <class L> struct Labels {
 template <class L> struct Side {
   const Graph &g;
   Labels<L> dist;
-  Queue queue;
+  using QueueType = Queue<sizeof(L) == 2>;
+  QueueType queue;
   explicit Side(const Graph &g) : g(g), dist(g.n), queue(g.n) {}
   void start(u32 s) {
     dist.reset(), queue.clear();
@@ -662,7 +665,7 @@ template <class L> struct Side {
   // the entries ahead; returns the number of vertices settled. Relaxations are
   // branch-free: nd + other(v) is a real path length either way.
   template <unsigned W = 0> void drain_bits(const Side &other, u64 &best) {
-    Queue::Bucket &bk = queue.bucket[queue.cur % Queue::B];
+    typename QueueType::Bucket &bk = queue.bucket[queue.cur % QueueType::B];
     u32 mask = (1u << queue.node_bits) - 1;
     for (u32 k = 0; k < bk.size; ++k) {
       u32 ahead = bk.data[std::min(k + 8, bk.size - 1)] & mask;
@@ -685,7 +688,8 @@ template <class L> struct Side {
       }
     }
     queue.near -= bk.size, bk.size = 0;
-    queue.occupied[queue.cur % Queue::B / 64] &= ~(u64(1) << queue.cur % 64);
+    queue.occupied[queue.cur % QueueType::B / 64] &=
+        ~(u64(1) << queue.cur % 64);
   }
   void drain(const Side &other, u64 &best) {
     if (g.wbits == 11)

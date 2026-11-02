@@ -16,6 +16,9 @@
 
 using u32 = uint32_t;
 using u64 = uint64_t;
+#ifndef SD_FORWARD_PROBE
+#define SD_FORWARD_PROBE 128
+#endif
 // Above any path length (all are below 2^53), so INF + d cannot wrap.
 constexpr u64 INF = u64(1) << 62;
 // Edge index -> weight too large for its packed field, sorted by index.
@@ -670,9 +673,9 @@ template <class L> struct Side {
   // Settles the current bucket in FIFO order, prefetching rows and labels of
   // the entries ahead; returns the number of vertices settled. Relaxations are
   // branch-free: nd + other(v) is a real path length either way.
-  template <unsigned W = 0> void drain_bits(const Side &other, u64 &best) {
+  template <unsigned W = 0> u32 drain_bits(const Side &other, u64 &best) {
     typename QueueType::Bucket &bk = queue.bucket[queue.cur % QueueType::B];
-    u32 mask = (1u << queue.node_bits) - 1;
+    u32 mask = (1u << queue.node_bits) - 1, settled = 0;
     for (u32 k = 0; k < bk.size; ++k) {
       u32 ahead = bk.data[std::min(k + 8, bk.size - 1)] & mask;
       __builtin_prefetch(&g.off[ahead]), __builtin_prefetch(dist.at(ahead));
@@ -682,6 +685,7 @@ template <class L> struct Side {
       u64 d = queue.cur << queue.shift | bk.data[k] >> queue.node_bits;
       if (dist.get(u) != d)
         continue;
+      ++settled;
       for (u32 i = g.off[u]; i < g.off[u + 1]; ++i) {
         u32 v = g.adj[i] >> (W ? W : g.wbits);
         L *x = dist.slot(v);
@@ -696,12 +700,12 @@ template <class L> struct Side {
     queue.near -= bk.size, bk.size = 0;
     queue.occupied[queue.cur % QueueType::B / 64] &=
         ~(u64(1) << queue.cur % 64);
+    return settled;
   }
-  void drain(const Side &other, u64 &best) {
+  u32 drain(const Side &other, u64 &best) {
     if (g.wbits == 11)
-      drain_bits<11>(other, best);
-    else
-      drain_bits<>(other, best);
+      return drain_bits<11>(other, best);
+    return drain_bits<>(other, best);
   }
 };
 
@@ -716,8 +720,17 @@ template <class L> struct Worker {
       return 0;
     if (fwd.g.off[s] == fwd.g.off[s + 1] || bwd.g.off[t] == bwd.g.off[t + 1])
       return INF;
-    fwd.start(s), bwd.start(t);
+    bwd.dist.reset(), fwd.start(s);
     u64 best = INF;
+    u32 probed = 0;
+    while (probed < SD_FORWARD_PROBE) {
+      u64 f = fwd.queue.lower_bound(), known = fwd.dist.get(t);
+      if (f == INF || known < f)
+        return known < Labels<L>::NONE ? known : INF;
+      probed += fwd.drain(bwd, best);
+    }
+    bwd.start(t);
+    best = fwd.dist.get(t);
     for (;;) {
       u64 f = fwd.queue.lower_bound(), b = bwd.queue.lower_bound();
       if (f == INF || b == INF) // one side has seen all it can reach

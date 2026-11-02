@@ -459,14 +459,15 @@ struct Reverse {
 std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
                                      unsigned threads, std::vector<u32> &ends) {
   u32 n = raw->n, m = raw->m;
+  unsigned growing = std::min(threads, 6u);
   Bits claimed(bypass.size());
   std::vector<Region> regions(threads);
-  parallel(threads, [&](unsigned t) {
+  parallel(growing, [&](unsigned t) {
     Region &reg = regions[t];
     reg.order = alloc<u32>(n), reg.ends = alloc<uint8_t>(n),
     reg.out = alloc<u32>(m);
     Grower grower{*raw, bypass, claimed, reg};
-    for (u32 x = cut(n, t, threads); x < cut(n, t + 1, threads); ++x)
+    for (u32 x = cut(n, t, growing); x < cut(n, t + 1, growing); ++x)
       if (!test(bypass, x))
         grower.grow(x);
   });
@@ -749,7 +750,7 @@ int main() {
   std::sort(by_source.begin(), by_source.end(),
             [&](u32 a, u32 b) { return ends[2 * a] < ends[2 * b]; });
   std::atomic<size_t> next{0};
-  parallel(std::min<size_t>(std::min(threads, 8u), queries + 1), [&](unsigned) {
+  parallel(std::min<size_t>(std::min(threads, 6u), queries + 1), [&](unsigned) {
     // Paths below 65535 are exact with 16-bit labels. Saturated or
     // unreachable results are rerun with exact 64-bit labels.
     Worker<uint16_t> narrow{Side<uint16_t>(*fwd), Side<uint16_t>(*rev)};

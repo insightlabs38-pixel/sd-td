@@ -1,7 +1,7 @@
 name: D Codex final qualification
 on:
   push:
-    branches: ['prize/d-codex-final-prefix-simd-pages']
+    branches: ['prize/d-codex-final-champion-wide128-query10']
     paths: ['track-d/d_traverse.cpp', '.github/workflows/d-codex-final-qualify.yml']
   workflow_dispatch:
 jobs:
@@ -108,7 +108,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/compare /tmp/receipts
-          git cat-file blob 5d56a5bebdf1d82633e6e643801213f5df987578 >/tmp/compare/control.cpp
+          git cat-file blob 02e0764ef534a8a6694006b12911776e0a9f2860 >/tmp/compare/control.cpp
           cp track-d/d_traverse.cpp /tmp/compare/candidate.cpp
           docker run --rm -v /tmp/compare:/work -w /work gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce bash -c 'set -e; for x in control candidate; do g++ -O3 -std=c++17 -pthread -flto -static -s -o $x $x.cpp; done'
           sha256sum /tmp/compare/control /tmp/compare/candidate | tee /tmp/receipts/binaries.txt

@@ -15,7 +15,7 @@ jobs:
           python-version: '3.13'
       - name: Build exact pinned Dockerfile and extract executable
         run: |
-          set -eu
+          set -euo pipefail
           docker build --pull -t d-codex-final track-d
           id=$(docker create d-codex-final)
           docker cp "$id:/traverse" /tmp/traverse
@@ -27,7 +27,7 @@ jobs:
         env:
           SD_TEST_BINARY: /tmp/traverse
         run: |
-          set -eu
+          set -euo pipefail
           python tests/test_d.py | tee /tmp/receipts/fixtures.txt
           python tests/boundary_d.py | tee /tmp/receipts/boundary.txt
           python tests/saturation_d.py | tee /tmp/receipts/saturation.txt
@@ -73,7 +73,7 @@ jobs:
       - name: Build sanitizer executable
         shell: bash
         run: |
-          set -eu
+          set -euo pipefail
           flags='-fsanitize=thread'
           if [ '${{ matrix.sanitizer }}' = address ]; then flags='-fsanitize=address,undefined'; fi
           g++ --version
@@ -85,7 +85,7 @@ jobs:
           UBSAN_OPTIONS: halt_on_error=1
           TSAN_OPTIONS: halt_on_error=1
         run: |
-          set -eu
+          set -euo pipefail
           python tests/test_d.py
           python tests/boundary_d.py
           python tests/saturation_d.py

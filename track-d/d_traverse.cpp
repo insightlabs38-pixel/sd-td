@@ -318,15 +318,25 @@ struct Grower {
   Bits &claimed;
   Region &reg;
   std::vector<Walk> walks;
+  u32 own_lo = 0, own_hi = 0;
+  Bits owned;
 
-  // The relaxed OR linearizes a claim. The initial load avoids locked
-  // operations for vertices that are already claimed.
+  // Every non-bypass vertex is discovered by its id-slice owner. Retained
+  // bypass vertices still need globally unique atomic claims.
   void claim(u32 z) {
-    u64 bit = u64(1) << (z & 63), *word = &claimed[z >> 6];
-    u64 seen = __atomic_load_n(word, __ATOMIC_RELAXED);
-    if (seen & bit)
+    if (!test(bypass, z)) {
+      if (z < own_lo || z >= own_hi)
+        return;
+      u32 local = z - own_lo;
+      if (!test(owned, local)) {
+        set(owned, local);
+        reg.order[reg.len++] = z;
+      }
       return;
-    if (!(__atomic_fetch_or(word, bit, __ATOMIC_RELAXED) & bit))
+    }
+    u64 bit = u64(1) << (z & 63), *word = &claimed[z >> 6];
+    if (!(__atomic_load_n(word, __ATOMIC_RELAXED) & bit) &&
+        !(__atomic_fetch_or(word, bit, __ATOMIC_RELAXED) & bit))
       reg.order[reg.len++] = z;
   }
   void put(u32 pos, u32 z, u64 w) {
@@ -455,7 +465,10 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
     reg.order = alloc<u32>(n), reg.ends = alloc<u32>(n),
     reg.out = alloc<u32>(m);
     Grower grower{*raw, bypass, claimed, reg};
-    for (u32 x = cut(n, t, threads); x < cut(n, t + 1, threads); ++x)
+    grower.own_lo = cut(n, t, threads);
+    grower.own_hi = cut(n, t + 1, threads);
+    grower.owned.resize((grower.own_hi - grower.own_lo + 63) / 64);
+    for (u32 x = grower.own_lo; x < grower.own_hi; ++x)
       if (!test(bypass, x))
         grower.grow(x);
   });
@@ -481,8 +494,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
         f(t, std::max(cuts[k], base[t]) - base[t],
           std::min(cuts[k + 1], base[t + 1]) - base[t]);
   };
-  // Raw id -> new id. A vertex claimed twice is named by the entry that lands
-  // last, the same for every head.
+  // Each survivor has one owner and therefore exactly one new id.
   parallel(threads, [&](unsigned k) {
     each(k, [&](unsigned t, u32 lo, u32 hi) {
       for (u32 i = lo; i < hi; ++i)

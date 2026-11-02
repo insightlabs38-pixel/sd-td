@@ -21,6 +21,9 @@ if not args.expect_fault:
     harness = '#define EXPECT_FIXED\n' + harness
 if 'std::vector<uint8_t> &claimed' in text:
     harness = '#define CLAIM_BYTES\n' + harness
+if 'Bits &claimed, mine;' in text:
+    harness = harness.replace('Grower fast{raw,bypass,claimed,a},slow{raw,bypass,claimed,b};',
+                              'Grower fast{raw,bypass,claimed,Bits(claimed.size()),a},slow{raw,bypass,claimed,Bits(claimed.size()),b};')
 with tempfile.TemporaryDirectory() as directory:
     root = pathlib.Path(directory)
     (root / 'solver.cpp').write_text(text)

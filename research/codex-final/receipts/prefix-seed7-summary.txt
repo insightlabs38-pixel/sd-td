@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.509783 cpu 0.509224 maxrss 145092
+1 compact_bounded_pure_sse_byte_cap6 wall 0.488514 cpu 0.488194 maxrss 141520
+1 fixed_all_compact_bounded_pure_sse_byte_cap6 wall 0.480595 cpu 0.480036 maxrss 141464
+1 prefix_bins wall 0.47218 cpu 0.471926 maxrss 141528
+6 fix_atomic wall 0.367203 cpu 0.670533 maxrss 145880
+6 compact_bounded_pure_sse_byte_cap6 wall 0.364371 cpu 0.652455 maxrss 141680
+6 fixed_all_compact_bounded_pure_sse_byte_cap6 wall 0.360256 cpu 0.642587 maxrss 141540
+6 prefix_bins wall 0.327711 cpu 0.636964 maxrss 141472
+12 fix_atomic wall 0.348893 cpu 0.653364 maxrss 146512
+12 compact_bounded_pure_sse_byte_cap6 wall 0.365649 cpu 0.631031 maxrss 142068
+12 fixed_all_compact_bounded_pure_sse_byte_cap6 wall 0.358521 cpu 0.618085 maxrss 141924
+12 prefix_bins wall 0.330863 cpu 0.612126 maxrss 141968

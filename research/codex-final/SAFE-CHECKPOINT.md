@@ -33,3 +33,17 @@ Recommendation at this checkpoint: keep PR24 selected while stronger experiments
 
 
 Official update: safe PR24 BEST is now K32.780740, run-2e268a627927. Qualified PR25 trial commit2244048e64033b137daf4bc94242a91069a4b9d1 passed all gates but scored K30.342851/T0.101688/M61517824/S655/D1, run-e696b8644680. Rejected and restored ONLY D to PR24 in pushed commite9a5789, preserving newer A/B/C changes. User now explicitly authorizes direct D submission. Hourly task is enabled through freeze. Leader observed K34.117253 (SweetDreams); gap versus our safe BEST1.336513K,4.077% uplift needed. Board JSON snapshots preserve source identities and queue context.
+
+
+2026-11-02 10:10 UTC: NEW VALID CHAMPION prefix bins, official commit
+ab541b93850e2fe9615d9d10a95e1cc93894f04c, solver24aff529703cb9aca78976b70682edcfd97ce6f0,
+original Docker8eabe09b96a60131ce5bfda3f098011e1f0863e6. Official run-e055d3802c43:
+K32.933888 T0.089314 M55287808 S674 D1, all gates pass. Qualification41424109317
+passes all sanitizer, pinned offline Docker, independent oracle/full matrix and
+high-bin skew overflow gates. This supersedes PR24 as the selected safe source.
+Raw local parent-cgroup matrix135 executions includes full seeds1/7/17, workers4/6/12,
+first-five trimmed mean time/max memory, canonical S: prefix/control K ratios1.0182–1.0731.
+Do not treat local ratios as official projections. Leader34.168125; valid gap1.234237.
+Atomic4e45 remains exact rollback. Unsafe board BEST32.868729 is still excluded.
+Current experiments: two/three raw slots regress CPU; paired distance labels and
+immutable bin metadata being measured; no unqualified source selected.

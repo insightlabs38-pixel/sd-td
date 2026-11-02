@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.496778 cpu 0.496503 maxrss 145100
+1 prefix_bins wall 0.470899 cpu 0.470529 maxrss 141472
+1 prefix_raw3 wall 0.494177 cpu 0.493599 maxrss 141004
+1 prefix_raw2 wall 0.50319 cpu 0.502846 maxrss 142232
+6 fix_atomic wall 0.370446 cpu 0.666892 maxrss 145804
+6 prefix_bins wall 0.331054 cpu 0.62993 maxrss 141472
+6 prefix_raw3 wall 0.362629 cpu 0.667743 maxrss 141340
+6 prefix_raw2 wall 0.368824 cpu 0.666243 maxrss 142232
+12 fix_atomic wall 0.381389 cpu 0.66772 maxrss 146784
+12 prefix_bins wall 0.363921 cpu 0.617421 maxrss 141864
+12 prefix_raw3 wall 0.342888 cpu 0.645986 maxrss 141892
+12 prefix_raw2 wall 0.373299 cpu 0.653975 maxrss 142580

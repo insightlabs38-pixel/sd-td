@@ -1,0 +1,767 @@
+pinned	Set up job	﻿2026-11-02T09:51:59.5161330Z Current runner version: '2.338.2'
+pinned	Set up job	2026-11-02T09:51:59.5196476Z ##[group]Runner Image Provisioner
+pinned	Set up job	2026-11-02T09:51:59.5198089Z Hosted Compute Agent
+pinned	Set up job	2026-11-02T09:51:59.5199092Z Version: 20261021.618
+pinned	Set up job	2026-11-02T09:51:59.5200284Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+pinned	Set up job	2026-11-02T09:51:59.5201534Z Build Date: 2026-10-21T00:45:21Z
+pinned	Set up job	2026-11-02T09:51:59.5202692Z Worker ID: {ba8a8c2a-0d3c-4927-8bd1-d8002110ce68}
+pinned	Set up job	2026-11-02T09:51:59.5203924Z Region: eastus
+pinned	Set up job	2026-11-02T09:51:59.5205021Z Cloud: Azure
+pinned	Set up job	2026-11-02T09:51:59.5205923Z ##[endgroup]
+pinned	Set up job	2026-11-02T09:51:59.5208664Z ##[group]Operating System
+pinned	Set up job	2026-11-02T09:51:59.5209835Z Ubuntu
+pinned	Set up job	2026-11-02T09:51:59.5210781Z 24.04.5
+pinned	Set up job	2026-11-02T09:51:59.5211583Z LTS
+pinned	Set up job	2026-11-02T09:51:59.5212483Z ##[endgroup]
+pinned	Set up job	2026-11-02T09:51:59.5213496Z ##[group]Runner Image
+pinned	Set up job	2026-11-02T09:51:59.5214603Z Image: ubuntu-24.04
+pinned	Set up job	2026-11-02T09:51:59.5215504Z Version: 20261025.353.1
+pinned	Set up job	2026-11-02T09:51:59.5217729Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+pinned	Set up job	2026-11-02T09:51:59.5221166Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+pinned	Set up job	2026-11-02T09:51:59.5223024Z ##[endgroup]
+pinned	Set up job	2026-11-02T09:51:59.5225029Z ##[group]GITHUB_TOKEN Permissions
+pinned	Set up job	2026-11-02T09:51:59.5228324Z Contents: read
+pinned	Set up job	2026-11-02T09:51:59.5229321Z Metadata: read
+pinned	Set up job	2026-11-02T09:51:59.5230317Z Packages: read
+pinned	Set up job	2026-11-02T09:51:59.5231277Z ##[endgroup]
+pinned	Set up job	2026-11-02T09:51:59.5234329Z Secret source: Actions
+pinned	Set up job	2026-11-02T09:51:59.5235945Z Cache mode: write
+pinned	Set up job	2026-11-02T09:51:59.5237665Z Prepare workflow directory
+pinned	Set up job	2026-11-02T09:51:59.5711288Z Prepare all required actions
+pinned	Set up job	2026-11-02T09:51:59.5781936Z Getting action download info
+pinned	Set up job	2026-11-02T09:51:59.7850233Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+pinned	Set up job	2026-11-02T09:51:59.8997259Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+pinned	Set up job	2026-11-02T09:51:59.9758491Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+pinned	Set up job	2026-11-02T09:52:00.1972658Z Complete job name: pinned
+pinned	Run actions/checkout@v4	﻿2026-11-02T09:52:00.2964085Z ##[group]Run actions/checkout@v4
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2965020Z with:
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2965499Z   repository: insightlabs38-pixel/sd-td
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2969500Z   token: ***
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2969999Z   ssh-strict: true
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2970443Z   ssh-user: git
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2970889Z   persist-credentials: true
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2971368Z   clean: true
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2971819Z   sparse-checkout-cone-mode: true
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2972355Z   fetch-depth: 1
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2972789Z   fetch-tags: false
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2973235Z   show-progress: true
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2973677Z   lfs: false
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2974092Z   submodules: false
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2974543Z   set-safe-directory: true
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2975044Z   allow-unsafe-pr-checkout: false
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.2975817Z ##[endgroup]
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.5992529Z Syncing repository: insightlabs38-pixel/sd-td
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.5995380Z ##[group]Getting Git version info
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.5996558Z Working directory is '/home/runner/work/sd-td/sd-td'
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.5998551Z [command]/usr/bin/git version
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6160577Z git version 2.56.0
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6183026Z ##[endgroup]
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6201974Z Temporarily overriding HOME='/home/runner/work/_temp/b49b9ac6-0209-48e9-aea7-5b312632442c' before making global git config changes
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6204695Z Adding repository directory to the temporary git global config as a safe directory
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6209056Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6267984Z Deleting the contents of '/home/runner/work/sd-td/sd-td'
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6273850Z ##[group]Initializing the repository
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6278487Z [command]/usr/bin/git init /home/runner/work/sd-td/sd-td
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6396605Z hint: Using 'master' as the name for the initial branch. This default branch name
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6399164Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6400332Z hint: to use in all of your new repositories, which will suppress this warning,
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6401343Z hint: call:
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6401823Z hint:
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6402363Z hint: 	git config --global init.defaultBranch <name>
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6403005Z hint:
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6403602Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6404877Z hint: 'development'. The just-created branch can be renamed via this command:
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6405668Z hint:
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6406101Z hint: 	git branch -m <name>
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6406595Z hint:
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6407240Z hint: Disable this message with "git config set advice.defaultBranchName false"
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6411744Z Initialized empty Git repository in /home/runner/work/sd-td/sd-td/.git/
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6424488Z [command]/usr/bin/git remote add origin https://github.com/insightlabs38-pixel/sd-td
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6475126Z ##[endgroup]
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6475975Z ##[group]Disabling automatic garbage collection
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6480586Z [command]/usr/bin/git config --local gc.auto 0
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6516726Z ##[endgroup]
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6517851Z ##[group]Setting up auth
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6525641Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6566217Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.6973458Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.7016932Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.7264861Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.7309914Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.7553144Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.7604992Z ##[endgroup]
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.7606141Z ##[group]Fetching the repository
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.7618267Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5b66a9f82f525db61d675dbbc6e75aabaf50cb75:refs/remotes/origin/prize/d-codex-final-prefix-bins
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9757891Z From https://github.com/insightlabs38-pixel/sd-td
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9759433Z  * [new ref]         5b66a9f82f525db61d675dbbc6e75aabaf50cb75 -> origin/prize/d-codex-final-prefix-bins
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9768978Z ##[endgroup]
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9769924Z ##[group]Determining the checkout info
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9770882Z ##[endgroup]
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9776577Z [command]/usr/bin/git sparse-checkout disable
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9848913Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9899324Z ##[group]Checking out the ref
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9905562Z [command]/usr/bin/git checkout --progress --force -B prize/d-codex-final-prefix-bins refs/remotes/origin/prize/d-codex-final-prefix-bins
+pinned	Run actions/checkout@v4	2026-11-02T09:52:00.9998273Z Switched to a new branch 'prize/d-codex-final-prefix-bins'
+pinned	Run actions/checkout@v4	2026-11-02T09:52:01.0006101Z branch 'prize/d-codex-final-prefix-bins' set up to track 'origin/prize/d-codex-final-prefix-bins'.
+pinned	Run actions/checkout@v4	2026-11-02T09:52:01.0010863Z ##[endgroup]
+pinned	Run actions/checkout@v4	2026-11-02T09:52:01.0060233Z [command]/usr/bin/git log -1 --format=%H
+pinned	Run actions/checkout@v4	2026-11-02T09:52:01.0093481Z 5b66a9f82f525db61d675dbbc6e75aabaf50cb75
+pinned	Run actions/setup-python@v5	﻿2026-11-02T09:52:01.0478297Z ##[group]Run actions/setup-python@v5
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.0479783Z with:
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.0480616Z   python-version: 3.13
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.0481601Z   check-latest: false
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.0491594Z   token: ***
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.0492507Z   update-environment: true
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.0493550Z   allow-prereleases: false
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.0494570Z   freethreaded: false
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.0495489Z ##[endgroup]
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.1992327Z ##[group]Installed versions
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.2094165Z (node:2278) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.2098672Z (Use `node --trace-deprecation ...` to show where the warning was created)
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.2114683Z Successfully set up CPython (3.13.17)
+pinned	Run actions/setup-python@v5	2026-11-02T09:52:01.2116474Z ##[endgroup]
+pinned	Build exact pinned Dockerfile and extract executable	﻿2026-11-02T09:52:01.2340310Z ##[group]Run set -euo pipefail
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2341721Z [36;1mset -euo pipefail[0m
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2343449Z [36;1mdocker build --pull -t d-codex-final track-d[0m
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2345176Z [36;1mid=$(docker create d-codex-final)[0m
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2346696Z [36;1mdocker cp "$id:/traverse" /tmp/traverse[0m
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2348409Z [36;1mdocker rm "$id"[0m
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2349526Z [36;1mmkdir -p /tmp/receipts[0m
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2351697Z [36;1mgit rev-parse HEAD:track-d/d_traverse.cpp HEAD:track-d/Dockerfile | tee /tmp/receipts/blobs.txt[0m
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2354339Z [36;1msha256sum /tmp/traverse | tee /tmp/receipts/binary.txt[0m
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2446596Z shell: /usr/bin/bash -e {0}
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2448240Z env:
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2449397Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2451499Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2453871Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2455897Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2457865Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2459576Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:01.2460961Z ##[endgroup]
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6869703Z #0 building with "default" instance using docker driver
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6870514Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6870932Z #1 [internal] load build definition from Dockerfile
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6871833Z #1 transferring dockerfile: 395B 0.0s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6872606Z #1 DONE 0.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6872903Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6873298Z #2 [auth] library/gcc:pull token for registry-1.docker.io
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6874663Z #2 DONE 0.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6875021Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6875414Z #3 [auth] library/debian:pull token for registry-1.docker.io
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6876277Z #3 DONE 0.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6876618Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.6878195Z #4 [internal] load metadata for docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.8343938Z #4 DONE 0.3s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.8344771Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.8346003Z #5 [internal] load metadata for docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9751029Z #5 DONE 0.4s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9752944Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9754553Z #6 [internal] load .dockerignore
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9756763Z #6 transferring context: 2B done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9764265Z #6 DONE 0.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9768986Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9769663Z #7 [internal] load build context
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9771894Z #7 transferring context: 29.96kB done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9774664Z #7 DONE 0.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9775534Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9777250Z #8 [build 1/3] FROM docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9780073Z #8 resolve docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9782819Z #8 sha256:df8a4d9d058f59c2a4ee8cca45e59cea987f442fdb348aa6258357886a13afa8 2.49kB / 2.49kB done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9786547Z #8 sha256:43f51138b1cd8113a36a0a38d89243debb9da1dc64dff2d3f10e945f15eab0bd 7.46kB / 7.46kB done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:03.9790221Z #8 sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 17.83MB / 25.64MB 0.1s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.1135117Z #8 sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 25.64MB / 25.64MB 0.1s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.1139479Z #8 sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce 7.63kB / 7.63kB done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.1141039Z #8 sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 49.39MB / 49.39MB 0.2s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.1142898Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 2.10MB / 237.00MB 0.2s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.1144423Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 8.39MB / 67.82MB 0.2s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.2325281Z #8 sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 49.39MB / 49.39MB 0.2s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.2326937Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 38.80MB / 237.00MB 0.3s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.2328764Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 40.89MB / 67.82MB 0.3s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.2329972Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 0B / 168.16MB 0.3s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.2331225Z #8 sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b 4.59MB / 4.59MB 0.3s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.2332459Z #8 extracting sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.3443942Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 74.45MB / 237.00MB 0.4s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.4524119Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 67.82MB / 67.82MB 0.4s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.4532004Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 116.39MB / 237.00MB 0.5s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.4533739Z #8 sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 67.82MB / 67.82MB 0.4s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.4539417Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 12.58MB / 168.16MB 0.5s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.4555801Z #8 sha256:7141354ffcf765a5454476c2d38c2318eba54cc13a3fc5b6a04430064b940c2c 2.00kB / 2.00kB 0.5s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.4560571Z #8 sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb 10.64kB / 10.64kB 0.4s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.5628151Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 155.19MB / 237.00MB 0.6s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.5642343Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 38.80MB / 168.16MB 0.6s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.6792444Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 225.44MB / 237.00MB 0.8s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.6793509Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 99.61MB / 168.16MB 0.8s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.7872484Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 131.07MB / 168.16MB 0.9s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:04.8872051Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 168.16MB / 168.16MB 1.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:05.4934197Z #8 sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 237.00MB / 237.00MB 1.4s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:05.4935645Z #8 sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 168.16MB / 168.16MB 1.5s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0701253Z #8 ...
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0701560Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0702227Z #9 [stage-1 1/2] FROM docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0703680Z #9 resolve docker.io/library/debian:13-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0705017Z #9 sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad 8.97kB / 8.97kB done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0706520Z #9 sha256:4876fdea29cac1a33a3195f1eb1952feb1fca7dd6dd00be3e2f1879cf20d34d2 1.02kB / 1.02kB done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0707868Z #9 sha256:133aec7ab1411181567fef7fc3f4512123e1f9660090b49851de4b698b4ff772 451B / 451B done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0709055Z #9 sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 29.84MB / 29.84MB 0.2s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0710386Z #9 extracting sha256:f2be67225471500c788ce88c597eb5ea8336e912ad1ca4815650e0281afe2034 1.8s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0711164Z #9 DONE 2.1s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0711356Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.0711938Z #8 [build 1/3] FROM docker.io/library/gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.5781308Z #8 extracting sha256:8d0037029946d2c6dabce18eceda79c533c5797ed1ee86f94084cb8cddaeea91 2.3s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:06.5782955Z #8 extracting sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:07.3210058Z #8 extracting sha256:63040bd9752a74c5b1082903de92d441d30121f994018576b4a2f4cf8bb3bca4 0.6s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:07.8478959Z #8 extracting sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:10.2169848Z #8 extracting sha256:7046f4e749f0e32d9fc67f654ad5e33cc555534f82a9971e45a00dbdb899e309 2.2s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:10.3836297Z #8 extracting sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:15.4175853Z #8 extracting sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 5.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:16.6748372Z #8 extracting sha256:992d9e06c2e85b99901bc1e8b27e557e9537e4d0eee8d4cdff13bc0f9bdee2e4 6.1s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:18.0417684Z #8 extracting sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:18.2962276Z #8 extracting sha256:50bc7c381382ccc0ef2a6aca7edfe90ada5ce5432fc1b6bd15a815c01c6f748b 0.1s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:18.2963528Z #8 extracting sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 0.1s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:20.9195813Z #8 extracting sha256:89609dd4f2480f888a687c4a426a0da6df53ce8433ff2d51962984ed305565ea 2.6s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.7745870Z #8 extracting sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.9927627Z #8 extracting sha256:6d00483150ff167003da6b91eaf3c32f70e3165c244ddd7146c285fd424886eb done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.9928634Z #8 extracting sha256:7141354ffcf765a5454476c2d38c2318eba54cc13a3fc5b6a04430064b940c2c done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.9929173Z #8 DONE 18.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.9929314Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.9929447Z #10 [build 2/3] COPY d_traverse.cpp /src/
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.9929780Z #10 DONE 0.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.9929917Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:21.9930250Z #11 [build 3/3] RUN g++ -O3 -std=c++17 -pthread -flto -static -s -o /traverse /src/d_traverse.cpp
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:24.9975258Z #11 DONE 3.2s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:25.5599663Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:25.5600759Z #12 [stage-1 2/2] COPY --from=build /traverse /traverse
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:25.7216130Z #12 DONE 0.0s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:25.7216399Z 
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:25.7216518Z #13 exporting to image
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:25.7216800Z #13 exporting layers
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:26.0031677Z #13 exporting layers 0.4s done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:26.0200292Z #13 writing image sha256:08749b8b07f2ecd54385f265484127aff1df72cffdcfef797e68ecfa72fa66b7 done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:26.0201563Z #13 naming to docker.io/library/d-codex-final done
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:26.0202329Z #13 DONE 0.4s
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:26.0998773Z 6b955e4ca5a9982f1f10786174bb1f2170da00a09d29c587f6294781fb820441
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:26.1055263Z 24aff529703cb9aca78976b70682edcfd97ce6f0
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:26.1055837Z 8eabe09b96a60131ce5bfda3f098011e1f0863e6
+pinned	Build exact pinned Dockerfile and extract executable	2026-11-02T09:52:26.1087224Z bd4573111b3d527d42259daa009f0aa46aff717b1580959cca1ab944b05a3d28  /tmp/traverse
+pinned	Differential, boundary and contraction stress	﻿2026-11-02T09:52:26.1136810Z ##[group]Run set -euo pipefail
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1137150Z [36;1mset -euo pipefail[0m
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1137915Z [36;1mpython tests/claim_schedule_d.py | tee /tmp/receipts/claim-schedule.txt[0m
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1138676Z [36;1mpython tests/claim_capacity_d.py | tee /tmp/receipts/claim-capacity.txt[0m
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1139155Z [36;1mpython tests/test_d.py | tee /tmp/receipts/fixtures.txt[0m
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1139590Z [36;1mpython tests/boundary_d.py | tee /tmp/receipts/boundary.txt[0m
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1140037Z [36;1mpython tests/saturation_d.py | tee /tmp/receipts/saturation.txt[0m
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1140482Z [36;1mpython tests/stress_d.py 30 | tee /tmp/receipts/stress.txt[0m
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1140921Z [36;1mpython tests/skew_bins_d.py | tee /tmp/receipts/skew-bins.txt[0m
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1162397Z shell: /usr/bin/bash -e {0}
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1162649Z env:
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1162928Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1163383Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1163867Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1164247Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1164653Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1165041Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1165370Z   SD_TEST_BINARY: /tmp/traverse
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:26.1165606Z ##[endgroup]
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:29.0992522Z fast region already contains 999 of 1000 vertices; releasing stale claim
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:29.0993345Z completed fast region len=999 edges=3998 (capacities 1000,4000)
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:29.0994719Z child_signal=0 exit_code=0
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:29.2654872Z fast region already contains 1740511 of 1740512 vertices; releasing stale claim
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:29.2655672Z completed fast region len=1740511 edges=4999998 (capacities 1740512,5000000)
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:29.2760463Z child_signal=0 exit_code=0
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:29.3155377Z PASS forced stale-claim schedule: small and full dimensions
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:31.6337776Z forward vertices=4 edges=4000 capacities n=1000 m=4000 answers=1,4611686018427387904
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:31.6339856Z child_signal=0 exit_code=0
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:31.8406803Z forward vertices=4 edges=5000000 capacities n=1740512 m=5000000 answers=1,4611686018427387904
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:31.8441030Z child_signal=0 exit_code=0
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:31.8493834Z PASS simultaneous-hub capacity schedule: small and full dimensions
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:36.6073868Z PASS 88 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed 4.69s
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:38.2872640Z PASS boundary 60
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:46.6292542Z PASS saturation 110
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:50.1720971Z PASS stress 30
+pinned	Differential, boundary and contraction stress	2026-11-02T09:52:56.2304358Z PASS skewed high-bin overflow 1740512 5000000
+pinned	Organizer references and restricted Docker worker matrix	﻿2026-11-02T09:52:56.2407867Z ##[group]Run set -euo pipefail
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2408323Z [36;1mset -euo pipefail[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2408809Z [36;1mgit clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2409423Z [36;1mfor item in 'tiny 2' 'sample 1' 'sample 2' 'full 1' 'full 7' 'full 17'; do[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2409854Z [36;1m  read -r scale seed <<< "$item"[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2410218Z [36;1m  data="/tmp/data-$scale-$seed"; ref="/tmp/ref-$scale-$seed"[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2410572Z [36;1m  mkdir -p "$data" "$ref"[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2411033Z [36;1m  python /tmp/official/generators/d_traverse.py --scale "$scale" --seed "$seed" --out "$data"[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2411633Z [36;1m  python /tmp/official/reference/d_traverse.py --data "$data" --out "$ref"[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2412259Z [36;1m  sha256sum "$data/graph.txt" "$data/queries.txt" "$ref/distances.txt" | tee -a /tmp/receipts/hashes.txt[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2412774Z [36;1m  for threads in 4 6 12; do[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2413196Z [36;1m    out="/tmp/out-$scale-$seed-$threads"; mkdir -p "$out"; chmod 777 "$out"[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2414197Z [36;1m    docker run --rm --network none --read-only --memory 8g --pids-limit 512 --user 65534:65534 --cap-drop ALL --security-opt no-new-privileges -e SD_THREADS="$threads" -v "$data:/data:ro" -v "$out:/out:rw" d-codex-final[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2415307Z [36;1m    cmp "$ref/distances.txt" "$out/distances.txt"[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2415777Z [36;1m    echo "PASS $scale seed=$seed threads=$threads" | tee -a /tmp/receipts/matrix.txt[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2416191Z [36;1m  done[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2416381Z [36;1mdone[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2416891Z [36;1mecho 'a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/ref-sample-1/distances.txt' | sha256sum -c[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2418119Z [36;1mecho 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/ref-full-1/distances.txt' | sha256sum -c[0m
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2440429Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2440775Z env:
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2441034Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2441465Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2441908Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2442300Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2442685Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2443065Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2443386Z ##[endgroup]
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.2500743Z Cloning into '/tmp/official'...
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.6072530Z e7b9b0ffd504edeb15d02c1b6ee199cefe67312e30a0ed8030b44a63d01ac586  /tmp/data-tiny-2/graph.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.6073684Z af1099c10b88b2df3949120ab9d60c07a35d5f4357c1c3cf2813bf73efa767f8  /tmp/data-tiny-2/queries.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.6075047Z 686519de01b6c28cc2bb73423152b0636e0e2c1b9a0cb90cda8b0f21673a3474  /tmp/ref-tiny-2/distances.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.8199400Z PASS tiny seed=2 threads=4
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:56.9622668Z PASS tiny seed=2 threads=6
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:52:57.1179668Z PASS tiny seed=2 threads=12
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:08.5771466Z 16351d408f1f94a6bcf66de5c5762abede111c07a4a38306253504a6c9c9b7cd  /tmp/data-sample-1/graph.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:08.5773027Z fb4065ffe94d2dd51c924f389bd0c6afa58d42534391aa5b0fe5edfaa33988a5  /tmp/data-sample-1/queries.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:08.5774341Z a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/ref-sample-1/distances.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:08.7514738Z PASS sample seed=1 threads=4
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:08.9145757Z PASS sample seed=1 threads=6
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:09.0784109Z PASS sample seed=1 threads=12
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:21.4848491Z 614f55156fc95e301f8a27d6d7ab89f7354710de57cbc8b04a6ebc081ed99a2d  /tmp/data-sample-2/graph.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:21.4849395Z cce224a9c00a0c9bbcf59a2d2d4090ed9d990b54f85feb1db7bee6d11782a71d  /tmp/data-sample-2/queries.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:21.4850523Z 70e94813fc6fbee12c22cc040bc4a4629c70508d13eaab2bfabbdd75e1d51aed  /tmp/ref-sample-2/distances.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:21.6543087Z PASS sample seed=2 threads=4
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:21.8169618Z PASS sample seed=2 threads=6
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:53:21.9812974Z PASS sample seed=2 threads=12
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:55:58.1636486Z fe6471f2712d10b23c2ec58a4cbc7db1ea3e742daf6b6db62829e74d6c4a26c7  /tmp/data-full-1/graph.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:55:58.1638109Z 160f1ef48378dcb567a8d9ddd2676ee777b044a5ede3ad4c7b42e812aa4b3a6f  /tmp/data-full-1/queries.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:55:58.1639412Z a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/ref-full-1/distances.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:55:58.4925616Z PASS full seed=1 threads=4
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:55:58.8327711Z PASS full seed=1 threads=6
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:55:59.1671610Z PASS full seed=1 threads=12
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:58:52.3845641Z 925139d08965c0b9fa9d73ebdb64a51e2ad71dd26a7926fb2848c55a5e03bf49  /tmp/data-full-7/graph.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:58:52.3846949Z b9266e6df0c5a054c33b1165db04b5fcd75bd6e9a64a87f2170158fb1cf43832  /tmp/data-full-7/queries.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:58:52.3848890Z 66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646  /tmp/ref-full-7/distances.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:58:52.7173271Z PASS full seed=7 threads=4
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:58:53.0589593Z PASS full seed=7 threads=6
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T09:58:53.4017266Z PASS full seed=7 threads=12
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T10:01:38.1455341Z cf1f804da4c8f7283004d89340229cbe7147d516d8da712dde7a64b519d615ff  /tmp/data-full-17/graph.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T10:01:38.1460866Z edebd2d34844eee26dcd19e8ea5cca313cbc152025001fb060c124771282a8ff  /tmp/data-full-17/queries.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T10:01:38.1462286Z ad7c211024014a4c21a50faab598dd19e730cbc0b4e8013a7d3b3306132913ba  /tmp/ref-full-17/distances.txt
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T10:01:38.4934771Z PASS full seed=17 threads=4
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T10:01:38.8384562Z PASS full seed=17 threads=6
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T10:01:39.1731288Z PASS full seed=17 threads=12
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T10:01:39.1750577Z /tmp/ref-sample-1/distances.txt: OK
+pinned	Organizer references and restricted Docker worker matrix	2026-11-02T10:01:39.1769764Z /tmp/ref-full-1/distances.txt: OK
+pinned	Run actions/upload-artifact@v4	﻿2026-11-02T10:01:39.1840965Z ##[group]Run actions/upload-artifact@v4
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1841292Z with:
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1841499Z   name: pinned-correctness
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1841746Z   path: /tmp/receipts
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1841977Z   if-no-files-found: warn
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1842225Z   compression-level: 6
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1842443Z   overwrite: false
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1842670Z   include-hidden-files: false
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1842900Z env:
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1843151Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1843642Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1844084Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1844481Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1844868Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1845256Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.1845580Z ##[endgroup]
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.3725316Z (node:169124) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.3727785Z (Use `node --trace-deprecation ...` to show where the warning was created)
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.3832255Z With the provided path, there will be 11 files uploaded
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.3833233Z Artifact name is valid!
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.3833652Z Root directory input is valid!
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.6383052Z Beginning upload of artifact content to blob storage
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.6792525Z (node:169124) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.7050738Z Uploaded bytes 2669
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.7203777Z Finished uploading artifact content to blob storage!
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.7204953Z SHA256 digest of uploaded artifact zip is b3b0204d2cb32659c5572b0ddadef6e53d4a96a66df8189b2f1a13c5b00d7189
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:39.7206605Z Finalizing artifact upload
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:40.1253032Z Artifact pinned-correctness.zip successfully finalized. Artifact ID 13132086545
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:40.1254453Z Artifact pinned-correctness has been successfully uploaded! Final size is 2669 bytes. Artifact ID is 13132086545
+pinned	Run actions/upload-artifact@v4	2026-11-02T10:01:40.1261188Z Artifact download URL: https://github.com/insightlabs38-pixel/sd-td/actions/runs/41424109317/artifacts/13132086545
+pinned	Post Run actions/setup-python@v5	﻿2026-11-02T10:01:40.1460420Z Post job cleanup.
+pinned	Post Run actions/setup-python@v5	2026-11-02T10:01:40.2692519Z (node:169137) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+pinned	Post Run actions/setup-python@v5	2026-11-02T10:01:40.2693505Z (Use `node --trace-deprecation ...` to show where the warning was created)
+pinned	Post Run actions/checkout@v4	﻿2026-11-02T10:01:40.2835053Z Post job cleanup.
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.3898259Z [command]/usr/bin/git version
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.3958253Z git version 2.56.0
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4015708Z Temporarily overriding HOME='/home/runner/work/_temp/50681fc4-a310-43f9-a7fb-8957dae173ed' before making global git config changes
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4017598Z Adding repository directory to the temporary git global config as a safe directory
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4024171Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4094759Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4168801Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4529107Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4611127Z http.https://github.com/.extraheader
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4630073Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.4739399Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.5058400Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+pinned	Post Run actions/checkout@v4	2026-11-02T10:01:40.5113871Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+pinned	Complete job	﻿2026-11-02T10:01:40.5508234Z Cleaning up orphan processes
+pinned	Complete job	2026-11-02T10:01:40.6053649Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+sanitizers (thread)	Set up job	﻿2026-11-02T09:52:00.3520169Z Current runner version: '2.338.2'
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3543719Z ##[group]Runner Image Provisioner
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3544813Z Hosted Compute Agent
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3545354Z Version: 20261021.618
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3545935Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3546557Z Build Date: 2026-10-21T00:45:21Z
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3547123Z Worker ID: {8acb3652-30f9-40b0-b971-43e345e08d6c}
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3547782Z Region: westus
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3548297Z Cloud: Azure
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3548800Z ##[endgroup]
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3550189Z ##[group]Operating System
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3550742Z Ubuntu
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3551303Z 24.04.5
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3551806Z LTS
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3552293Z ##[endgroup]
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3552795Z ##[group]Runner Image
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3553321Z Image: ubuntu-24.04
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3553851Z Version: 20261025.353.1
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3555067Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3556908Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3557788Z ##[endgroup]
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3558885Z ##[group]GITHUB_TOKEN Permissions
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3560740Z Contents: read
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3561352Z Metadata: read
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3561856Z Packages: read
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3562386Z ##[endgroup]
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3564704Z Secret source: Actions
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3565609Z Cache mode: write
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3566236Z Prepare workflow directory
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3837381Z Prepare all required actions
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.3876918Z Getting action download info
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.7315009Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+sanitizers (thread)	Set up job	2026-11-02T09:52:00.8248619Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+sanitizers (thread)	Set up job	2026-11-02T09:52:01.0706176Z Complete job name: sanitizers (thread)
+sanitizers (thread)	Run actions/checkout@v4	﻿2026-11-02T09:52:01.1385243Z ##[group]Run actions/checkout@v4
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1385915Z with:
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1386306Z   repository: insightlabs38-pixel/sd-td
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1389985Z   token: ***
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1390369Z   ssh-strict: true
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1390749Z   ssh-user: git
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1391120Z   persist-credentials: true
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1391529Z   clean: true
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1391917Z   sparse-checkout-cone-mode: true
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1392345Z   fetch-depth: 1
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1392710Z   fetch-tags: false
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1393101Z   show-progress: true
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1393468Z   lfs: false
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1393805Z   submodules: false
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1394369Z   set-safe-directory: true
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1394782Z   allow-unsafe-pr-checkout: false
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.1395468Z ##[endgroup]
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4402955Z Syncing repository: insightlabs38-pixel/sd-td
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4405766Z ##[group]Getting Git version info
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4406827Z Working directory is '/home/runner/work/sd-td/sd-td'
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4408408Z [command]/usr/bin/git version
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4606282Z git version 2.56.0
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4625033Z ##[endgroup]
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4632173Z Temporarily overriding HOME='/home/runner/work/_temp/a9780024-536d-4360-99dc-5bc0b3b4defb' before making global git config changes
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4636753Z Adding repository directory to the temporary git global config as a safe directory
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4638488Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4699019Z Deleting the contents of '/home/runner/work/sd-td/sd-td'
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4707504Z ##[group]Initializing the repository
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4715183Z [command]/usr/bin/git init /home/runner/work/sd-td/sd-td
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4839931Z hint: Using 'master' as the name for the initial branch. This default branch name
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4841555Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4843308Z hint: to use in all of your new repositories, which will suppress this warning,
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4844561Z hint: call:
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4845140Z hint:
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4845958Z hint: 	git config --global init.defaultBranch <name>
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4854784Z hint:
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4855667Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4857009Z hint: 'development'. The just-created branch can be renamed via this command:
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4858103Z hint:
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4858686Z hint: 	git branch -m <name>
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4859339Z hint:
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4860220Z hint: Disable this message with "git config set advice.defaultBranchName false"
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4861628Z Initialized empty Git repository in /home/runner/work/sd-td/sd-td/.git/
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4867808Z [command]/usr/bin/git remote add origin https://github.com/insightlabs38-pixel/sd-td
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4916846Z ##[endgroup]
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4921876Z ##[group]Disabling automatic garbage collection
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4922950Z [command]/usr/bin/git config --local gc.auto 0
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4959310Z ##[endgroup]
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4960067Z ##[group]Setting up auth
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.4966699Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.5006056Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.5497041Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.5541254Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.5783262Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.5828948Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.6064631Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.6115484Z ##[endgroup]
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.6117005Z ##[group]Fetching the repository
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.6129441Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5b66a9f82f525db61d675dbbc6e75aabaf50cb75:refs/remotes/origin/prize/d-codex-final-prefix-bins
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.9983319Z From https://github.com/insightlabs38-pixel/sd-td
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.9985697Z  * [new ref]         5b66a9f82f525db61d675dbbc6e75aabaf50cb75 -> origin/prize/d-codex-final-prefix-bins
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.9989293Z ##[endgroup]
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.9990704Z ##[group]Determining the checkout info
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.9992205Z ##[endgroup]
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:01.9995945Z [command]/usr/bin/git sparse-checkout disable
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:02.0125437Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:02.0161950Z ##[group]Checking out the ref
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:02.0165567Z [command]/usr/bin/git checkout --progress --force -B prize/d-codex-final-prefix-bins refs/remotes/origin/prize/d-codex-final-prefix-bins
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:02.0240064Z Switched to a new branch 'prize/d-codex-final-prefix-bins'
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:02.0245872Z branch 'prize/d-codex-final-prefix-bins' set up to track 'origin/prize/d-codex-final-prefix-bins'.
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:02.0250938Z ##[endgroup]
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:02.0294679Z [command]/usr/bin/git log -1 --format=%H
+sanitizers (thread)	Run actions/checkout@v4	2026-11-02T09:52:02.0323485Z 5b66a9f82f525db61d675dbbc6e75aabaf50cb75
+sanitizers (thread)	Run actions/setup-python@v5	﻿2026-11-02T09:52:02.0664350Z ##[group]Run actions/setup-python@v5
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.0665429Z with:
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.0666180Z   python-version: 3.13
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.0667027Z   check-latest: false
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.0674749Z   token: ***
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.0675543Z   update-environment: true
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.0676465Z   allow-prereleases: false
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.0677364Z   freethreaded: false
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.0678183Z ##[endgroup]
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.1835304Z ##[group]Installed versions
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.1922723Z (node:2085) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.1926180Z (Use `node --trace-deprecation ...` to show where the warning was created)
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.1927835Z Successfully set up CPython (3.13.17)
+sanitizers (thread)	Run actions/setup-python@v5	2026-11-02T09:52:02.1929472Z ##[endgroup]
+sanitizers (thread)	Build sanitizer executable	﻿2026-11-02T09:52:02.2136485Z ##[group]Run set -euo pipefail
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2138047Z [36;1mset -euo pipefail[0m
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2139361Z [36;1mflags='-fsanitize=thread'[0m
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2141085Z [36;1mif [ 'thread' = address ]; then flags='-fsanitize=address,undefined'; fi[0m
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2142562Z [36;1mg++ --version[0m
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2144405Z [36;1mg++ -O1 -g -std=c++17 -pthread -fno-omit-frame-pointer $flags track-d/d_traverse.cpp -o /tmp/traverse-san[0m
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2244302Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2330527Z env:
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2332014Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2333585Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2335300Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2336691Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2338074Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2339570Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2340750Z ##[endgroup]
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2528023Z g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2529430Z Copyright (C) 2023 Free Software Foundation, Inc.
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2530952Z This is free software; see the source for copying conditions.  There is NO
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2532721Z warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+sanitizers (thread)	Build sanitizer executable	2026-11-02T09:52:02.2533766Z 
+sanitizers (thread)	Independent oracle fixtures under sanitizer	﻿2026-11-02T09:52:04.8997985Z ##[group]Run set -euo pipefail
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.8998342Z [36;1mset -euo pipefail[0m
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.8998593Z [36;1mpython tests/test_d.py[0m
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.8998848Z [36;1mpython tests/boundary_d.py[0m
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.8999116Z [36;1mpython tests/saturation_d.py[0m
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.8999383Z [36;1mpython tests/stress_d.py 20[0m
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.8999664Z [36;1mpython tests/skew_bins_d.py --small[0m
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9018417Z shell: /usr/bin/bash -e {0}
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9018671Z env:
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9018931Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9019329Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9019705Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9020073Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9020420Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9020768Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9021132Z   SD_TEST_BINARY: /tmp/traverse-san
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9021416Z   ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9021708Z   UBSAN_OPTIONS: halt_on_error=1
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9021954Z   TSAN_OPTIONS: halt_on_error=1
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:04.9022192Z ##[endgroup]
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:43.1825872Z PASS 88 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed 37.65s
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:57.9900665Z PASS boundary 60
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:53:50.1886564Z PASS saturation 110
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:54:08.1610679Z PASS stress 20
+sanitizers (thread)	Independent oracle fixtures under sanitizer	2026-11-02T09:54:08.7958264Z PASS skewed high-bin overflow 10000 120000
+sanitizers (thread)	Post Run actions/setup-python@v5	﻿2026-11-02T09:54:08.8104501Z Post job cleanup.
+sanitizers (thread)	Post Run actions/setup-python@v5	2026-11-02T09:54:08.9150585Z (node:162538) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+sanitizers (thread)	Post Run actions/setup-python@v5	2026-11-02T09:54:08.9152240Z (Use `node --trace-deprecation ...` to show where the warning was created)
+sanitizers (thread)	Post Run actions/checkout@v4	﻿2026-11-02T09:54:08.9336552Z Post job cleanup.
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0104246Z [command]/usr/bin/git version
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0143652Z git version 2.56.0
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0178397Z Temporarily overriding HOME='/home/runner/work/_temp/654d4777-35e0-474c-b52e-3eed9d3629c3' before making global git config changes
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0179445Z Adding repository directory to the temporary git global config as a safe directory
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0183304Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0225406Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0272117Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0521321Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0584879Z http.https://github.com/.extraheader
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0595835Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0654147Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0888191Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+sanitizers (thread)	Post Run actions/checkout@v4	2026-11-02T09:54:09.0927821Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+sanitizers (thread)	Complete job	﻿2026-11-02T09:54:09.1297693Z Cleaning up orphan processes
+sanitizers (thread)	Complete job	2026-11-02T09:54:09.1611424Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+sanitizers (address)	Set up job	﻿2026-11-02T09:52:00.0759815Z Current runner version: '2.338.2'
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0798901Z ##[group]Runner Image Provisioner
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0800456Z Hosted Compute Agent
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0801534Z Version: 20261021.618
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0802606Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0804378Z Build Date: 2026-10-21T00:45:21Z
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0805734Z Worker ID: {3cf964c7-2768-4736-a547-0fe82582ed1e}
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0807088Z Region: centralus
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0808196Z Cloud: Azure
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0809126Z ##[endgroup]
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0811553Z ##[group]Operating System
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0812652Z Ubuntu
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0814010Z 24.04.5
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0815011Z LTS
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0815968Z ##[endgroup]
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0817134Z ##[group]Runner Image
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0818297Z Image: ubuntu-24.04
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0819254Z Version: 20261025.353.1
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0821403Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0825473Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0827128Z ##[endgroup]
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0828466Z ##[group]GITHUB_TOKEN Permissions
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0830731Z Contents: read
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0831561Z Metadata: read
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0832163Z Packages: read
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0832721Z ##[endgroup]
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0835187Z Secret source: Actions
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0836147Z Cache mode: write
+sanitizers (address)	Set up job	2026-11-02T09:52:00.0837376Z Prepare workflow directory
+sanitizers (address)	Set up job	2026-11-02T09:52:00.1228125Z Prepare all required actions
+sanitizers (address)	Set up job	2026-11-02T09:52:00.1299293Z Getting action download info
+sanitizers (address)	Set up job	2026-11-02T09:52:00.3932344Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+sanitizers (address)	Set up job	2026-11-02T09:52:00.4911336Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+sanitizers (address)	Set up job	2026-11-02T09:52:00.6736073Z Complete job name: sanitizers (address)
+sanitizers (address)	Run actions/checkout@v4	﻿2026-11-02T09:52:00.7599512Z ##[group]Run actions/checkout@v4
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7600422Z with:
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7600886Z   repository: insightlabs38-pixel/sd-td
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7604771Z   token: ***
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7605222Z   ssh-strict: true
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7605670Z   ssh-user: git
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7606119Z   persist-credentials: true
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7606614Z   clean: true
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7607069Z   sparse-checkout-cone-mode: true
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7607585Z   fetch-depth: 1
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7608016Z   fetch-tags: false
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7608457Z   show-progress: true
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7608897Z   lfs: false
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7609313Z   submodules: false
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7609759Z   set-safe-directory: true
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7610269Z   allow-unsafe-pr-checkout: false
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:00.7611049Z ##[endgroup]
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0698460Z Syncing repository: insightlabs38-pixel/sd-td
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0701005Z ##[group]Getting Git version info
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0702101Z Working directory is '/home/runner/work/sd-td/sd-td'
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0703941Z [command]/usr/bin/git version
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0856367Z git version 2.56.0
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0881327Z ##[endgroup]
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0897644Z Temporarily overriding HOME='/home/runner/work/_temp/5894a74e-7992-4e85-9279-f0baffc349c3' before making global git config changes
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0900084Z Adding repository directory to the temporary git global config as a safe directory
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0902450Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0961028Z Deleting the contents of '/home/runner/work/sd-td/sd-td'
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0966894Z ##[group]Initializing the repository
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.0972062Z [command]/usr/bin/git init /home/runner/work/sd-td/sd-td
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1120534Z hint: Using 'master' as the name for the initial branch. This default branch name
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1122215Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1124600Z hint: to use in all of your new repositories, which will suppress this warning,
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1125756Z hint: call:
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1126353Z hint:
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1127087Z hint: 	git config --global init.defaultBranch <name>
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1128328Z hint:
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1129542Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1130826Z hint: 'development'. The just-created branch can be renamed via this command:
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1132554Z hint:
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1133959Z hint: 	git branch -m <name>
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1135185Z hint:
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1136757Z hint: Disable this message with "git config set advice.defaultBranchName false"
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1139508Z Initialized empty Git repository in /home/runner/work/sd-td/sd-td/.git/
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1151675Z [command]/usr/bin/git remote add origin https://github.com/insightlabs38-pixel/sd-td
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1208012Z ##[endgroup]
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1209898Z ##[group]Disabling automatic garbage collection
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1212384Z [command]/usr/bin/git config --local gc.auto 0
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1251939Z ##[endgroup]
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1254229Z ##[group]Setting up auth
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1260144Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1302504Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1757634Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.1804904Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.2081967Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.2128026Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.2379061Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.2430560Z ##[endgroup]
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.2432358Z ##[group]Fetching the repository
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.2446867Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +5b66a9f82f525db61d675dbbc6e75aabaf50cb75:refs/remotes/origin/prize/d-codex-final-prefix-bins
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6484164Z From https://github.com/insightlabs38-pixel/sd-td
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6488158Z  * [new ref]         5b66a9f82f525db61d675dbbc6e75aabaf50cb75 -> origin/prize/d-codex-final-prefix-bins
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6496581Z ##[endgroup]
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6499322Z ##[group]Determining the checkout info
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6502332Z ##[endgroup]
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6504437Z [command]/usr/bin/git sparse-checkout disable
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6569238Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6613954Z ##[group]Checking out the ref
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6619018Z [command]/usr/bin/git checkout --progress --force -B prize/d-codex-final-prefix-bins refs/remotes/origin/prize/d-codex-final-prefix-bins
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6722839Z Switched to a new branch 'prize/d-codex-final-prefix-bins'
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6729178Z branch 'prize/d-codex-final-prefix-bins' set up to track 'origin/prize/d-codex-final-prefix-bins'.
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6736226Z ##[endgroup]
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6791358Z [command]/usr/bin/git log -1 --format=%H
+sanitizers (address)	Run actions/checkout@v4	2026-11-02T09:52:01.6827117Z 5b66a9f82f525db61d675dbbc6e75aabaf50cb75
+sanitizers (address)	Run actions/setup-python@v5	﻿2026-11-02T09:52:01.7273742Z ##[group]Run actions/setup-python@v5
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.7275112Z with:
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.7276047Z   python-version: 3.13
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.7277115Z   check-latest: false
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.7287480Z   token: ***
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.7288474Z   update-environment: true
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.7289610Z   allow-prereleases: false
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.7290722Z   freethreaded: false
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.7291730Z ##[endgroup]
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.8829752Z ##[group]Installed versions
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.8930792Z (node:2326) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.8937039Z (Use `node --trace-deprecation ...` to show where the warning was created)
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.8941089Z Successfully set up CPython (3.13.17)
+sanitizers (address)	Run actions/setup-python@v5	2026-11-02T09:52:01.8944811Z ##[endgroup]
+sanitizers (address)	Build sanitizer executable	﻿2026-11-02T09:52:01.9162706Z ##[group]Run set -euo pipefail
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9164327Z [36;1mset -euo pipefail[0m
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9165516Z [36;1mflags='-fsanitize=thread'[0m
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9167238Z [36;1mif [ 'address' = address ]; then flags='-fsanitize=address,undefined'; fi[0m
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9169007Z [36;1mg++ --version[0m
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9171060Z [36;1mg++ -O1 -g -std=c++17 -pthread -fno-omit-frame-pointer $flags track-d/d_traverse.cpp -o /tmp/traverse-san[0m
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9213740Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9215363Z env:
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9322822Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9326013Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9328399Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9330189Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9331977Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9334219Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9335744Z ##[endgroup]
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9524813Z g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9526480Z Copyright (C) 2023 Free Software Foundation, Inc.
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9528358Z This is free software; see the source for copying conditions.  There is NO
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9530587Z warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+sanitizers (address)	Build sanitizer executable	2026-11-02T09:52:01.9531917Z 
+sanitizers (address)	Independent oracle fixtures under sanitizer	﻿2026-11-02T09:52:09.8895632Z ##[group]Run set -euo pipefail
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8896079Z [36;1mset -euo pipefail[0m
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8896395Z [36;1mpython tests/test_d.py[0m
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8896719Z [36;1mpython tests/boundary_d.py[0m
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8897262Z [36;1mpython tests/saturation_d.py[0m
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8897812Z [36;1mpython tests/stress_d.py 20[0m
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8898173Z [36;1mpython tests/skew_bins_d.py --small[0m
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8921786Z shell: /usr/bin/bash -e {0}
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8922105Z env:
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8922430Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8922941Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8923755Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8924247Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8924703Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8925161Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8925631Z   SD_TEST_BINARY: /tmp/traverse-san
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8925981Z   ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8926339Z   UBSAN_OPTIONS: halt_on_error=1
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8926649Z   TSAN_OPTIONS: halt_on_error=1
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:09.8927121Z ##[endgroup]
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:52:50.3327743Z PASS 88 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed 40.34s
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:53:04.1787758Z PASS boundary 60
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:54:11.2913012Z PASS saturation 110
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:54:30.6581041Z PASS stress 20
+sanitizers (address)	Independent oracle fixtures under sanitizer	2026-11-02T09:54:31.1959455Z PASS skewed high-bin overflow 10000 120000
+sanitizers (address)	Post Run actions/setup-python@v5	﻿2026-11-02T09:54:31.2132203Z Post job cleanup.
+sanitizers (address)	Post Run actions/setup-python@v5	2026-11-02T09:54:31.3438374Z (node:159024) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+sanitizers (address)	Post Run actions/setup-python@v5	2026-11-02T09:54:31.3441136Z (Use `node --trace-deprecation ...` to show where the warning was created)
+sanitizers (address)	Post Run actions/checkout@v4	﻿2026-11-02T09:54:31.3609753Z Post job cleanup.
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.4549547Z [command]/usr/bin/git version
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.4599963Z git version 2.56.0
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.4647470Z Temporarily overriding HOME='/home/runner/work/_temp/a5e61821-b513-490d-a477-804bda692a9f' before making global git config changes
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.4649095Z Adding repository directory to the temporary git global config as a safe directory
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.4654193Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.4702453Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.4770407Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.5095539Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.5114418Z http.https://github.com/.extraheader
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.5149244Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.5227938Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.5543358Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+sanitizers (address)	Post Run actions/checkout@v4	2026-11-02T09:54:31.5602635Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+sanitizers (address)	Complete job	﻿2026-11-02T09:54:31.6065202Z Cleaning up orphan processes
+sanitizers (address)	Complete job	2026-11-02T09:54:31.6439951Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

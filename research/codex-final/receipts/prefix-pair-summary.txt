@@ -1,0 +1,6 @@
+1 prefix_bins wall 0.465276 cpu 0.464363 maxrss 141536
+1 prefix_pair wall 0.477159 cpu 0.476504 maxrss 141464
+6 prefix_bins wall 0.352731 cpu 0.612685 maxrss 141580
+6 prefix_pair wall 0.325728 cpu 0.62933 maxrss 141456
+12 prefix_bins wall 0.328312 cpu 0.599357 maxrss 142028
+12 prefix_pair wall 0.33349 cpu 0.61199 maxrss 141932

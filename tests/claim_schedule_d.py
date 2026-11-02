@@ -17,7 +17,7 @@ b = text.index('  void put(', a)
 body = text[a:b].replace('__atomic_load_n(', 'claim_load(').replace('__atomic_store_n(', 'claim_store(').replace('__atomic_fetch_or(', 'claim_or(')
 if 'Bits &claimed, mine;' in text:
     body = body.replace('    u64 &local = mine[z >> 6];',
-                        '    (void)claim_load(word, __ATOMIC_RELAXED);\n    u64 &local = mine[z >> 6];')
+                        '    if (role == 1) (void)claim_load(word, __ATOMIC_RELAXED);\n    u64 &local = mine[z >> 6];')
 text = text[:a] + body + text[b:]
 harness = (here / 'claim_schedule_d.cpp').read_text().replace('"b_instrumented.cpp"', '"solver.cpp"')
 if not args.expect_fault:

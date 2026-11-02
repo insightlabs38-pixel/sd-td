@@ -257,7 +257,7 @@ Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
       u32 pos = 4 * n + spilled.fetch_add(extra);
       for (u32 x = 0; x < size; ++x) {
         u32 v = first + x, *row = rows + 4 * size_t(v);
-        if (at[x] <= 2 && !test(terminal, v))
+        if (at[x] <= BYPASS_MAX_DEGREE && !test(terminal, v))
           set(bypass, v); // buckets are word aligned
         std::fill(row, row + 4, NONE);
         if (at[x] > 4)
@@ -283,6 +283,10 @@ Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
   g->merge(escapes);
   return g;
 }
+
+#ifndef BYPASS_MAX_DEGREE
+#define BYPASS_MAX_DEGREE 3
+#endif
 
 // ---------------------------------------------------------------- ordering
 

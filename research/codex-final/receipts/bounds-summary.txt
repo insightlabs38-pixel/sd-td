@@ -1,0 +1,16 @@
+1 fix_atomic wall 0.48142 cpu 0.480474 maxrss 145100
+1 bound_target wall 0.484094 cpu 0.480801 maxrss 145124
+1 bound_vertex wall 0.477098 cpu 0.475611 maxrss 145096
+1 bound_edge wall 0.581506 cpu 0.581043 maxrss 145124
+4 fix_atomic wall 0.333263 cpu 0.644401 maxrss 145576
+4 bound_target wall 0.360832 cpu 0.643002 maxrss 145520
+4 bound_vertex wall 0.339524 cpu 0.639388 maxrss 145532
+4 bound_edge wall 0.401304 cpu 0.744475 maxrss 145512
+6 fix_atomic wall 0.332582 cpu 0.647085 maxrss 145896
+6 bound_target wall 0.361436 cpu 0.645577 maxrss 145800
+6 bound_vertex wall 0.361252 cpu 0.632913 maxrss 145916
+6 bound_edge wall 0.394432 cpu 0.720131 maxrss 145824
+12 fix_atomic wall 0.375087 cpu 0.6278 maxrss 146752
+12 bound_target wall 0.338523 cpu 0.623241 maxrss 146560
+12 bound_vertex wall 0.367191 cpu 0.62224 maxrss 146712
+12 bound_edge wall 0.401038 cpu 0.712135 maxrss 146628

@@ -1,0 +1,8 @@
+1 fix_atomic wall 0.482724 cpu 0.482348 maxrss 145164
+1 bin8_simple wall 0.487109 cpu 0.486788 maxrss 145180
+4 fix_atomic wall 0.330888 cpu 0.645676 maxrss 145532
+4 bin8_simple wall 0.356092 cpu 0.651756 maxrss 145532
+6 fix_atomic wall 0.368262 cpu 0.643059 maxrss 145832
+6 bin8_simple wall 0.334601 cpu 0.649327 maxrss 145976
+12 fix_atomic wall 0.337675 cpu 0.625612 maxrss 146788
+12 bin8_simple wall 0.371318 cpu 0.637924 maxrss 146448

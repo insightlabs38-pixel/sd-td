@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.483031 cpu 0.479059 maxrss 145128
+1 leaf_inline wall 0.761527 cpu 0.756893 maxrss 143944
+1 leaf_cached wall 0.542546 cpu 0.541554 maxrss 150840
+4 fix_atomic wall 0.333638 cpu 0.663397 maxrss 145484
+4 leaf_inline wall 0.551986 cpu 1.021775 maxrss 144468
+4 leaf_cached wall 0.401075 cpu 0.729214 maxrss 150924
+6 fix_atomic wall 0.365542 cpu 0.649645 maxrss 145824
+6 leaf_inline wall 0.515618 cpu 0.983495 maxrss 144576
+6 leaf_cached wall 0.395879 cpu 0.7217 maxrss 151012
+12 fix_atomic wall 0.337444 cpu 0.629955 maxrss 146824
+12 leaf_inline wall 0.512134 cpu 0.962805 maxrss 145436
+12 leaf_cached wall 0.395227 cpu 0.68632 maxrss 151664

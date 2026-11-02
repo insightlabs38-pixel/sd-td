@@ -1,0 +1,8 @@
+1 fix_atomic wall 0.484585 cpu 0.483986 maxrss 145100
+1 phased_claims wall 0.49504 cpu 0.493888 maxrss 145272
+4 fix_atomic wall 0.33674 cpu 0.65195 maxrss 145532
+4 phased_claims wall 0.37994 cpu 0.690797 maxrss 145596
+6 fix_atomic wall 0.364373 cpu 0.652545 maxrss 145852
+6 phased_claims wall 0.381048 cpu 0.701062 maxrss 145956
+12 fix_atomic wall 0.374366 cpu 0.629334 maxrss 146724
+12 phased_claims wall 0.391832 cpu 0.684054 maxrss 146760

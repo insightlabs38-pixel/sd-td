@@ -1,0 +1,5 @@
+forward vertices=6 edges=11996 capacities n=1000 m=4000 answers=1,4611686018427387904
+child_signal=0 exit_code=0
+forward vertices=6 edges=14999996 capacities n=1740512 m=5000000 answers=1,4611686018427387904
+child_signal=0 exit_code=0
+PASS simultaneous-hub capacity schedule: small and full dimensions

@@ -1,0 +1,8 @@
+6 final wall 0.376129 cpu 0.677904 maxrss 144812
+6 outline_esc wall 0.37789 cpu 0.688176 maxrss 144792
+6 growbits wall 0.368756 cpu 0.679205 maxrss 144816
+6 growbits_cold wall 0.372443 cpu 0.677895 maxrss 144876
+12 final wall 0.384927 cpu 0.677143 maxrss 146500
+12 outline_esc wall 0.384503 cpu 0.684554 maxrss 146488
+12 growbits wall 0.379454 cpu 0.67211 maxrss 146536
+12 growbits_cold wall 0.382944 cpu 0.665362 maxrss 146520

@@ -1,0 +1,11 @@
+start wall_ms=0.000 cpu_ms=29.390 rss_kib=6820 cg_current=892928 cg_peak=3895296
+parse-bin wall_ms=49.166 cpu_ms=113.148 rss_kib=125376 cg_current=39362560 cg_peak=39403520
+raw-csr wall_ms=31.818 cpu_ms=59.890 rss_kib=129188 cg_current=31252480 cg_peak=43667456
+grow-contract wall_ms=105.701 cpu_ms=200.961 rss_kib=146232 cg_current=56037376 cg_peak=58748928
+rename-map wall_ms=5.900 cpu_ms=5.192 rss_kib=146232 cg_current=30998528 cg_peak=58748928
+forward-rename-count wall_ms=21.437 cpu_ms=38.507 rss_kib=146232 cg_current=36134912 cg_peak=58748928
+graph n=1199132 m=4039369 escapes=4764 reverse_escapes=4764
+reverse-place wall_ms=13.490 cpu_ms=13.155 rss_kib=146232 cg_current=45355008 cg_peak=58748928
+schedule wall_ms=0.187 cpu_ms=0.187 rss_kib=146232 cg_current=45355008 cg_peak=58748928
+queries wall_ms=147.489 cpu_ms=245.579 rss_kib=146232 cg_current=55631872 cg_peak=58748928
+output wall_ms=0.383 cpu_ms=0.276 rss_kib=146232 cg_current=55631872 cg_peak=58748928

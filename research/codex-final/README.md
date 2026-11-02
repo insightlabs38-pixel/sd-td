@@ -1,6 +1,6 @@
 # Independent final D campaign
 
-Research in progress; no official K claim. Base PR #17, immutable controls in `controls.json`. PR #18 is a separate control and only adds a construction-worker cap. `sd-sm` remains read-only.
+Research in progress. The saturated-label query engine was qualified as PR #20 and combined with Claude's construction in PR #23. A subsequently reproduced construction claim defect invalidates PR #23 as a correctness champion. Qualified fixes are PR #24 (globally unique atomic bitmap claims) and PR #25 (monotone byte claims plus checked recycled-storage expansion). See `SAFE-CHECKPOINT.md`. Immutable early controls remain in `controls.json`. `sd-sm` remains read-only.
 
 Environment: managed Linux guest with two-CPU cgroup quota, SMT/topology not equivalent to the official six-core system. Every measured solver uses the exact GCC 15 image compiler, `-O3 -std=c++17 -pthread -flto -static -s`, without PGO. Because Docker's VFS layers exhausted the 8 GB disk, the compiler filesystem was reconstructed from digest-verified official image layers and used read-only through a small container; source Dockerfile is unchanged. `gcc-manifest.json` records the verified layer identities. Full restricted runtime and parent-cgroup gates follow separately.
 

@@ -1,0 +1,2 @@
+fast region already contains 999 of 1000 vertices; releasing stale claim
+child_signal=11 expected_guard_failure=11

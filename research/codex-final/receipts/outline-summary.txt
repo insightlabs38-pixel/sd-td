@@ -1,0 +1,15 @@
+1 final wall 0.528212 cpu 0.527293 maxrss 144204
+1 outline_labels wall 0.53323 cpu 0.532924 maxrss 144204
+1 outline_queue wall 0.534301 cpu 0.533962 maxrss 144144
+1 outline_esc wall 0.520742 cpu 0.520338 maxrss 144204
+1 outline_all wall 0.541355 cpu 0.540083 maxrss 144204
+6 final wall 0.373005 cpu 0.6737 maxrss 144776
+6 outline_labels wall 0.376812 cpu 0.689482 maxrss 144776
+6 outline_queue wall 0.3767 cpu 0.678536 maxrss 144744
+6 outline_esc wall 0.346295 cpu 0.678719 maxrss 144884
+6 outline_all wall 0.380344 cpu 0.696875 maxrss 144792
+12 final wall 0.384522 cpu 0.687852 maxrss 146456
+12 outline_labels wall 0.385524 cpu 0.678513 maxrss 146476
+12 outline_queue wall 0.386405 cpu 0.684313 maxrss 146516
+12 outline_esc wall 0.381497 cpu 0.664644 maxrss 146500
+12 outline_all wall 0.382755 cpu 0.679499 maxrss 146512

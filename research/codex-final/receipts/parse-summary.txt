@@ -1,0 +1,16 @@
+1 fix_atomic wall 0.497161 cpu 0.496805 maxrss 145160
+1 parse_triple wall 0.499263 cpu 0.498286 maxrss 145212
+1 parse_batch wall 0.491725 cpu 0.491389 maxrss 145144
+1 bin_overlap_safe wall 0.495046 cpu 0.494788 maxrss 145096
+4 fix_atomic wall 0.335949 cpu 0.654542 maxrss 145448
+4 parse_triple wall 0.360297 cpu 0.647452 maxrss 145660
+4 parse_batch wall 0.343904 cpu 0.653657 maxrss 145544
+4 bin_overlap_safe wall 0.361868 cpu 0.654117 maxrss 145464
+6 fix_atomic wall 0.374085 cpu 0.663957 maxrss 145792
+6 parse_triple wall 0.361947 cpu 0.65697 maxrss 146012
+6 parse_batch wall 0.362486 cpu 0.648282 maxrss 145996
+6 bin_overlap_safe wall 0.349286 cpu 0.653244 maxrss 145880
+12 fix_atomic wall 0.374705 cpu 0.645035 maxrss 146668
+12 parse_triple wall 0.367537 cpu 0.635696 maxrss 146656
+12 parse_batch wall 0.349409 cpu 0.644612 maxrss 146752
+12 bin_overlap_safe wall 0.370523 cpu 0.635381 maxrss 146536

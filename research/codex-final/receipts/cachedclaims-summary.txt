@@ -1,0 +1,15 @@
+1 b_control wall 0.477068 cpu 0.476651 maxrss 145160
+1 b_claimatomic wall 0.48259 cpu 0.480401 maxrss 145100
+1 b_bytes_safe wall 0.492699 cpu 0.490555 maxrss 146636
+1 b_private_safe wall 0.481348 cpu 0.480341 maxrss 145224
+1 b_cachedclaims wall 0.487931 cpu 0.484242 maxrss 145260
+6 b_control wall 0.331721 cpu 0.632597 maxrss 145792
+6 b_claimatomic wall 0.366911 cpu 0.644767 maxrss 145984
+6 b_bytes_safe wall 0.34046 cpu 0.642364 maxrss 147288
+6 b_private_safe wall 0.357345 cpu 0.629956 maxrss 146576
+6 b_cachedclaims wall 0.331277 cpu 0.621718 maxrss 146660
+12 b_control wall 0.370245 cpu 0.621412 maxrss 146668
+12 b_claimatomic wall 0.371717 cpu 0.632854 maxrss 146604
+12 b_bytes_safe wall 0.366761 cpu 0.618582 maxrss 148148
+12 b_private_safe wall 0.34081 cpu 0.621312 maxrss 148284
+12 b_cachedclaims wall 0.345789 cpu 0.612111 maxrss 148372

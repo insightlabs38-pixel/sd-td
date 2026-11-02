@@ -1,0 +1,16 @@
+1 fix_atomic wall 0.480161 cpu 0.479816 maxrss 145100
+1 boundary_search wall 0.478428 cpu 0.477903 maxrss 145144
+1 boundary_search0 wall 0.479202 cpu 0.47885 maxrss 145208
+1 boundary_search64 wall 0.488516 cpu 0.488183 maxrss 145144
+4 fix_atomic wall 0.372783 cpu 0.658913 maxrss 145652
+4 boundary_search wall 0.36637 cpu 0.658067 maxrss 145596
+4 boundary_search0 wall 0.364722 cpu 0.655496 maxrss 145568
+4 boundary_search64 wall 0.332785 cpu 0.659263 maxrss 145576
+6 fix_atomic wall 0.359064 cpu 0.642884 maxrss 145892
+6 boundary_search wall 0.36431 cpu 0.652875 maxrss 145808
+6 boundary_search0 wall 0.371812 cpu 0.65914 maxrss 145876
+6 boundary_search64 wall 0.338343 cpu 0.647605 maxrss 145772
+12 fix_atomic wall 0.341113 cpu 0.639499 maxrss 146680
+12 boundary_search wall 0.373704 cpu 0.64872 maxrss 146748
+12 boundary_search0 wall 0.368424 cpu 0.638376 maxrss 146664
+12 boundary_search64 wall 0.373141 cpu 0.638809 maxrss 146652

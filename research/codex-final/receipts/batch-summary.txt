@@ -1,0 +1,15 @@
+1 final wall 0.522473 cpu 0.52185 maxrss 144208
+1 batch4 wall 0.571636 cpu 0.571363 maxrss 144204
+1 batch8 wall 0.531896 cpu 0.531436 maxrss 144204
+1 batch16 wall 0.531031 cpu 0.52788 maxrss 144180
+1 batch32 wall 0.547005 cpu 0.546483 maxrss 144208
+6 final wall 0.381939 cpu 0.693645 maxrss 144848
+6 batch4 wall 0.396619 cpu 0.735307 maxrss 144836
+6 batch8 wall 0.387337 cpu 0.71263 maxrss 144896
+6 batch16 wall 0.382774 cpu 0.702258 maxrss 144900
+6 batch32 wall 0.38347 cpu 0.702291 maxrss 144784
+12 final wall 0.387386 cpu 0.685839 maxrss 146496
+12 batch4 wall 0.397457 cpu 0.709023 maxrss 146512
+12 batch8 wall 0.391948 cpu 0.702377 maxrss 146532
+12 batch16 wall 0.389819 cpu 0.693923 maxrss 146672
+12 batch32 wall 0.390622 cpu 0.689682 maxrss 146444

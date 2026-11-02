@@ -1,0 +1,184 @@
+﻿2026-11-02T00:17:38.1360835Z Current runner version: '2.338.2'
+2026-11-02T00:17:38.1389424Z ##[group]Runner Image Provisioner
+2026-11-02T00:17:38.1390384Z Hosted Compute Agent
+2026-11-02T00:17:38.1391117Z Version: 20261021.618
+2026-11-02T00:17:38.1391818Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-11-02T00:17:38.1392975Z Build Date: 2026-10-21T00:45:21Z
+2026-11-02T00:17:38.1393784Z Worker ID: {6915b80a-bc34-4016-a7c8-d41436b21469}
+2026-11-02T00:17:38.1394663Z Region: eastus
+2026-11-02T00:17:38.1395280Z Cloud: Azure
+2026-11-02T00:17:38.1395865Z ##[endgroup]
+2026-11-02T00:17:38.1397522Z ##[group]Operating System
+2026-11-02T00:17:38.1398242Z Ubuntu
+2026-11-02T00:17:38.1398799Z 24.04.5
+2026-11-02T00:17:38.1399472Z LTS
+2026-11-02T00:17:38.1400034Z ##[endgroup]
+2026-11-02T00:17:38.1400705Z ##[group]Runner Image
+2026-11-02T00:17:38.1401337Z Image: ubuntu-24.04
+2026-11-02T00:17:38.1402738Z Version: 20261025.353.1
+2026-11-02T00:17:38.1404386Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+2026-11-02T00:17:38.1406247Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+2026-11-02T00:17:38.1407298Z ##[endgroup]
+2026-11-02T00:17:38.1408766Z ##[group]GITHUB_TOKEN Permissions
+2026-11-02T00:17:38.1411009Z Contents: read
+2026-11-02T00:17:38.1411740Z Metadata: read
+2026-11-02T00:17:38.1412347Z Packages: read
+2026-11-02T00:17:38.1413465Z ##[endgroup]
+2026-11-02T00:17:38.1415717Z Secret source: Actions
+2026-11-02T00:17:38.1416729Z Cache mode: write
+2026-11-02T00:17:38.1417728Z Prepare workflow directory
+2026-11-02T00:17:38.1762359Z Prepare all required actions
+2026-11-02T00:17:38.1813731Z Getting action download info
+2026-11-02T00:17:38.3958577Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-11-02T00:17:38.4994045Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-11-02T00:17:38.6829584Z Complete job name: sanitizers (address)
+2026-11-02T00:17:38.7756600Z ##[group]Run actions/checkout@v4
+2026-11-02T00:17:38.7757513Z with:
+2026-11-02T00:17:38.7757994Z   repository: insightlabs38-pixel/sd-td
+2026-11-02T00:17:38.7762309Z   token: ***
+2026-11-02T00:17:38.7763101Z   ssh-strict: true
+2026-11-02T00:17:38.7763560Z   ssh-user: git
+2026-11-02T00:17:38.7764021Z   persist-credentials: true
+2026-11-02T00:17:38.7764517Z   clean: true
+2026-11-02T00:17:38.7764972Z   sparse-checkout-cone-mode: true
+2026-11-02T00:17:38.7765503Z   fetch-depth: 1
+2026-11-02T00:17:38.7765937Z   fetch-tags: false
+2026-11-02T00:17:38.7766391Z   show-progress: true
+2026-11-02T00:17:38.7766847Z   lfs: false
+2026-11-02T00:17:38.7767267Z   submodules: false
+2026-11-02T00:17:38.7767727Z   set-safe-directory: true
+2026-11-02T00:17:38.7768242Z   allow-unsafe-pr-checkout: false
+2026-11-02T00:17:38.7769081Z ##[endgroup]
+2026-11-02T00:17:39.0236710Z Syncing repository: insightlabs38-pixel/sd-td
+2026-11-02T00:17:39.0239288Z ##[group]Getting Git version info
+2026-11-02T00:17:39.0240726Z Working directory is '/home/runner/work/sd-td/sd-td'
+2026-11-02T00:17:39.0242864Z [command]/usr/bin/git version
+2026-11-02T00:17:39.0314104Z git version 2.56.0
+2026-11-02T00:17:39.0344607Z ##[endgroup]
+2026-11-02T00:17:39.0355693Z Temporarily overriding HOME='/home/runner/work/_temp/249cde28-8ca6-4798-b2ce-55aa3102ae9f' before making global git config changes
+2026-11-02T00:17:39.0358660Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T00:17:39.0361753Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+2026-11-02T00:17:39.0417435Z Deleting the contents of '/home/runner/work/sd-td/sd-td'
+2026-11-02T00:17:39.0426566Z ##[group]Initializing the repository
+2026-11-02T00:17:39.0427875Z [command]/usr/bin/git init /home/runner/work/sd-td/sd-td
+2026-11-02T00:17:39.0529881Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-11-02T00:17:39.0531886Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-11-02T00:17:39.0535998Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-11-02T00:17:39.0537410Z hint: call:
+2026-11-02T00:17:39.0538191Z hint:
+2026-11-02T00:17:39.0539119Z hint: 	git config --global init.defaultBranch <name>
+2026-11-02T00:17:39.0540327Z hint:
+2026-11-02T00:17:39.0541458Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-11-02T00:17:39.0543668Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-11-02T00:17:39.0545225Z hint:
+2026-11-02T00:17:39.0545972Z hint: 	git branch -m <name>
+2026-11-02T00:17:39.0546802Z hint:
+2026-11-02T00:17:39.0547961Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-11-02T00:17:39.0550129Z Initialized empty Git repository in /home/runner/work/sd-td/sd-td/.git/
+2026-11-02T00:17:39.0562348Z [command]/usr/bin/git remote add origin https://github.com/insightlabs38-pixel/sd-td
+2026-11-02T00:17:39.0638389Z ##[endgroup]
+2026-11-02T00:17:39.0639870Z ##[group]Disabling automatic garbage collection
+2026-11-02T00:17:39.0641484Z [command]/usr/bin/git config --local gc.auto 0
+2026-11-02T00:17:39.0682651Z ##[endgroup]
+2026-11-02T00:17:39.0684112Z ##[group]Setting up auth
+2026-11-02T00:17:39.0691371Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T00:17:39.0733920Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-02T00:17:39.1119572Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T00:17:39.1177980Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-02T00:17:39.1465674Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T00:17:39.1514044Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-02T00:17:39.1784460Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-11-02T00:17:39.1843153Z ##[endgroup]
+2026-11-02T00:17:39.1844814Z ##[group]Fetching the repository
+2026-11-02T00:17:39.1860720Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +2a65d10272463630164d27cc2da7760d21d7a3e4:refs/remotes/origin/prize/d-codex-final-saturated-cap4
+2026-11-02T00:17:39.3657751Z From https://github.com/insightlabs38-pixel/sd-td
+2026-11-02T00:17:39.3659495Z  * [new ref]         2a65d10272463630164d27cc2da7760d21d7a3e4 -> origin/prize/d-codex-final-saturated-cap4
+2026-11-02T00:17:39.3664009Z ##[endgroup]
+2026-11-02T00:17:39.3665569Z ##[group]Determining the checkout info
+2026-11-02T00:17:39.3667119Z ##[endgroup]
+2026-11-02T00:17:39.3674253Z [command]/usr/bin/git sparse-checkout disable
+2026-11-02T00:17:39.3737004Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-11-02T00:17:39.3776403Z ##[group]Checking out the ref
+2026-11-02T00:17:39.3790933Z [command]/usr/bin/git checkout --progress --force -B prize/d-codex-final-saturated-cap4 refs/remotes/origin/prize/d-codex-final-saturated-cap4
+2026-11-02T00:17:39.3871392Z Switched to a new branch 'prize/d-codex-final-saturated-cap4'
+2026-11-02T00:17:39.3878464Z branch 'prize/d-codex-final-saturated-cap4' set up to track 'origin/prize/d-codex-final-saturated-cap4'.
+2026-11-02T00:17:39.3883787Z ##[endgroup]
+2026-11-02T00:17:39.3932332Z [command]/usr/bin/git log -1 --format=%H
+2026-11-02T00:17:39.3967344Z 2a65d10272463630164d27cc2da7760d21d7a3e4
+2026-11-02T00:17:39.4282682Z ##[group]Run actions/setup-python@v5
+2026-11-02T00:17:39.4283417Z with:
+2026-11-02T00:17:39.4283883Z   python-version: 3.13
+2026-11-02T00:17:39.4284401Z   check-latest: false
+2026-11-02T00:17:39.4288652Z   token: ***
+2026-11-02T00:17:39.4289147Z   update-environment: true
+2026-11-02T00:17:39.4289705Z   allow-prereleases: false
+2026-11-02T00:17:39.4290239Z   freethreaded: false
+2026-11-02T00:17:39.4290959Z ##[endgroup]
+2026-11-02T00:17:39.5717127Z ##[group]Installed versions
+2026-11-02T00:17:39.5821764Z (node:2325) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T00:17:39.5824543Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T00:17:39.5826599Z Successfully set up CPython (3.13.17)
+2026-11-02T00:17:39.5829122Z ##[endgroup]
+2026-11-02T00:17:39.6050662Z ##[group]Run set -euo pipefail
+2026-11-02T00:17:39.6051407Z [36;1mset -euo pipefail[0m
+2026-11-02T00:17:39.6052126Z [36;1mflags='-fsanitize=thread'[0m
+2026-11-02T00:17:39.6054235Z [36;1mif [ 'address' = address ]; then flags='-fsanitize=address,undefined'; fi[0m
+2026-11-02T00:17:39.6056033Z [36;1mg++ --version[0m
+2026-11-02T00:17:39.6057671Z [36;1mg++ -O1 -g -std=c++17 -pthread -fno-omit-frame-pointer $flags track-d/d_traverse.cpp -o /tmp/traverse-san[0m
+2026-11-02T00:17:39.6170582Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-11-02T00:17:39.6171912Z env:
+2026-11-02T00:17:39.6173160Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T00:17:39.6174775Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T00:17:39.6176310Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T00:17:39.6281709Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T00:17:39.6283810Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T00:17:39.6285277Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T00:17:39.6286528Z ##[endgroup]
+2026-11-02T00:17:39.6466618Z g++ (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0
+2026-11-02T00:17:39.6467723Z Copyright (C) 2023 Free Software Foundation, Inc.
+2026-11-02T00:17:39.6469006Z This is free software; see the source for copying conditions.  There is NO
+2026-11-02T00:17:39.6470441Z warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+2026-11-02T00:17:39.6471313Z 
+2026-11-02T00:17:47.7056724Z ##[group]Run set -euo pipefail
+2026-11-02T00:17:47.7057172Z [36;1mset -euo pipefail[0m
+2026-11-02T00:17:47.7057497Z [36;1mpython tests/test_d.py[0m
+2026-11-02T00:17:47.7057831Z [36;1mpython tests/boundary_d.py[0m
+2026-11-02T00:17:47.7058179Z [36;1mpython tests/saturation_d.py[0m
+2026-11-02T00:17:47.7058537Z [36;1mpython tests/stress_d.py 20[0m
+2026-11-02T00:17:47.7080977Z shell: /usr/bin/bash -e {0}
+2026-11-02T00:17:47.7081309Z env:
+2026-11-02T00:17:47.7081641Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T00:17:47.7082181Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+2026-11-02T00:17:47.7083042Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T00:17:47.7083518Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T00:17:47.7084011Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+2026-11-02T00:17:47.7084500Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+2026-11-02T00:17:47.7084955Z   SD_TEST_BINARY: /tmp/traverse-san
+2026-11-02T00:17:47.7085346Z   ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+2026-11-02T00:17:47.7085719Z   UBSAN_OPTIONS: halt_on_error=1
+2026-11-02T00:17:47.7086057Z   TSAN_OPTIONS: halt_on_error=1
+2026-11-02T00:17:47.7086359Z ##[endgroup]
+2026-11-02T00:18:20.1866034Z PASS 88 differential cases; thread counts 1/4/12 x 6 probe limits, elapsed 31.93s
+2026-11-02T00:18:35.5291023Z PASS boundary 60
+2026-11-02T00:19:28.3477385Z PASS saturation 110
+2026-11-02T00:19:45.1545518Z PASS stress 20
+2026-11-02T00:19:45.1784747Z Post job cleanup.
+2026-11-02T00:19:45.3041974Z (node:94724) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-11-02T00:19:45.3043895Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-11-02T00:19:45.3244149Z Post job cleanup.
+2026-11-02T00:19:45.4211461Z [command]/usr/bin/git version
+2026-11-02T00:19:45.4261493Z git version 2.56.0
+2026-11-02T00:19:45.4307728Z Temporarily overriding HOME='/home/runner/work/_temp/a2ad6f75-61e1-415b-8a41-9dc3b2cd5d1c' before making global git config changes
+2026-11-02T00:19:45.4309864Z Adding repository directory to the temporary git global config as a safe directory
+2026-11-02T00:19:45.4314111Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+2026-11-02T00:19:45.4361511Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-11-02T00:19:45.4428208Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-11-02T00:19:45.4708236Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-11-02T00:19:45.4740232Z http.https://github.com/.extraheader
+2026-11-02T00:19:45.4753117Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-11-02T00:19:45.4808754Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-11-02T00:19:45.5101418Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-11-02T00:19:45.5159924Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-11-02T00:19:45.5591559Z Cleaning up orphan processes
+2026-11-02T00:19:45.5954871Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

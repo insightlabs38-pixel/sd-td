@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.49366 cpu 0.49338 maxrss 145100
+1 direct_bfs wall 0.539272 cpu 0.531159 maxrss 157900
+1 contract_one wall 0.53458 cpu 0.531727 maxrss 155528
+4 fix_atomic wall 0.332721 cpu 0.652335 maxrss 145476
+4 direct_bfs wall 0.401805 cpu 0.754971 maxrss 158488
+4 contract_one wall 0.393987 cpu 0.732908 maxrss 155956
+6 fix_atomic wall 0.366101 cpu 0.655518 maxrss 145796
+6 direct_bfs wall 0.406676 cpu 0.746383 maxrss 158884
+6 contract_one wall 0.396114 cpu 0.732778 maxrss 156488
+12 fix_atomic wall 0.374689 cpu 0.635124 maxrss 146804
+12 direct_bfs wall 0.407015 cpu 0.722162 maxrss 160116
+12 contract_one wall 0.399583 cpu 0.712163 maxrss 157320

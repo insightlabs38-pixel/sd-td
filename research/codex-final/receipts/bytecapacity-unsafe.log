@@ -1,0 +1,3 @@
+child_signal=11 exit_code=-1
+child_signal=11 exit_code=-1
+PASS simultaneous-hub capacity schedule: small and full dimensions

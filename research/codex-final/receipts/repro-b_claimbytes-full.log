@@ -1,0 +1,3 @@
+fast region already contains 1740511 of 1740512 vertices; releasing stale claim
+completed fast region len=1740511 edges=4999998 (capacities 1740512,5000000)
+child_signal=0 expected_guard_failure=11

@@ -1,0 +1,8 @@
+1 fix_atomic wall 0.488092 cpu 0.487738 maxrss 145100
+1 one_potential wall 1.101162 cpu 1.100745 maxrss 145484
+4 fix_atomic wall 0.366706 cpu 0.65965 maxrss 145524
+4 one_potential wall 0.812126 cpu 1.525768 maxrss 157092
+6 fix_atomic wall 0.355896 cpu 0.636066 maxrss 145832
+6 one_potential wall 0.802403 cpu 1.495575 maxrss 163980
+12 fix_atomic wall 0.357299 cpu 0.622741 maxrss 146640
+12 one_potential wall 0.824859 cpu 1.516642 maxrss 179004

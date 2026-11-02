@@ -1,0 +1,15 @@
+1 b_control wall 0.479699 cpu 0.479319 maxrss 145164
+1 b_claimbytes wall 0.494202 cpu 0.491424 maxrss 146700
+1 b_claimatomic wall 0.494228 cpu 0.49373 maxrss 145164
+1 b_claimtags wall 0.510246 cpu 0.509704 maxrss 146324
+1 b_claimtags_fused wall 0.499994 cpu 0.499263 maxrss 146384
+6 b_control wall 0.35651 cpu 0.632854 maxrss 145820
+6 b_claimbytes wall 0.333309 cpu 0.638975 maxrss 147312
+6 b_claimatomic wall 0.365152 cpu 0.648192 maxrss 145884
+6 b_claimtags wall 0.360592 cpu 0.635182 maxrss 147132
+6 b_claimtags_fused wall 0.338453 cpu 0.641586 maxrss 147096
+12 b_control wall 0.363718 cpu 0.620667 maxrss 146756
+12 b_claimbytes wall 0.335188 cpu 0.619301 maxrss 148108
+12 b_claimatomic wall 0.372506 cpu 0.636453 maxrss 146700
+12 b_claimtags wall 0.372362 cpu 0.631572 maxrss 147844
+12 b_claimtags_fused wall 0.366921 cpu 0.628547 maxrss 147960

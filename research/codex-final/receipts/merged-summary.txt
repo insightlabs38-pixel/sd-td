@@ -4,3 +4,9 @@
 4 pr17 wall 0.387901 cpu 0.730498 maxrss 144268
 4 u16_fixed128_clipped wall 0.37018 cpu 0.694904 maxrss 144292
 4 merged6 wall 0.493514 cpu 0.940929 maxrss 144328
+6 pr17 wall 0.389522 cpu 0.713736 maxrss 144760
+6 u16_fixed128_clipped wall 0.375614 cpu 0.682307 maxrss 144836
+6 merged6 wall 0.50301 cpu 0.948589 maxrss 144764
+12 pr17 wall 0.396189 cpu 0.708982 maxrss 146468
+12 u16_fixed128_clipped wall 0.381778 cpu 0.680157 maxrss 146448
+12 merged6 wall 0.506217 cpu 0.91606 maxrss 146568

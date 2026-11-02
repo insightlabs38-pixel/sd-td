@@ -31,14 +31,16 @@ jobs:
           cat /sys/fs/cgroup/cpu.max | tee -a /tmp/codex-final/receipts/cpus.txt
       - name: Generate independent full seeds
         run: |
-          set -eu
+          set -euo pipefail
           git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
           for seed in 1 7 17; do
             python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out "/tmp/codex-final/full$seed"
             sha256sum "/tmp/codex-final/full$seed/graph.txt" "/tmp/codex-final/full$seed/queries.txt" | tee -a /tmp/codex-final/receipts/inputs.txt
           done
       - name: Randomized matched complete-program comparison
-        run: python research/codex-final/scripts/ci_benchmark.py | tee /tmp/codex-final/receipts/summary.txt
+        run: |
+          set -euo pipefail
+          python research/codex-final/scripts/ci_benchmark.py | tee /tmp/codex-final/receipts/summary.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:

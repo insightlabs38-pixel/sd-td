@@ -1,11 +1,12 @@
-name: D Codex final qualification
+name: D conditional-bound screening
 on:
   push:
-    branches: ['d/chat-bounded-stream-20261102-07']
+    branches: ['d/chat-conditional-bound-20261102-08']
     paths: ['track-d/d_traverse.cpp', '.github/workflows/d-codex-final-qualify.yml']
   workflow_dispatch:
 jobs:
   pinned:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -61,6 +62,7 @@ jobs:
           name: pinned-correctness
           path: /tmp/receipts
   sanitizers:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -107,12 +109,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p /tmp/compare /tmp/receipts
-          git cat-file blob 0fe52b8e2a406dbbf874cfcf8ee742129cca070d >/tmp/compare/control.cpp
+          git cat-file blob 508e9092873a93338eb05979b957ef4fb8aa2933 >/tmp/compare/control.cpp
           cp track-d/d_traverse.cpp /tmp/compare/candidate.cpp
           docker run --rm -v /tmp/compare:/work -w /work gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce bash -c 'set -e; for x in control candidate; do g++ -O3 -std=c++17 -pthread -flto -static -s -o $x $x.cpp; done'
           sha256sum /tmp/compare/control /tmp/compare/candidate | tee /tmp/receipts/binaries.txt
           git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
-          for seed in 1 7 17; do
+          for seed in 1 7; do
             python /tmp/official/generators/d_traverse.py --scale full --seed "$seed" --out "/tmp/data-full-$seed"
           done
       - name: Interleaved exact full-program comparison

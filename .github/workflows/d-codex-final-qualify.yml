@@ -1,0 +1,92 @@
+name: D Codex final qualification
+on:
+  push:
+    branches: ['prize/d-codex-final-saturated', 'prize/d-codex-final-saturated-cap4']
+    paths: ['track-d/d_traverse.cpp', '.github/workflows/d-codex-final-qualify.yml']
+  workflow_dispatch:
+jobs:
+  pinned:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build exact pinned Dockerfile and extract executable
+        run: |
+          set -eu
+          docker build --pull -t d-codex-final track-d
+          id=$(docker create d-codex-final)
+          docker cp "$id:/traverse" /tmp/traverse
+          docker rm "$id"
+          mkdir -p /tmp/receipts
+          git rev-parse HEAD:track-d/d_traverse.cpp HEAD:track-d/Dockerfile | tee /tmp/receipts/blobs.txt
+          sha256sum /tmp/traverse | tee /tmp/receipts/binary.txt
+      - name: Differential, boundary and contraction stress
+        env:
+          SD_TEST_BINARY: /tmp/traverse
+        run: |
+          set -eu
+          python tests/test_d.py | tee /tmp/receipts/fixtures.txt
+          python tests/boundary_d.py | tee /tmp/receipts/boundary.txt
+          python tests/saturation_d.py | tee /tmp/receipts/saturation.txt
+          python tests/stress_d.py 30 | tee /tmp/receipts/stress.txt
+      - name: Organizer references and restricted Docker worker matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for item in 'tiny 2' 'sample 1' 'sample 2' 'full 1' 'full 7' 'full 17'; do
+            read -r scale seed <<< "$item"
+            data="/tmp/data-$scale-$seed"; ref="/tmp/ref-$scale-$seed"
+            mkdir -p "$data" "$ref"
+            python /tmp/official/generators/d_traverse.py --scale "$scale" --seed "$seed" --out "$data"
+            python /tmp/official/reference/d_traverse.py --data "$data" --out "$ref"
+            sha256sum "$data/graph.txt" "$data/queries.txt" "$ref/distances.txt" | tee -a /tmp/receipts/hashes.txt
+            for threads in 4 6 12; do
+              out="/tmp/out-$scale-$seed-$threads"; mkdir -p "$out"; chmod 777 "$out"
+              docker run --rm --network none --read-only --memory 8g --pids-limit 512 --user 65534:65534 --cap-drop ALL --security-opt no-new-privileges -e SD_THREADS="$threads" -v "$data:/data:ro" -v "$out:/out:rw" d-codex-final
+              cmp "$ref/distances.txt" "$out/distances.txt"
+              echo "PASS $scale seed=$seed threads=$threads" | tee -a /tmp/receipts/matrix.txt
+            done
+          done
+          echo 'a4c76ed030bc7e365db33191f6cf74708fba7f25eb48d64c8c4279f2e57046a0  /tmp/ref-sample-1/distances.txt' | sha256sum -c
+          echo 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e  /tmp/ref-full-1/distances.txt' | sha256sum -c
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pinned-correctness
+          path: /tmp/receipts
+  sanitizers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [address, thread]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build sanitizer executable
+        shell: bash
+        run: |
+          set -eu
+          flags='-fsanitize=thread'
+          if [ '${{ matrix.sanitizer }}' = address ]; then flags='-fsanitize=address,undefined'; fi
+          g++ --version
+          g++ -O1 -g -std=c++17 -pthread -fno-omit-frame-pointer $flags track-d/d_traverse.cpp -o /tmp/traverse-san
+      - name: Independent oracle fixtures under sanitizer
+        env:
+          SD_TEST_BINARY: /tmp/traverse-san
+          ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1
+          TSAN_OPTIONS: halt_on_error=1
+        run: |
+          set -eu
+          python tests/test_d.py
+          python tests/boundary_d.py
+          python tests/saturation_d.py
+          python tests/stress_d.py 20

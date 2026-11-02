@@ -1,8 +1,8 @@
 {
-  "at_utc": "2026-11-02T14:49:00Z",
+  "at_utc": "2026-11-02T14:54:19.005605+00:00",
   "best_valid_K": 33.672416,
   "best_valid_run": "run-3cf937618e77",
-  "official_commit": "55bc81024955ea5dda6d289fb7d6192f13c4b92f",
+  "official_commit": "6426b26362d036a1784498591de0fa4c9956285e",
   "solver_blob": "02e0764ef534a8a6694006b12911776e0a9f2860",
   "docker_blob": "8eabe09b96a60131ce5bfda3f098011e1f0863e6",
   "developer_branch": "prize/d-codex-final-prefix-simd-pages",
@@ -17,11 +17,26 @@
   "older_atomic_solver": "4e45be05890b6228c8df88702da48f51a15fc712",
   "leader_K": 38.090527,
   "gap": 4.418111,
-  "active_candidates": [
-    "prize/d-codex-final-champion-restrict-helper"
+  "active_candidates": [],
+  "selected_commit": "6426b26362d036a1784498591de0fa4c9956285e",
+  "remote_commit": "6426b26362d036a1784498591de0fa4c9956285e",
+  "scored_files": [
+    "track-d/d_traverse.cpp",
+    "track-d/Dockerfile"
   ],
-  "selected_trial_commit": "43fde5142405617c74ce52a910450e7e4eb780f0",
-  "selected_trial_solver": "7b4b872edde4b529449ce6413755f0b84230b0f2",
-  "selected_trial_qualification": 41454639180,
-  "selected_trial_status": "queued; not promoted"
+  "directory_files": [
+    ".speed-demon.toml",
+    "Dockerfile",
+    "PERF.md",
+    "README.md",
+    "d_traverse.cpp"
+  ],
+  "changed_paths": [
+    "track-d/PERF.md",
+    "track-d/d_traverse.cpp"
+  ],
+  "author": "vikyath <vikyath.vidiyala@gmail.com>",
+  "selection": "FINAL: valid PR36 champion restored; no training helper",
+  "handoff_deadline_missed": true,
+  "freeze_utc": "2026-11-02T15:00:00Z"
 }

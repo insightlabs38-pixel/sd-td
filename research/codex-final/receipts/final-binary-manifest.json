@@ -1,0 +1,35 @@
+{
+  "flags": "-O3 -std=c++17 -pthread -flto -static -s",
+  "compiler": "pinned GCC15.3.0, verified official image filesystem",
+  "binaries": [
+    {
+      "name": "champion33672",
+      "solver_blob": "02e0764ef534a8a6694006b12911776e0a9f2860",
+      "binary_sha256": "0927ee891e16dc991f20aac9ff27235bf4b2f4957d55c799fc67f26963a027d6"
+    },
+    {
+      "name": "final_pr33_control",
+      "solver_blob": "5d56a5bebdf1d82633e6e643801213f5df987578",
+      "binary_sha256": "0851b81441ef2ee940af721ece748452ada76d14cbb225ef485600689af89f38"
+    },
+    {
+      "name": "final_pr24_control",
+      "solver_blob": "4e45be05890b6228c8df88702da48f51a15fc712",
+      "binary_sha256": "2e50dc331be69e743249f77ca6a749d1b65938d090ebd7ccbe1b5555cf296ae8"
+    },
+    {
+      "name": "champion_restrict_member",
+      "binary_sha256": "f83dc4f04bcd420ad0e9a4de63c86335b404b661e62446c005ba731b83d4ea8c",
+      "local_variant_blob": "b119082a500716b66bbc336191b5714b92316c45",
+      "solver_blob": "8fe0643256d5771f27e5805530a6d1df10c69f27",
+      "format_note": "local and submitted sources canonicalize identically; compiled binaries match exact CI SHA256"
+    },
+    {
+      "name": "champion_restrict_helper",
+      "binary_sha256": "8156892a29d2208e6bb0590b7031ab2c4e7c87c2372dbcc9ff90081d1382436c",
+      "local_variant_blob": "5f5825f0f955ce6266c5fd3ce2b18e0d90f25b74",
+      "solver_blob": "7b4b872edde4b529449ce6413755f0b84230b0f2",
+      "format_note": "local and submitted sources canonicalize identically; compiled binaries match exact CI SHA256"
+    }
+  ]
+}

@@ -55,3 +55,18 @@ Against PR33 S674: T−3.64/−7.95/−3.65%, M−.84/−.78/−1.10%,
 ratios1.01838/1.04185/1.01900. Official hardware differs; these do not project K.
 The actual official best difference PR33→champion is K33.161862→33.672416,
 T.086295→.083599, M58208256→57802752, S674→683, D1 unchanged.
+
+Relative to Claude PR17/18: retained compatible region-local reverse CSR with
+cross-region edge mailing and prefetched renaming. Added globally atomic unique
+claims, prefix raw-bin allocation, fixed legal-domain packed graph representation,
+byte degrees with exact escapes, exact narrow-distance labels with wide fallback,
+bounded narrow queues, bidirectional query policy, twelve query workers, streamed
+SSSE3 decimal conversion and256-entry label pages. These are combined in PR36;
+Claude's active branches were not modified. Experiments remain separate branches.
+
+Scored champion directory contains only d_traverse.cpp and six-line Dockerfile as
+scored code, plus excluded Markdown and unchanged D metadata. No PGO generator.
+Rollback is a D-only forward commit restoring both exact blobs, deleting any
+training helper; never restore an old whole submission tree or racing PR23.
+
+Helper official run run-9e3c75401896, commit43fde5142405617c74ce52a910450e7e4eb780f0: K32.850288/T.087790/M57499648/S689/D1, all gates passed; rejected. Final D-only restoration pushed at14:53UTC, commit6426b26362d036a1784498591de0fa4c9956285e. No losing trial selected. The14:00handoff was missed; correction and independent remote verification completed before15:00freeze.

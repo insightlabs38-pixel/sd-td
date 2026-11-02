@@ -1,0 +1,28 @@
+{
+  "at_utc": "2026-11-02T14:53:42.602272+00:00",
+  "selected_commit": "6426b26362d036a1784498591de0fa4c9956285e",
+  "remote_commit": "6426b26362d036a1784498591de0fa4c9956285e",
+  "solver_blob": "02e0764ef534a8a6694006b12911776e0a9f2860",
+  "docker_blob": "8eabe09b96a60131ce5bfda3f098011e1f0863e6",
+  "scored_files": [
+    "track-d/d_traverse.cpp",
+    "track-d/Dockerfile"
+  ],
+  "directory_files": [
+    ".speed-demon.toml",
+    "Dockerfile",
+    "PERF.md",
+    "README.md",
+    "d_traverse.cpp"
+  ],
+  "changed_paths": [
+    "track-d/PERF.md",
+    "track-d/d_traverse.cpp"
+  ],
+  "author": "vikyath <vikyath.vidiyala@gmail.com>",
+  "best_valid_K": 33.672416,
+  "best_valid_run": "run-3cf937618e77",
+  "qualification": 41434298002,
+  "S": 683,
+  "D": 1
+}

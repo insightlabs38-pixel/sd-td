@@ -315,7 +315,7 @@ struct Grower {
   };
   const Graph &raw;
   const Bits &bypass;
-  Bits &claimed;
+  Bits &claimed, mine;
   Region &reg;
   std::vector<Walk> walks;
 
@@ -323,6 +323,10 @@ struct Grower {
   // operations for vertices that are already claimed.
   void claim(u32 z) {
     u64 bit = u64(1) << (z & 63), *word = &claimed[z >> 6];
+    u64 &local = mine[z >> 6];
+    if (local & bit)
+      return;
+    local |= bit;
     u64 seen = __atomic_load_n(word, __ATOMIC_RELAXED);
     if (seen & bit)
       return;
@@ -454,7 +458,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
     Region &reg = regions[t];
     reg.order = alloc<u32>(n), reg.ends = alloc<u32>(n),
     reg.out = alloc<u32>(m);
-    Grower grower{*raw, bypass, claimed, reg};
+    Grower grower{*raw, bypass, claimed, Bits(claimed.size()), reg};
     for (u32 x = cut(n, t, threads); x < cut(n, t + 1, threads); ++x)
       if (!test(bypass, x))
         grower.grow(x);

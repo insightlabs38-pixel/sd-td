@@ -131,6 +131,10 @@ const char *map(const std::string &path, size_t &size) {
   return static_cast<const char *>(p);
 }
 
+#ifndef BYPASS_MAX_DEGREE
+#define BYPASS_MAX_DEGREE 3
+#endif
+
 // ---------------------------------------------------------------- graphs
 
 // Empty raw slot, and the first slot of a vertex with its edges spilled.
@@ -283,10 +287,6 @@ Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
   g->merge(escapes);
   return g;
 }
-
-#ifndef BYPASS_MAX_DEGREE
-#define BYPASS_MAX_DEGREE 3
-#endif
 
 // ---------------------------------------------------------------- ordering
 

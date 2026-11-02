@@ -1,7 +1,7 @@
 name: D Codex final qualification
 on:
   push:
-    branches: ['d/chat-successful-relax-20261102-08']
+    branches: ['d/chat-conditional-meet-20261102-08']
     paths: ['track-d/d_traverse.cpp', '.github/workflows/d-codex-final-qualify.yml']
   workflow_dispatch:
 jobs:

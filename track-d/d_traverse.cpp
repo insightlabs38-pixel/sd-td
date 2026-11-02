@@ -326,7 +326,18 @@ struct Grower {
     u64 seen = __atomic_load_n(word, __ATOMIC_RELAXED);
     if (seen & bit)
       return;
-    if (!(__atomic_fetch_or(word, bit, __ATOMIC_RELAXED) & bit))
+    // LOCK BTS returns the old bit directly, without a compare-exchange loop.
+    unsigned char was_set;
+#if defined(__x86_64__)
+    u64 index = z & 63;
+    asm volatile("lock btsq %2, %1\n\tsetc %0"
+                 : "=q"(was_set), "+m"(*word)
+                 : "r"(index)
+                 : "cc", "memory");
+#else
+    was_set = (__atomic_fetch_or(word, bit, __ATOMIC_RELAXED) & bit) != 0;
+#endif
+    if (!was_set)
       reg.order[reg.len++] = z;
   }
   void put(u32 pos, u32 z, u64 w) {

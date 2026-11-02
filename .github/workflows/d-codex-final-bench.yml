@@ -1,0 +1,46 @@
+name: D Codex final immutable comparison
+on:
+  push:
+    branches: ['prize/d-codex-final-query']
+    paths: ['.github/workflows/d-codex-final-bench.yml']
+  workflow_dispatch:
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build immutable sources with exact official GCC15 flags
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/codex-final/{src,bin,receipts}
+          for item in 'pr15 d0a25aea3da74f7e9031c5591ecf1524049675ed' 'pr17 79617b5c40b01613797138b294a33c0a7b5c6e44' 'pr18 5df4bde3f8e46a32335ef380ed0cf4cf85415bf1' 'candidate 55f5221730afa74a362278adb94f2eb5ef2f6ee0' 'cap4 91b78b4a151da6244f7ab30b5f68267dda569735'; do
+            read -r name blob <<< "$item"
+            git cat-file blob "$blob" >"/tmp/codex-final/src/$name.cpp"
+            echo "$name $blob" >>/tmp/codex-final/receipts/sources.txt
+          done
+          docker run --rm -v /tmp/codex-final:/work -w /work gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce bash -c 'set -e; g++ --version; for p in pr15 pr17 pr18 candidate cap4; do g++ -O3 -std=c++17 -pthread -flto -static -s -o bin/$p src/$p.cpp; done' | tee /tmp/codex-final/receipts/compiler.txt
+          sha256sum /tmp/codex-final/bin/* | tee /tmp/codex-final/receipts/binaries.txt
+          nproc | tee /tmp/codex-final/receipts/cpus.txt
+          cat /sys/fs/cgroup/cpu.max | tee -a /tmp/codex-final/receipts/cpus.txt
+      - name: Generate independent full seeds
+        run: |
+          set -eu
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          for seed in 1 7 17; do
+            python /tmp/official/generators/d_traverse.py --seed "$seed" --scale full --out "/tmp/codex-final/full$seed"
+            sha256sum "/tmp/codex-final/full$seed/graph.txt" "/tmp/codex-final/full$seed/queries.txt" | tee -a /tmp/codex-final/receipts/inputs.txt
+          done
+      - name: Randomized matched complete-program comparison
+        run: python research/codex-final/scripts/ci_benchmark.py | tee /tmp/codex-final/receipts/summary.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: immutable-comparison
+          path: /tmp/codex-final/receipts

@@ -759,22 +759,23 @@ int main() {
   std::sort(by_source.begin(), by_source.end(),
             [&](u32 a, u32 b) { return ends[2 * a] < ends[2 * b]; });
   std::atomic<size_t> next{0};
-  parallel(std::min<size_t>(threads, queries + 1), [&](unsigned) {
-    // Paths below 65535 are exact with 16-bit labels. Saturated or
-    // unreachable results are rerun with exact 64-bit labels.
-    Worker<uint16_t> narrow{Side<uint16_t>(*fwd), Side<uint16_t>(*rev)};
-    Worker<u64> *wide = nullptr;
-    for (size_t k; (k = next++) < queries;) {
-      u32 i = by_source[k], s = ends[2 * i], t = ends[2 * i + 1];
-      u64 d = narrow.solve(s, t);
-      if (d >= Labels<uint16_t>::NONE) {
-        if (!wide)
-          wide = new Worker<u64>{Side<u64>(*fwd), Side<u64>(*rev)};
-        d = wide->solve(s, t);
-      }
-      answers[i] = d < INF ? int64_t(d) : -1;
-    }
-  });
+  parallel(
+      std::min<size_t>(std::min(threads, 10u), queries + 1), [&](unsigned) {
+        // Paths below 65535 are exact with 16-bit labels. Saturated or
+        // unreachable results are rerun with exact 64-bit labels.
+        Worker<uint16_t> narrow{Side<uint16_t>(*fwd), Side<uint16_t>(*rev)};
+        Worker<u64> *wide = nullptr;
+        for (size_t k; (k = next++) < queries;) {
+          u32 i = by_source[k], s = ends[2 * i], t = ends[2 * i + 1];
+          u64 d = narrow.solve(s, t);
+          if (d >= Labels<uint16_t>::NONE) {
+            if (!wide)
+              wide = new Worker<u64>{Side<u64>(*fwd), Side<u64>(*rev)};
+            d = wide->solve(s, t);
+          }
+          answers[i] = d < INF ? int64_t(d) : -1;
+        }
+      });
   std::string text;
   for (int64_t x : answers)
     text += std::to_string(x) + '\n';

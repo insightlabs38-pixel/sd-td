@@ -338,13 +338,16 @@ struct Grower {
   // branch ends the walk at a survivor; a dead end or a way back to the root
   // leaves a useless self-loop.
   bool step(Walk &w) {
-    auto [i, end] = row(raw, w.at);
-    u32 ahead = 0, next = w.at, which = i;
-    for (; i < end; ++i) {
-      u32 h = raw.head(raw.adj[i]);
-      if (h != w.prev && h != w.at)
-        ++ahead, next = h, which = i;
-    }
+    // Every active walk is at a bypass vertex, whose raw degree is <= 2.
+    u32 i = 4 * w.at;
+    __m128i edges = _mm_loadu_si128((const __m128i *)(raw.adj + i));
+    __m128i heads = _mm_srl_epi32(edges, _mm_cvtsi32_si128(raw.wbits));
+    __m128i skip = _mm_or_si128(_mm_cmpeq_epi32(heads, _mm_set1_epi32(w.prev)),
+                                _mm_cmpeq_epi32(heads, _mm_set1_epi32(w.at)));
+    skip = _mm_or_si128(skip, _mm_cmpeq_epi32(edges, _mm_set1_epi32(-1)));
+    u32 valid = ~u32(_mm_movemask_ps(_mm_castsi128_ps(skip))) & 3;
+    u32 ahead = (valid & 1) + (valid >> 1), which = i + !(valid & 1);
+    u32 next = raw.head(raw.adj[which]);
     if (ahead > 1) {
       next = w.at;
     } else if (ahead == 0 || next == w.root) {
@@ -540,8 +543,8 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
 // Monotone queue: a ring of buckets 2^shift wide; larger jumps wait in a heap.
 // push always writes the entry but counts it only when `take`, so relaxations
 // need no branch.
-struct Queue {
-  static constexpr u32 B = 2048;
+template <bool BOUNDED> struct Queue {
+  static constexpr u32 B = BOUNDED ? 512 : 2048;
   struct Bucket {
     u32 *data = nullptr, size = 0, cap = 0;
   } bucket[B];
@@ -559,7 +562,7 @@ struct Queue {
     far = {}, cur = near = 0;
   }
   void push(u64 d, u32 v, bool take = true) {
-    if ((d >> shift) - cur >= B) {
+    if (!BOUNDED && (d >> shift) - cur >= B) {
       if (take)
         far.push({d, v});
       return;
@@ -579,14 +582,16 @@ struct Queue {
       u32 b = cur % B, w = b / 64;
       u64 bits = occupied[w] & (~u64(0) << b % 64);
       while (!bits)
-        bits = occupied[w = (w + 1) % (B / 64)];
-      cur += (w * 64 + __builtin_ctzll(bits) - b) % B;
-    } else if (!far.empty()) {
+        bits = occupied[w = BOUNDED ? w + 1 : (w + 1) % (B / 64)];
+      cur = BOUNDED ? w * 64 + __builtin_ctzll(bits)
+                    : cur + (w * 64 + __builtin_ctzll(bits) - b) % B;
+    } else if (!BOUNDED && !far.empty()) {
       cur = far.top().first >> shift;
     } else {
       return INF;
     }
-    for (; !far.empty() && (far.top().first >> shift) - cur < B; far.pop())
+    for (; !BOUNDED && !far.empty() && (far.top().first >> shift) - cur < B;
+         far.pop())
       push(far.top().first, far.top().second);
     return cur << shift;
   }
@@ -627,7 +632,8 @@ template <class L> struct Labels {
 template <class L> struct Side {
   const Graph &g;
   Labels<L> dist;
-  Queue queue;
+  using QueueType = Queue<sizeof(L) == 2>;
+  QueueType queue;
   explicit Side(const Graph &g) : g(g), dist(g.n), queue(g.n) {}
   void start(u32 s) {
     dist.reset(), queue.clear();
@@ -637,7 +643,7 @@ template <class L> struct Side {
   // the entries ahead; returns the number of vertices settled. Relaxations are
   // branch-free: nd + other(v) is a real path length either way.
   template <unsigned W = 0> size_t drain_bits(const Side &other, u64 &best) {
-    Queue::Bucket &bk = queue.bucket[queue.cur % Queue::B];
+    typename QueueType::Bucket &bk = queue.bucket[queue.cur % QueueType::B];
     u32 mask = (1u << queue.node_bits) - 1, settled = 0;
     for (u32 k = 0; k < bk.size; ++k) {
       u32 ahead = bk.data[std::min(k + 8, bk.size - 1)] & mask;
@@ -661,7 +667,8 @@ template <class L> struct Side {
       }
     }
     queue.near -= bk.size, bk.size = 0;
-    queue.occupied[queue.cur % Queue::B / 64] &= ~(u64(1) << queue.cur % 64);
+    queue.occupied[queue.cur % QueueType::B / 64] &=
+        ~(u64(1) << queue.cur % 64);
     return settled;
   }
   size_t drain(const Side &other, u64 &best) {
@@ -731,7 +738,7 @@ int main() {
   std::sort(by_source.begin(), by_source.end(),
             [&](u32 a, u32 b) { return ends[2 * a] < ends[2 * b]; });
   std::atomic<size_t> next{0};
-  parallel(std::min<size_t>(threads, queries + 1), [&](unsigned) {
+  parallel(std::min<size_t>(std::min(threads, 6u), queries + 1), [&](unsigned) {
     // Paths below 65535 are exact with 16-bit labels. Saturated or
     // unreachable results are rerun with exact 64-bit labels.
     Worker<uint16_t> narrow{Side<uint16_t>(*fwd), Side<uint16_t>(*rev)};

@@ -315,18 +315,16 @@ struct Grower {
   };
   const Graph &raw;
   const Bits &bypass;
-  Bits &claimed;
+  std::vector<uint8_t> &claimed;
   Region &reg;
   std::vector<Walk> walks;
 
-  // The relaxed OR linearizes a claim. The initial load avoids locked
-  // operations for vertices that are already claimed.
+  // Each byte is claimed once by atomic exchange, avoiding bit-word sharing.
   void claim(u32 z) {
-    u64 bit = u64(1) << (z & 63), *word = &claimed[z >> 6];
-    u64 seen = __atomic_load_n(word, __ATOMIC_RELAXED);
-    if (seen & bit)
+    uint8_t *flag = &claimed[z];
+    if (__atomic_load_n(flag, __ATOMIC_RELAXED))
       return;
-    if (!(__atomic_fetch_or(word, bit, __ATOMIC_RELAXED) & bit))
+    if (!__atomic_exchange_n(flag, uint8_t(1), __ATOMIC_RELAXED))
       reg.order[reg.len++] = z;
   }
   void put(u32 pos, u32 z, u64 w) {
@@ -448,7 +446,7 @@ struct Reverse {
 std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
                                      unsigned threads, std::vector<u32> &ends) {
   u32 n = raw->n, m = raw->m;
-  Bits claimed(bypass.size());
+  std::vector<uint8_t> claimed(n);
   std::vector<Region> regions(threads);
   parallel(threads, [&](unsigned t) {
     Region &reg = regions[t];

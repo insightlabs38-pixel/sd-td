@@ -21,20 +21,22 @@ jobs:
           sha1sum bench/*.cpp
           git hash-object bench/*.cpp
           docker pull -q gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
-          for v in b vB4 vBp vBb4 vBx; do
+          for v in b vBh vBm vBq; do
             docker run --rm --network=none -v "$PWD/bench:/src:ro" -v /tmp:/out gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce \
               g++ -O3 -std=c++17 -pthread -flto -static -s -o "/out/d-$v" "/src/$v.cpp"
           done
+          docker run --rm --network=none -v "$PWD/bench:/src:ro" -v /tmp:/out gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce \
+            g++ -O3 -std=c++17 -pthread -flto -static -s -DPROBE -o /out/d-bp /src/bp.cpp
           nproc; lscpu | grep -E 'Model name|Thread|Core'
       - name: Differential and boundary regression of the candidates
         shell: bash
         run: |
           set -euo pipefail
-          for v in vB4 vBp vBx; do
+          for v in vBm vBq; do
             SD_TEST_BINARY="/tmp/d-$v" python tests/test_d.py
             SD_TEST_BINARY="/tmp/d-$v" python tests/boundary_d.py
           done
-          SD_TEST_BINARY=/tmp/d-vB4 python tests/stress_d.py 20
+          SD_TEST_BINARY=/tmp/d-vBh python tests/stress_d.py 20
       - name: Organizer generator, full seeds 1 and 7
         shell: bash
         run: |
@@ -52,8 +54,8 @@ jobs:
           python - <<'PY'
           import hashlib, os, random, statistics, time
           from pathlib import Path
-          names = ('b', 'vB4', 'vBp', 'vBb4', 'vBx')
-          rng = random.Random(20261103)
+          names = ('b', 'vBh', 'vBm', 'vBq')
+          rng = random.Random(20261104)
           want = {1: 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e',
                   7: '66d63e1c9c1f80583914b835d82fd24e1bd78fba3bdc1cf73efb7f60ed4fe646'}
           for seed in (1, 7):
@@ -83,3 +85,18 @@ jobs:
                             f'min {min(wall[n]):.6f} max {max(wall[n]):.6f} maxrss {max(rss[n])} KiB', flush=True)
           print('ALL OUTPUTS EXACT')
           PY
+      - name: Phase profile of B
+        shell: bash
+        run: |
+          set -euo pipefail
+          for w in 4 12; do
+            for r in 1 2 3 4 5 6 7; do SD_DATA=/tmp/data-1 SD_OUT=/tmp SD_THREADS=$w /tmp/d-bp 2>> /tmp/prof-$w.txt; done
+            echo "workers $w"; python - "/tmp/prof-$w.txt" <<'PY'
+          import sys, statistics as st, collections
+          d = collections.defaultdict(list)
+          for line in open(sys.argv[1]):
+              f = line.split()
+              if len(f) >= 3: d[f[0]].append(float(f[1]))
+          print(' '.join(f'{k}={st.median(v):.1f}' for k, v in d.items()))
+          PY
+          done

@@ -500,32 +500,25 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
   Graph *g = new Graph(total, edges[threads], spare + edges[threads], spare);
   Reverse rev(g->n, g->m, cuts, splice<u32>(orders, total + 1));
   std::vector<Escapes> escapes(threads);
-  // Self-loops left by walks are dropped; the slots freed in a slice become
-  // weight-0 self-loops of its last vertex.
   parallel(threads, [&](unsigned k) {
     std::fill(rev.r->off + cuts[k], rev.r->off + cuts[k + 1], 0);
-    u32 at = ~0u, end = 0, last = 0;
     each(k, [&](unsigned t, u32 lo, u32 hi) {
       Region &reg = regions[t];
       u32 pos = lo ? reg.ends[lo - 1] : 0, shift = edges[t];
       auto esc = std::lower_bound(reg.esc.begin(), reg.esc.end(),
                                   std::pair(size_t(pos), u64(0)));
-      at = std::min(at, shift + pos);
-      for (u32 i = lo, v = base[t] + lo; i < hi; ++i, ++v) {
-        g->off[v] = at;
+      for (u32 i = lo; i < hi; ++i) {
+        g->off[base[t] + i] = shift + pos;
         for (; pos < reg.ends[i]; ++pos) {
           __builtin_prefetch(
               &where[reg.out[std::min(pos + 24, reg.edges - 1)] >> wbits]);
           u32 e = reg.out[pos], w = e & mask, h = where[e >> wbits];
-          g->put(at, h, w == mask ? esc++->second : w, escapes[k]);
-          if (h != v)
-            rev.count(k, v, h, at++);
+          u64 weight = w == mask ? esc++->second : w;
+          g->put(shift + pos, h, weight, escapes[k]);
+          rev.count(k, base[t] + i, h, shift + pos);
         }
       }
-      end = shift + reg.ends[hi - 1], last = base[t] + hi - 1;
     });
-    for (; at < end; ++at)
-      g->adj[at] = last << g->wbits, rev.count(k, last, last, at);
   });
   for (Region &reg : regions)
     release(reg.ends, n);
@@ -574,7 +567,7 @@ struct Queue {
     u32 b = (d >> shift) % B;
     Bucket &k = bucket[b];
     if (k.size == k.cap)
-      k.data = (u32 *)realloc(k.data, (k.cap = std::max(16u, 2 * k.cap)) * 4);
+      k.data = (u32 *)realloc(k.data, (k.cap = std::max(4u, 2 * k.cap)) * 4);
     k.data[k.size] = v | u32(d & ((1u << shift) - 1)) << node_bits;
     k.size += take, near += take;
     occupied[b / 64] |= u64(take) << b % 64;

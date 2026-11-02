@@ -308,14 +308,14 @@ struct alignas(64) Region {
 // share one pass. The walks of a batch advance one hop per round, so their
 // cache misses overlap.
 struct Grower {
-  static constexpr u32 BATCH = 4;
+  static constexpr u32 BATCH = 8;
   struct Walk {
     u32 pos, root, prev, at, steps;
     u64 w;
   };
   const Graph &raw;
   const Bits &bypass;
-  Bits &claimed;
+  Bits &claimed, mine;
   Region &reg;
   std::vector<Walk> walks;
 
@@ -323,6 +323,9 @@ struct Grower {
   // copy that no edge reaches, as every head resolves through one map entry.
   void claim(u32 z) {
     u64 bit = u64(1) << (z & 63), *word = &claimed[z >> 6];
+    if (mine[z >> 6] & bit)
+      return;
+    mine[z >> 6] |= bit;
     u64 seen = __atomic_load_n(word, __ATOMIC_RELAXED);
     if (seen & bit)
       return;
@@ -454,7 +457,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
     Region &reg = regions[t];
     reg.order = alloc<u32>(n), reg.ends = alloc<u32>(n),
     reg.out = alloc<u32>(m);
-    Grower grower{*raw, bypass, claimed, reg};
+    Grower grower{*raw, bypass, claimed, Bits(claimed.size()), reg};
     for (u32 x = cut(n, t, threads); x < cut(n, t + 1, threads); ++x)
       if (!test(bypass, x))
         grower.grow(x);

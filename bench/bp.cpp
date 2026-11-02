@@ -12,6 +12,7 @@
 #include <thread>
 #include <unistd.h>
 #include <vector>
+#include "probe.h"
 
 using u32 = uint32_t;
 using u64 = uint64_t;
@@ -234,6 +235,7 @@ Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
           [&](u32 u, u32 v, u32 w) { bin.add(u, v, w); });
     std::sort(bin.heavy.begin(), bin.heavy.end());
   });
+  PMARK(1, "parse");
   // Four slots per vertex, then the spill area. The map and the contracted
   // graph reuse this storage.
   u32 *rows = alloc<u32>(size_t(4) * n + m);
@@ -281,6 +283,7 @@ Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
     }
   });
   g->merge(escapes);
+  PMARK(2, "rawcsr");
   return g;
 }
 
@@ -459,6 +462,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
       if (!test(bypass, x))
         grower.grow(x);
   });
+  PMARK(3, "grow");
   u32 wbits = raw->wbits, mask = raw->mask;
   // The raw rows' pages become the map and the forward graph.
   u32 *where = raw->adj, *spare = where + n;
@@ -497,6 +501,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
     orders.push_back({reg.order, reg.len * 4ul});
     outs.push_back({reg.out, reg.edges * 4ul});
   }
+  PMARK(4, "where");
   Graph *g = new Graph(total, edges[threads], spare + edges[threads], spare);
   Reverse rev(g->n, g->m, cuts, splice<u32>(orders, total + 1));
   std::vector<Escapes> escapes(threads);
@@ -525,6 +530,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
   rev.r->adj = splice<u32>(outs, g->m);
   g->off[g->n] = edges[threads];
   g->merge(escapes);
+  PMARK(5, "rename");
   std::vector<Escapes> back(threads);
   parallel(threads, [&](unsigned t) { rev.place(*g, t, back[t]); });
   rev.r->off[g->n] = g->m;
@@ -532,6 +538,7 @@ std::pair<Graph *, Graph *> contract(Graph *raw, const Bits &bypass,
   for (u32 &v : ends)
     v = where[v];
   munmap(where, n * 4ul / 4096 * 4096);
+  PMARK(6, "reverse");
   return {g, rev.r};
 }
 
@@ -546,8 +553,8 @@ struct Queue {
     u32 *data = nullptr, size = 0, cap = 0;
   } bucket[B];
   u64 occupied[B / 64] = {}, cur = 0, near = 0;
-  // Vertex ids stay far below 2^25 (a vertex is claimed twice only when
-  // a racing store loses its bit), leaving seven bits for the key remainder.
+  // Each of at most twelve regions visits each input vertex at most once.
+  // 12 * 1,740,512 < 2^25, leaving seven bits for the distance remainder.
   static constexpr u32 shift = 7, node_bits = 25;
   using Far = std::pair<u64, u32>;
   std::priority_queue<Far, std::vector<Far>, std::greater<Far>> far;
@@ -713,6 +720,7 @@ int main() {
   if (getenv("SD_THREADS"))
     threads = atoi(getenv("SD_THREADS"));
   threads = std::clamp(threads, 1u, 12u);
+  PSTART();
   size_t qsize, gsize;
   const char *q = map(data + "/queries.txt", qsize), *qend = q + qsize;
   std::vector<u32> ends; // s0 t0 s1 t1 ...
@@ -747,19 +755,7 @@ int main() {
       answers[i] = d < INF ? int64_t(d) : -1;
     }
   });
-  // The graphs and the input are unmapped by all workers, not at exit.
-  parallel(threads, [&](unsigned k) {
-    for (auto [p, bytes] : {std::pair<const void *, size_t>{
-                                fwd->adj, (fwd->m + fwd->n) * 4ul + 8},
-                            {rev->off, rev->n * 4ul + 8},
-                            {rev->adj, rev->m * 4ul},
-                            {graph, gsize}}) {
-      uintptr_t a = uintptr_t(p) & ~4095ul, e = uintptr_t(p) + bytes;
-      uintptr_t lo = (a + (e - a) * k / threads) & ~4095ul;
-      uintptr_t hi = (a + (e - a) * (k + 1) / threads) & ~4095ul;
-      munmap((void *)lo, k + 1 == threads ? e - lo : hi - lo);
-    }
-  });
+  PMARK(7, "queries");
   std::string text;
   for (int64_t x : answers)
     text += std::to_string(x) + '\n';
@@ -767,5 +763,7 @@ int main() {
                 0644);
   if (fd < 0 || write(fd, text.data(), text.size()) != ssize_t(text.size()))
     exit(2);
+  PMARK(8, "output");
+  PFINISH();
   exit(0); // leaves the large buffers to the kernel
 }

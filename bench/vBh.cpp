@@ -4,10 +4,8 @@
 #include <cstring>
 #include <emmintrin.h>
 #include <fcntl.h>
-#include <functional>
 #include <numeric>
 #include <queue>
-#include <sched.h>
 #include <string>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -52,32 +50,13 @@ template <class T> T *splice(const Parts &parts, size_t n) {
   return (T *)p;
 }
 
-// Waits until done() holds: spinning briefly, then yielding the core.
-template <class F> void await(F done) {
-  for (u32 spins = 0; !done(); ++spins)
-    spins < 4096 ? _mm_pause() : void(sched_yield());
-}
-
-// Runs f(0) .. f(threads - 1) on this thread and on workers kept for the
-// whole process, so phases do not pay for thread creation.
 template <class F> void parallel(unsigned threads, F f) {
-  static std::atomic<u32> round{0}, done{0};
-  static std::function<void(unsigned)> job;
-  static unsigned made = 1;
-  for (; made < threads; ++made)
-    std::thread([t = made, seen = round.load()]() mutable {
-      for (;; ++seen, done += 1) {
-        await([&] { return round.load(std::memory_order_acquire) != seen; });
-        job(t);
-      }
-    }).detach();
-  job = [&](unsigned t) {
-    if (t < threads)
-      f(t);
-  };
-  done = 0, ++round;
+  std::vector<std::thread> pool;
+  for (unsigned t = 1; t < threads; ++t)
+    pool.emplace_back(f, t);
   f(0);
-  await([&] { return done == made - 1; });
+  for (auto &t : pool)
+    t.join();
 }
 
 // ---------------------------------------------------------------- parsing
@@ -258,6 +237,7 @@ Graph *read_graph(const char *lo, const char *hi, const Bits &terminal,
   // Four slots per vertex, then the spill area. The map and the contracted
   // graph reuse this storage.
   u32 *rows = alloc<u32>(size_t(4) * n + m);
+  madvise(rows, (size_t(4) * n + m) * 4, MADV_HUGEPAGE);
   Graph *g = new Graph(n, m, rows, rows);
   std::atomic<u32> spilled{0};
   std::vector<std::atomic<u32>> left(buckets / Bins::GROUP + 1);

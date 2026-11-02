@@ -1,0 +1,112 @@
+name: Track D slice-owned claims tournament
+on:
+  push:
+    branches: ['d/chat-owner-claims-20261102-03']
+    paths: ['.github/workflows/d-chat-owner-claims.yml']
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build baseline and slice-owned challenger with pinned GCC15
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/dclaim
+          git fetch --no-tags --depth=1 origin refs/heads/prize/d-codex-final-claim-atomic
+          git show 888e22648c0821e5fcdc0963e99dd38be512e496:track-d/d_traverse.cpp > /tmp/dclaim/base.cpp
+          cp track-d/d_traverse.cpp /tmp/dclaim/owner.cpp
+          docker run --rm -v /tmp/dclaim:/work -w /work \
+            gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce \
+            bash -euc 'for v in base owner; do g++ -O3 -std=c++17 -pthread -flto -static -s -o "$v" "$v.cpp"; done'
+          sha256sum /tmp/dclaim/{base,owner}
+      - name: Differential, boundary, saturation and stress
+        env:
+          SD_TEST_BINARY: /tmp/dclaim/owner
+        run: |
+          set -euo pipefail
+          python tests/test_d.py
+          python tests/boundary_d.py
+          python tests/saturation_d.py
+          python tests/stress_d.py 30
+      - name: Randomized paired full-seed timing
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official
+          cat > /tmp/dclaim/compare.py <<'PY'
+          import hashlib, os, random, statistics, subprocess, time
+          from pathlib import Path
+          variants = ['base', 'owner']
+          expected = 'a23dbdf0a3e49cc8901310a9ee1dc6a9a569a85297b6da75c2a7002cb2ed277e'
+          for seed in (1, 7):
+              data = Path(f'/tmp/dclaim/data-{seed}')
+              data.mkdir(exist_ok=True)
+              subprocess.run(['python3', '/tmp/official/generators/d_traverse.py',
+                              '--scale', 'full', '--seed', str(seed), '--out', str(data)], check=True)
+              for workers in (4, 6, 12):
+                  times = {v: [] for v in variants}
+                  rss = {v: [] for v in variants}
+                  hashes = set()
+                  out = Path('/tmp/dclaim/out')
+                  out.mkdir(exist_ok=True)
+                  env = dict(os.environ, SD_DATA=str(data), SD_OUT=str(out), SD_THREADS=str(workers))
+                  for round_no in range(12):
+                      order = variants[:]
+                      random.Random(100000 * seed + 100 * workers + round_no).shuffle(order)
+                      for v in order:
+                          t0 = time.perf_counter()
+                          proc = subprocess.Popen([str(Path('/tmp/dclaim') / v)], env=env)
+                          pid, status, usage = os.wait4(proc.pid, 0)
+                          proc.returncode = os.waitstatus_to_exitcode(status)
+                          if proc.returncode:
+                              raise RuntimeError(f'{v} seed={seed} workers={workers} exit={proc.returncode}')
+                          elapsed = time.perf_counter() - t0
+                          digest = hashlib.sha256((out / 'distances.txt').read_bytes()).hexdigest()
+                          if seed == 1 and digest != expected:
+                              raise RuntimeError(f'official seed-1 hash mismatch {v}: {digest}')
+                          hashes.add(digest)
+                          if round_no:
+                              times[v].append(elapsed)
+                              rss[v].append(usage.ru_maxrss)
+                  if len(hashes) != 1:
+                      raise RuntimeError(f'cross-variant output mismatch seed={seed} workers={workers}: {hashes}')
+                  med = {v: statistics.median(times[v]) for v in variants}
+                  mem = {v: statistics.median(rss[v]) for v in variants}
+                  wins = sum(a < b for a, b in zip(times['owner'], times['base']))
+                  print(f'PASS seed={seed} workers={workers} sha={next(iter(hashes))}', flush=True)
+                  print(f'medians_seconds={med} medians_RSS_KiB={mem} owner_wins={wins}/11', flush=True)
+          PY
+          python3 /tmp/dclaim/compare.py
+  sanitizers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer: [address, thread]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build sanitizer executable
+        shell: bash
+        run: |
+          set -euo pipefail
+          flags='-fsanitize=thread'
+          if [ '${{ matrix.sanitizer }}' = address ]; then flags='-fsanitize=address,undefined'; fi
+          g++ -O1 -g -std=c++17 -pthread -fno-omit-frame-pointer $flags track-d/d_traverse.cpp -o /tmp/traverse-san
+      - name: Differential under sanitizer
+        env:
+          SD_TEST_BINARY: /tmp/traverse-san
+          ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1
+          TSAN_OPTIONS: halt_on_error=1
+        run: |
+          set -euo pipefail
+          python tests/test_d.py
+          python tests/boundary_d.py
+          python tests/saturation_d.py
+          python tests/stress_d.py 20

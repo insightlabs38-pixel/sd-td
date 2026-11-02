@@ -2,7 +2,7 @@ name: Track D worker-local claim cache tournament
 on:
   push:
     branches: ['d/chat-local-claim-cache-20261102']
-    paths: ['track-d/d_traverse.cpp', '.github/workflows/d-chat-claim-cache.yml']
+    paths: ['track-d/d_traverse.cpp', 'tests/claim_schedule_d.py', '.github/workflows/d-chat-claim-cache.yml']
 jobs:
   qualify:
     runs-on: ubuntu-latest

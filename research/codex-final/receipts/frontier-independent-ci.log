@@ -1,0 +1,422 @@
+compare	Set up job	﻿2026-11-02T05:45:02.0311959Z Current runner version: '2.338.2'
+compare	Set up job	2026-11-02T05:45:02.0332063Z ##[group]Runner Image Provisioner
+compare	Set up job	2026-11-02T05:45:02.0332708Z Hosted Compute Agent
+compare	Set up job	2026-11-02T05:45:02.0333146Z Version: 20261021.618
+compare	Set up job	2026-11-02T05:45:02.0333571Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+compare	Set up job	2026-11-02T05:45:02.0334076Z Build Date: 2026-10-21T00:45:21Z
+compare	Set up job	2026-11-02T05:45:02.0334565Z Worker ID: {1cdfc8b5-0a84-4922-8881-f659ffab23c6}
+compare	Set up job	2026-11-02T05:45:02.0335022Z Region: westus3
+compare	Set up job	2026-11-02T05:45:02.0335383Z Cloud: Azure
+compare	Set up job	2026-11-02T05:45:02.0335807Z ##[endgroup]
+compare	Set up job	2026-11-02T05:45:02.0336685Z ##[group]Operating System
+compare	Set up job	2026-11-02T05:45:02.0337144Z Ubuntu
+compare	Set up job	2026-11-02T05:45:02.0337491Z 24.04.5
+compare	Set up job	2026-11-02T05:45:02.0337817Z LTS
+compare	Set up job	2026-11-02T05:45:02.0338202Z ##[endgroup]
+compare	Set up job	2026-11-02T05:45:02.0338597Z ##[group]Runner Image
+compare	Set up job	2026-11-02T05:45:02.0338998Z Image: ubuntu-24.04
+compare	Set up job	2026-11-02T05:45:02.0339381Z Version: 20261025.353.1
+compare	Set up job	2026-11-02T05:45:02.0340036Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261025.353/images/ubuntu/Ubuntu2404-Readme.md
+compare	Set up job	2026-11-02T05:45:02.0341204Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261025.353
+compare	Set up job	2026-11-02T05:45:02.0341994Z ##[endgroup]
+compare	Set up job	2026-11-02T05:45:02.0342786Z ##[group]GITHUB_TOKEN Permissions
+compare	Set up job	2026-11-02T05:45:02.0344394Z Contents: read
+compare	Set up job	2026-11-02T05:45:02.0344823Z Metadata: read
+compare	Set up job	2026-11-02T05:45:02.0345191Z Packages: read
+compare	Set up job	2026-11-02T05:45:02.0345623Z ##[endgroup]
+compare	Set up job	2026-11-02T05:45:02.0347098Z Secret source: Actions
+compare	Set up job	2026-11-02T05:45:02.0347774Z Cache mode: write
+compare	Set up job	2026-11-02T05:45:02.0348226Z Prepare workflow directory
+compare	Set up job	2026-11-02T05:45:02.0566683Z Prepare all required actions
+compare	Set up job	2026-11-02T05:45:02.0600062Z Getting action download info
+compare	Set up job	2026-11-02T05:45:02.3643132Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+compare	Set up job	2026-11-02T05:45:02.4350836Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+compare	Set up job	2026-11-02T05:45:02.5258600Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+compare	Set up job	2026-11-02T05:45:02.7234364Z Complete job name: compare
+compare	Run actions/checkout@v4	﻿2026-11-02T05:45:02.7796718Z ##[group]Run actions/checkout@v4
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7797246Z with:
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7797494Z   fetch-depth: 0
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7797773Z   repository: insightlabs38-pixel/sd-td
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7800234Z   token: ***
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7800480Z   ssh-strict: true
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7800732Z   ssh-user: git
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7800992Z   persist-credentials: true
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7801275Z   clean: true
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7801673Z   sparse-checkout-cone-mode: true
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7801976Z   fetch-tags: false
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7802234Z   show-progress: true
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7802494Z   lfs: false
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7802731Z   submodules: false
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7802989Z   set-safe-directory: true
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7803281Z   allow-unsafe-pr-checkout: false
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.7803660Z ##[endgroup]
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9683000Z Syncing repository: insightlabs38-pixel/sd-td
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9684912Z ##[group]Getting Git version info
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9685361Z Working directory is '/home/runner/work/sd-td/sd-td'
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9686038Z [command]/usr/bin/git version
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9740391Z git version 2.56.0
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9756591Z ##[endgroup]
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9769812Z Temporarily overriding HOME='/home/runner/work/_temp/05860042-feef-4e0e-b0ff-f89e93d19097' before making global git config changes
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9771193Z Adding repository directory to the temporary git global config as a safe directory
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9774538Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9828521Z Deleting the contents of '/home/runner/work/sd-td/sd-td'
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9838411Z ##[group]Initializing the repository
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9839390Z [command]/usr/bin/git init /home/runner/work/sd-td/sd-td
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9966984Z hint: Using 'master' as the name for the initial branch. This default branch name
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9968524Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9969322Z hint: to use in all of your new repositories, which will suppress this warning,
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9969955Z hint: call:
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9970324Z hint:
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9970786Z hint: 	git config --global init.defaultBranch <name>
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9971280Z hint:
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9972050Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9973126Z hint: 'development'. The just-created branch can be renamed via this command:
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9973979Z hint:
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9974478Z hint: 	git branch -m <name>
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9974944Z hint:
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9975503Z hint: Disable this message with "git config set advice.defaultBranchName false"
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9977421Z Initialized empty Git repository in /home/runner/work/sd-td/sd-td/.git/
+compare	Run actions/checkout@v4	2026-11-02T05:45:02.9988142Z [command]/usr/bin/git remote add origin https://github.com/insightlabs38-pixel/sd-td
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0031902Z ##[endgroup]
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0032507Z ##[group]Disabling automatic garbage collection
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0035288Z [command]/usr/bin/git config --local gc.auto 0
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0067655Z ##[endgroup]
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0068149Z ##[group]Setting up auth
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0074438Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0124173Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0504652Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0544771Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0782684Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.0805893Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.1030693Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.1077715Z ##[endgroup]
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.1078725Z ##[group]Fetching the repository
+compare	Run actions/checkout@v4	2026-11-02T05:45:03.1087736Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1300385Z From https://github.com/insightlabs38-pixel/sd-td
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1302833Z  * [new branch]      branch/intelligent-ride-tbqpdz -> origin/branch/intelligent-ride-tbqpdz
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1304455Z  * [new branch]      d/adjacency-order-20261031 -> origin/d/adjacency-order-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1306239Z  * [new branch]      d/adjacency-prefetch-final-20261101 -> origin/d/adjacency-prefetch-final-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1308607Z  * [new branch]      d/adjacency-prefetch-pipeline-20261101 -> origin/d/adjacency-prefetch-pipeline-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1310553Z  * [new branch]      d/avx2-build-pgo-20261101 -> origin/d/avx2-build-pgo-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1312482Z  * [new branch]      d/avx2-separator-tournament-20261101 -> origin/d/avx2-separator-tournament-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1314878Z  * [new branch]      d/balanced-settles-confirm -> origin/d/balanced-settles-confirm
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1316814Z  * [new branch]      d/batch-small-tournament-20261101 -> origin/d/batch-small-tournament-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1318423Z  * [new branch]      d/batch8-promote-20261101 -> origin/d/batch8-promote-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1320126Z  * [new branch]      d/bfs-seed-multiplicity-20261031-11 -> origin/d/bfs-seed-multiplicity-20261031-11
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1322551Z  * [new branch]      d/bidirectional-best-bound-prune -> origin/d/bidirectional-best-bound-prune
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1324264Z  * [new branch]      d/bidirectional-edge-work -> origin/d/bidirectional-edge-work
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1325884Z  * [new branch]      d/bin-chunk-tournament  -> origin/d/bin-chunk-tournament
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1327736Z  * [new branch]      d/binner-chunk-tournament-20261101 -> origin/d/binner-chunk-tournament-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1329942Z  * [new branch]      d/binner-progressive-page-reclaim -> origin/d/binner-progressive-page-reclaim
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1332022Z  * [new branch]      d/build-cap-tournament-20261101 -> origin/d/build-cap-tournament-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1333988Z  * [new branch]      d/build-cap-tournament-20261101-22 -> origin/d/build-cap-tournament-20261101-22
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1335995Z  * [new branch]      d/build-thread-pgo-sweep-20261031 -> origin/d/build-thread-pgo-sweep-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1337878Z  * [new branch]      d/bypass-threshold-20261031-11 -> origin/d/bypass-threshold-20261031-11
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1339657Z  * [new branch]      d/chat-bts-claims-20261102-03 -> origin/d/chat-bts-claims-20261102-03
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1341576Z  * [new branch]      d/chat-byte-exchange-20261102-02 -> origin/d/chat-byte-exchange-20261102-02
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1343737Z  * [new branch]      d/chat-claim-tournament-20261102-02 -> origin/d/chat-claim-tournament-20261102-02
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1345835Z  * [new branch]      d/chat-local-claim-cache-20261102 -> origin/d/chat-local-claim-cache-20261102
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1347768Z  * [new branch]      d/chat-owner-claims-20261102-03 -> origin/d/chat-owner-claims-20261102-03
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1349516Z  * [new branch]      d/claude-donation-12t   -> origin/d/claude-donation-12t
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1351179Z  * [new branch]      d/compact-distance-overflow -> origin/d/compact-distance-overflow
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1353038Z  * [new branch]      d/conditional-meet-20261101 -> origin/d/conditional-meet-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1355056Z  * [new branch]      d/conditional-relax-20261101 -> origin/d/conditional-relax-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1357282Z  * [new branch]      d/contraction-survivor-correctness -> origin/d/contraction-survivor-correctness
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1359264Z  * [new branch]      d/csr-inplace-cursors   -> origin/d/csr-inplace-cursors
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1361037Z  * [new branch]      d/csr-inplace-stable-order -> origin/d/csr-inplace-stable-order
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1363705Z  * [new branch]      d/decouple-build-query-workers -> origin/d/decouple-build-query-workers
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1365982Z  * [new branch]      d/degree3-bypass-20261102-04 -> origin/d/degree3-bypass-20261102-04
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1368023Z  * [new branch]      d/direct-csr-two-pass-20261031 -> origin/d/direct-csr-two-pass-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1370389Z  * [new branch]      d/direction-policy-tournament -> origin/d/direction-policy-tournament
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1372629Z  * [new branch]      d/distance-page-prefetch-20261101 -> origin/d/distance-page-prefetch-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1374420Z  * [new branch]      d/distance-slab-1031    -> origin/d/distance-slab-1031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1376043Z  * [new branch]      d/duplicate-query-20261101 -> origin/d/duplicate-query-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1377870Z  * [new branch]      d/duplicate-query-reuse-20261031 -> origin/d/duplicate-query-reuse-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1379671Z  * [new branch]      d/epoch16-score-probe   -> origin/d/epoch16-score-probe
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1381774Z  * [new branch]      d/epoch8-radix-mask-qualification -> origin/d/epoch8-radix-mask-qualification
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1383557Z  * [new branch]      d/epoch8-score-probe    -> origin/d/epoch8-score-probe
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1385013Z  * [new branch]      d/escape-page-index     -> origin/d/escape-page-index
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1386405Z  * [new branch]      d/escape-rank64         -> origin/d/escape-rank64
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1387872Z  * [new branch]      d/fast-common-weight-parse -> origin/d/fast-common-weight-parse
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1389831Z  * [new branch]      d/forward-probe-tournament-20261102 -> origin/d/forward-probe-tournament-20261102
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1392075Z  * [new branch]      d/frontier-independent-qualification -> origin/d/frontier-independent-qualification
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1394079Z  * [new branch]      d/frontier-thread-probe-sweep -> origin/d/frontier-thread-probe-sweep
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1396521Z  * [new branch]      d/frontier2-matched-qualification -> origin/d/frontier2-matched-qualification
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1399474Z  * [new branch]      d/fused-build-worker-sweep-20261101 -> origin/d/fused-build-worker-sweep-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1402326Z  * [new branch]      d/fused-owner-probe-20261101 -> origin/d/fused-owner-probe-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1404633Z  * [new branch]      d/fused-region-partition-20261101 -> origin/d/fused-region-partition-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1406638Z  * [new branch]      d/graph-cache-release-20261101 -> origin/d/graph-cache-release-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1408458Z  * [new branch]      d/grow-batch8-final-20261101 -> origin/d/grow-batch8-final-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1410213Z  * [new branch]      d/grow-mini-20261101    -> origin/d/grow-mini-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1411905Z  * [new branch]      d/grower-batch-20261101 -> origin/d/grower-batch-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1413593Z  * [new branch]      d/grower-batch16-champion-20261101 -> origin/d/grower-batch16-champion-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1415797Z  * [new branch]      d/grower-batch16-final-qualification-20261101 -> origin/d/grower-batch16-final-qualification-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1417747Z  * [new branch]      d/inline-bucket-1031-11 -> origin/d/inline-bucket-1031-11
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1419352Z  * [new branch]      d/intrabucket-minheap-20261031 -> origin/d/intrabucket-minheap-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1421153Z  * [new branch]      d/lean-binner-512-20261101 -> origin/d/lean-binner-512-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1423174Z  * [new branch]      d/lean-build-cap4-promote-20261101 -> origin/d/lean-build-cap4-promote-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1425379Z  * [new branch]      d/lean-construction-workers-20261101 -> origin/d/lean-construction-workers-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1427340Z  * [new branch]      d/lean-prefetch-locality-20261101 -> origin/d/lean-prefetch-locality-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1429226Z  * [new branch]      d/lifo-frontier-layout-20261031 -> origin/d/lifo-frontier-layout-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1430899Z  * [new branch]      d/memory-tournament     -> origin/d/memory-tournament
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1432649Z  * [new branch]      d/next-bucket-prefetch-20261031 -> origin/d/next-bucket-prefetch-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1435014Z  * [new branch]      d/official-parameter-sweep -> origin/d/official-parameter-sweep
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1436720Z  * [new branch]      d/page-granularity-tournament -> origin/d/page-granularity-tournament
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1438314Z  * [new branch]      d/paged-distance-slab   -> origin/d/paged-distance-slab
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1439876Z  * [new branch]      d/pgo-full-training-20261031 -> origin/d/pgo-full-training-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1441866Z  * [new branch]      d/pgo-training-diversity-20261031 -> origin/d/pgo-training-diversity-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1443673Z  * [new branch]      d/prefetch-locality-20261101 -> origin/d/prefetch-locality-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1445348Z  * [new branch]      d/prefetch-nta-final-20261101 -> origin/d/prefetch-nta-final-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1447088Z  * [new branch]      d/prefetch-nta-promote-20261101 -> origin/d/prefetch-nta-promote-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1448875Z  * [new branch]      d/probe-after-balanced-20261031 -> origin/d/probe-after-balanced-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1450480Z  * [new branch]      d/probe-gap-adaptive    -> origin/d/probe-gap-adaptive
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1452191Z  * [new branch]      d/probe-skip-unneeded-meets -> origin/d/probe-skip-unneeded-meets
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1454100Z  * [new branch]      d/probe-unilateral-fastpath -> origin/d/probe-unilateral-fastpath
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1455658Z  * [new branch]      d/query-batch-locality  -> origin/d/query-batch-locality
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1457514Z  * [new branch]      d/query-priority-1031-11 -> origin/d/query-priority-1031-11
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1459164Z  * [new branch]      d/query-seeded-bfs-20261101 -> origin/d/query-seeded-bfs-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1460809Z  * [new branch]      d/query-tail-lpt-20261031 -> origin/d/query-tail-lpt-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1462717Z  * [new branch]      d/query-tail-scheduling-20261101 -> origin/d/query-tail-scheduling-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1464543Z  * [new branch]      d/queue-push-fast-reject-20261101 -> origin/d/queue-push-fast-reject-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1466173Z  * [new branch]      d/queue-width-tournament -> origin/d/queue-width-tournament
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1467610Z  * [new branch]      d/radix-inplace-candidate -> origin/d/radix-inplace-candidate
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1469041Z  * [new branch]      d/radix-nonempty-mask   -> origin/d/radix-nonempty-mask
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1470354Z  * [new branch]      d/release-indegree      -> origin/d/release-indegree
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1471779Z  * [new branch]      d/release-parse-scratch -> origin/d/release-parse-scratch
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1474169Z  * [new branch]      d/reorder-region-gather-no-copy -> origin/d/reorder-region-gather-no-copy
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1475869Z  * [new branch]      d/reuse-forward-probe   -> origin/d/reuse-forward-probe
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1477285Z  * [new branch]      d/reverse-barrier-20261101 -> origin/d/reverse-barrier-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1478920Z  * [new branch]      d/reverse-count-prefetch-20261101 -> origin/d/reverse-count-prefetch-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1480588Z  * [new branch]      d/reverse-csr-inplace-cursor -> origin/d/reverse-csr-inplace-cursor
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1482639Z  * [new branch]      d/reverse-sharded-noatomic -> origin/d/reverse-sharded-noatomic
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1484279Z  * [new branch]      d/search-frontier-policy-20261101 -> origin/d/search-frontier-policy-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1486123Z  * [new branch]      d/slab-probe-combined   -> origin/d/slab-probe-combined
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1488233Z  * [new branch]      d/terminal-bitset-query-dedup -> origin/d/terminal-bitset-query-dedup
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1489759Z  * [new branch]      d/three-slot-rows-20261101 -> origin/d/three-slot-rows-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1491392Z  * [new branch]      d/two-level-bucket-bitmap-20261101 -> origin/d/two-level-bucket-bitmap-20261101
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1493285Z  * [new branch]      d/vertex-best-bound-20261031 -> origin/d/vertex-best-bound-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1494911Z  * [new branch]      d/walk-block-tournament-1031 -> origin/d/walk-block-tournament-1031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1496446Z  * [new branch]      d/wcc-guard-search-20261031 -> origin/d/wcc-guard-search-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1497997Z  * [new branch]      d/x86-v3-build-20261031 -> origin/d/x86-v3-build-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1499458Z  * [new branch]      frontier/d-claude-architecture -> origin/frontier/d-claude-architecture
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1501316Z  * [new branch]      frontier/d-claude-architecture-2 -> origin/frontier/d-claude-architecture-2
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1503175Z  * [new branch]      frontier/d-claude-architecture-3 -> origin/frontier/d-claude-architecture-3
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1504869Z  * [new branch]      frontier/d-claude-architecture-4 -> origin/frontier/d-claude-architecture-4
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1506534Z  * [new branch]      frontier/d-claude-architecture-5 -> origin/frontier/d-claude-architecture-5
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1508194Z  * [new branch]      frontier/d-claude-architecture-6 -> origin/frontier/d-claude-architecture-6
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1509528Z  * [new branch]      main                    -> origin/main
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1510847Z  * [new branch]      prize/d-codex-final-claim-atomic -> origin/prize/d-codex-final-claim-atomic
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1512722Z  * [new branch]      prize/d-codex-final-claim-bytes -> origin/prize/d-codex-final-claim-bytes
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1514406Z  * [new branch]      prize/d-codex-final-clipped -> origin/prize/d-codex-final-clipped
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1515883Z  * [new branch]      prize/d-codex-final-frontier -> origin/prize/d-codex-final-frontier
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1517518Z  * [new branch]      prize/d-codex-final-frontier-bytes -> origin/prize/d-codex-final-frontier-bytes
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1519086Z  * [new branch]      prize/d-codex-final-query -> origin/prize/d-codex-final-query
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1520543Z  * [new branch]      prize/d-codex-final-saturated -> origin/prize/d-codex-final-saturated
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1522346Z  * [new branch]      prize/d-codex-final-saturated-cap4 -> origin/prize/d-codex-final-saturated-cap4
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1524091Z  * [new branch]      prize/d-codex-final-stream-parser -> origin/prize/d-codex-final-stream-parser
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1525641Z  * [new branch]      prize/d-opus-final-bench -> origin/prize/d-opus-final-bench
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1526957Z  * [new branch]      prize/d-opus-final-c1   -> origin/prize/d-opus-final-c1
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1528225Z  * [new branch]      prize/d-opus-final-c2   -> origin/prize/d-opus-final-c2
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1529564Z  * [new branch]      prize/d-opus-final-c2-cap4 -> origin/prize/d-opus-final-c2-cap4
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1530887Z  * [new branch]      prize/d-opus-last-a     -> origin/prize/d-opus-last-a
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1532367Z  * [new branch]      prize/d-opus-last-a3    -> origin/prize/d-opus-last-a3
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1533618Z  * [new branch]      prize/d-opus-last-b     -> origin/prize/d-opus-last-b
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1534892Z  * [new branch]      prize/d-opus-last-bench -> origin/prize/d-opus-last-bench
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1536144Z  * [new branch]      prize/d-opus-lean       -> origin/prize/d-opus-lean
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1537953Z  * [new branch]      research/d-breakthrough-20261101-compact-multiround -> origin/research/d-breakthrough-20261101-compact-multiround
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1540169Z  * [new branch]      research/d-breakthrough-20261101-direct-raw -> origin/research/d-breakthrough-20261101-direct-raw
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1542535Z  * [new branch]      research/d-breakthrough-20261101-directed-alt -> origin/research/d-breakthrough-20261101-directed-alt
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1544579Z  * [new branch]      research/d-breakthrough-20261101-dual-bin -> origin/research/d-breakthrough-20261101-dual-bin
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1546545Z  * [new branch]      research/d-breakthrough-20261101-evidence -> origin/research/d-breakthrough-20261101-evidence
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1612037Z  * [new branch]      research/d-breakthrough-20261101-forward-only -> origin/research/d-breakthrough-20261101-forward-only
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1614969Z  * [new branch]      research/d-breakthrough-20261101-fused-degree34 -> origin/research/d-breakthrough-20261101-fused-degree34
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1617574Z  * [new branch]      research/d-breakthrough-20261101-fused-diagnostics -> origin/research/d-breakthrough-20261101-fused-diagnostics
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1620403Z  * [new branch]      research/d-breakthrough-20261101-fused-hierarchy -> origin/research/d-breakthrough-20261101-fused-hierarchy
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1624573Z  * [new branch]      research/d-breakthrough-20261101-fused-hierarchy-refined -> origin/research/d-breakthrough-20261101-fused-hierarchy-refined
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1628525Z  * [new branch]      research/d-breakthrough-20261101-input-cgroup -> origin/research/d-breakthrough-20261101-input-cgroup
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1632003Z  * [new branch]      research/d-breakthrough-20261101-input-handoff -> origin/research/d-breakthrough-20261101-input-handoff
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1635438Z  * [new branch]      research/d-breakthrough-20261101-input-lifetime -> origin/research/d-breakthrough-20261101-input-lifetime
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1638717Z  * [new branch]      research/d-breakthrough-20261101-input-tsan -> origin/research/d-breakthrough-20261101-input-tsan
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1642076Z  * [new branch]      research/d-breakthrough-20261101-lazy-shortcuts -> origin/research/d-breakthrough-20261101-lazy-shortcuts
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1644827Z  * [new branch]      research/d-breakthrough-20261101-native-directed-alt -> origin/research/d-breakthrough-20261101-native-directed-alt
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1647225Z  * [new branch]      research/d-breakthrough-20261101-overlap-query-reverse -> origin/research/d-breakthrough-20261101-overlap-query-reverse
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1649432Z  * [new branch]      research/d-breakthrough-20261101-partial-ch -> origin/research/d-breakthrough-20261101-partial-ch
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1651619Z  * [new branch]      research/d-breakthrough-20261101-phase-profile -> origin/research/d-breakthrough-20261101-phase-profile
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1654429Z  * [new branch]      research/d-breakthrough-20261101-phases -> origin/research/d-breakthrough-20261101-phases
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1656558Z  * [new branch]      research/d-breakthrough-20261101-query-anatomy-chat -> origin/research/d-breakthrough-20261101-query-anatomy-chat
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1658779Z  * [new branch]      research/d-breakthrough-20261101-quotient-astar -> origin/research/d-breakthrough-20261101-quotient-astar
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1661042Z  * [new branch]      research/d-breakthrough-20261101-quotient-diagnostics -> origin/research/d-breakthrough-20261101-quotient-diagnostics
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1663428Z  * [new branch]      research/d-breakthrough-20261101-sanitizers -> origin/research/d-breakthrough-20261101-sanitizers
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1666007Z  * [new branch]      research/d-breakthrough-20261101-stage-attribution-chat -> origin/research/d-breakthrough-20261101-stage-attribution-chat
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1669308Z  * [new branch]      research/d-exact-shortcut-probes-20261031 -> origin/research/d-exact-shortcut-probes-20261031
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1673576Z [command]/usr/bin/git branch --list --remote origin/prize/d-codex-final-frontier
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1675404Z   origin/prize/d-codex-final-frontier
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1678234Z [command]/usr/bin/git rev-parse refs/remotes/origin/prize/d-codex-final-frontier
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1679936Z e5c3e4524c342fecc11e89751857ee9cbdf63d69
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1682637Z ##[endgroup]
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1683770Z ##[group]Determining the checkout info
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1685378Z ##[endgroup]
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1686060Z [command]/usr/bin/git sparse-checkout disable
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1688347Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1691595Z ##[group]Checking out the ref
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1693795Z [command]/usr/bin/git checkout --progress --force -B prize/d-codex-final-frontier refs/remotes/origin/prize/d-codex-final-frontier
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1696342Z Switched to a new branch 'prize/d-codex-final-frontier'
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1698426Z branch 'prize/d-codex-final-frontier' set up to track 'origin/prize/d-codex-final-frontier'.
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1702143Z ##[endgroup]
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1704347Z [command]/usr/bin/git log -1 --format=%H
+compare	Run actions/checkout@v4	2026-11-02T05:45:04.1705645Z e5c3e4524c342fecc11e89751857ee9cbdf63d69
+compare	Run actions/setup-python@v5	﻿2026-11-02T05:45:04.1946450Z ##[group]Run actions/setup-python@v5
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.1947212Z with:
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.1947778Z   python-version: 3.13
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.1948406Z   check-latest: false
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.1954162Z   token: ***
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.1954740Z   update-environment: true
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.1955399Z   allow-prereleases: false
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.1956044Z   freethreaded: false
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.1956643Z ##[endgroup]
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.2915185Z ##[group]Installed versions
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.2987416Z (node:2111) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.2989240Z (Use `node --trace-deprecation ...` to show where the warning was created)
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.2990667Z Successfully set up CPython (3.13.17)
+compare	Run actions/setup-python@v5	2026-11-02T05:45:04.3008600Z ##[endgroup]
+compare	Immutable pinned comparison builds	﻿2026-11-02T05:45:04.3230863Z ##[group]Run set -euo pipefail
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3232425Z [36;1mset -euo pipefail[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3233187Z [36;1mmkdir -p /tmp/compare /tmp/receipts[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3234317Z [36;1mgit cat-file blob 4e45be05890b6228c8df88702da48f51a15fc712 >/tmp/compare/control.cpp[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3235539Z [36;1mcp track-d/d_traverse.cpp /tmp/compare/candidate.cpp[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3237735Z [36;1mdocker run --rm -v /tmp/compare:/work -w /work gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce bash -c 'set -e; for x in control candidate; do g++ -O3 -std=c++17 -pthread -flto -static -s -o $x $x.cpp; done'[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3240949Z [36;1msha256sum /tmp/compare/control /tmp/compare/candidate | tee /tmp/receipts/binaries.txt[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3243377Z [36;1mgit clone --depth 1 https://github.com/hackathon-raptors/speed-demon-2026.git /tmp/official[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3245053Z [36;1mfor seed in 1 7 17; do[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3247211Z [36;1m  python /tmp/official/generators/d_traverse.py --scale full --seed "$seed" --out "/tmp/data-full-$seed"[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3249268Z [36;1mdone[0m
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3289283Z shell: /usr/bin/bash -e {0}
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3290268Z env:
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3291229Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3292788Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3293899Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3294870Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3295790Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3296705Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.3297488Z ##[endgroup]
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.4037371Z Unable to find image 'gcc:15@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce' locally
+compare	Immutable pinned comparison builds	2026-11-02T05:45:04.9551219Z docker.io/library/gcc@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce: Pulling from library/gcc
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1962274Z 8d0037029946: Pulling fs layer
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1962810Z 63040bd9752a: Pulling fs layer
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1963430Z 7046f4e749f0: Pulling fs layer
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1963762Z 992d9e06c2e8: Pulling fs layer
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1963976Z 50bc7c381382: Pulling fs layer
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1964258Z 89609dd4f248: Pulling fs layer
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1964490Z 6d00483150ff: Pulling fs layer
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1964737Z 7141354ffcf7: Pulling fs layer
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1964976Z 992d9e06c2e8: Waiting
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1965176Z 50bc7c381382: Waiting
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1965409Z 89609dd4f248: Waiting
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1965592Z 6d00483150ff: Waiting
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.1965777Z 7141354ffcf7: Waiting
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.4746222Z 63040bd9752a: Download complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.5309259Z 8d0037029946: Verifying Checksum
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.5322282Z 8d0037029946: Download complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.5837290Z 7046f4e749f0: Verifying Checksum
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.5837679Z 7046f4e749f0: Download complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.7326941Z 50bc7c381382: Verifying Checksum
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.7327330Z 50bc7c381382: Download complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.9389337Z 6d00483150ff: Verifying Checksum
+compare	Immutable pinned comparison builds	2026-11-02T05:45:05.9389725Z 6d00483150ff: Download complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:06.1326397Z 7141354ffcf7: Verifying Checksum
+compare	Immutable pinned comparison builds	2026-11-02T05:45:06.1330167Z 7141354ffcf7: Download complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:06.2125313Z 89609dd4f248: Verifying Checksum
+compare	Immutable pinned comparison builds	2026-11-02T05:45:06.2125881Z 89609dd4f248: Download complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:06.2325214Z 992d9e06c2e8: Verifying Checksum
+compare	Immutable pinned comparison builds	2026-11-02T05:45:06.2325577Z 992d9e06c2e8: Download complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:06.7217658Z 8d0037029946: Pull complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:10.7073138Z 63040bd9752a: Pull complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:13.1684743Z 7046f4e749f0: Pull complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:20.4889151Z 992d9e06c2e8: Pull complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:20.6377308Z 50bc7c381382: Pull complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:24.7878133Z 89609dd4f248: Pull complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:24.7963839Z 6d00483150ff: Pull complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:24.8073320Z 7141354ffcf7: Pull complete
+compare	Immutable pinned comparison builds	2026-11-02T05:45:24.8102237Z Digest: sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+compare	Immutable pinned comparison builds	2026-11-02T05:45:24.8108908Z Status: Downloaded newer image for gcc@sha256:eb5e64286ad47187b32bda75c6b6916166ecb41da56559b8b09e0001748d2cce
+compare	Immutable pinned comparison builds	2026-11-02T05:45:29.2692563Z 2e50dc331be69e743249f77ca6a749d1b65938d090ebd7ccbe1b5555cf296ae8  /tmp/compare/control
+compare	Immutable pinned comparison builds	2026-11-02T05:45:29.2697145Z 3897cc01f9caddddf0d031893281e41b6b4efa8a6bcc6cc58fa5f1e7e6875e84  /tmp/compare/candidate
+compare	Immutable pinned comparison builds	2026-11-02T05:45:29.2709775Z Cloning into '/tmp/official'...
+compare	Interleaved exact full-program comparison	﻿2026-11-02T05:49:07.3601647Z ##[group]Run python tests/stream_compare.py | tee /tmp/receipts/summary.txt
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3601988Z [36;1mpython tests/stream_compare.py | tee /tmp/receipts/summary.txt[0m
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3620137Z shell: /usr/bin/bash -e {0}
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3620293Z env:
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3620451Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3620712Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3620950Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3621165Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3621380Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3621731Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:07.3621911Z ##[endgroup]
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:12.3936998Z 1 4 control wall 0.14312935100002733 cpu 0.48184299999999997 rss 145292
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:12.3937349Z 1 4 candidate wall 0.14076481699999022 cpu 0.478566 rss 145380
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:17.3689829Z 1 6 control wall 0.1468174390000172 cpu 0.484854 rss 145836
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:17.3690212Z 1 6 candidate wall 0.14383375800002796 cpu 0.47291399999999995 rss 145904
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:22.5155086Z 1 12 candidate wall 0.14835083200000554 cpu 0.497001 rss 146760
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:22.5155590Z 1 12 control wall 0.15255484900001193 cpu 0.498753 rss 146804
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:27.2556996Z 7 4 candidate wall 0.13823236700000052 cpu 0.472377 rss 145372
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:27.2557334Z 7 4 control wall 0.13769218999999566 cpu 0.47401899999999997 rss 145292
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:32.2475213Z 7 6 control wall 0.14664091399998824 cpu 0.488149 rss 145776
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:32.2475554Z 7 6 candidate wall 0.14735615600000074 cpu 0.485617 rss 145816
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:37.7304006Z 7 12 candidate wall 0.15672269899999947 cpu 0.5305629999999999 rss 146568
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:37.7304498Z 7 12 control wall 0.15676532199995563 cpu 0.527953 rss 146432
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:42.7746912Z 17 4 control wall 0.1451394459999733 cpu 0.495766 rss 145392
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:42.7747407Z 17 4 candidate wall 0.14281444099998453 cpu 0.49214899999999995 rss 145464
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:47.9993680Z 17 6 control wall 0.15347351200000503 cpu 0.503435 rss 145816
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:47.9994012Z 17 6 candidate wall 0.15186598099995763 cpu 0.497839 rss 145760
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:53.2626136Z 17 12 control wall 0.1560305470000003 cpu 0.5170159999999999 rss 146476
+compare	Interleaved exact full-program comparison	2026-11-02T05:49:53.2626534Z 17 12 candidate wall 0.153636395000035 cpu 0.512971 rss 146548
+compare	Run actions/upload-artifact@v4	﻿2026-11-02T05:49:53.2750637Z ##[group]Run actions/upload-artifact@v4
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2750821Z with:
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2750941Z   name: stream-comparison
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2751074Z   path: /tmp/receipts
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2751197Z   if-no-files-found: warn
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2751325Z   compression-level: 6
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2751566Z   overwrite: false
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2751685Z   include-hidden-files: false
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2751818Z env:
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2751962Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2752199Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib/pkgconfig
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2752434Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2752646Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2753023Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.17/x64
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2753234Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.17/x64/lib
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.2753412Z ##[endgroup]
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.3999602Z (node:16262) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.4000069Z (Use `node --trace-deprecation ...` to show where the warning was created)
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.4055784Z With the provided path, there will be 3 files uploaded
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.4056578Z Artifact name is valid!
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.4057299Z Root directory input is valid!
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.7283376Z Beginning upload of artifact content to blob storage
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.7495334Z (node:16262) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:53.9855536Z Uploaded bytes 7222
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:54.0464942Z Finished uploading artifact content to blob storage!
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:54.0465592Z SHA256 digest of uploaded artifact zip is 40a580acbecd4cb7f9340a160e0e619830f7a46f9eb3dd6cf0dabf66c6246a94
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:54.0466264Z Finalizing artifact upload
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:54.5030899Z Artifact stream-comparison.zip successfully finalized. Artifact ID 13119666668
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:54.5031764Z Artifact stream-comparison has been successfully uploaded! Final size is 7222 bytes. Artifact ID is 13119666668
+compare	Run actions/upload-artifact@v4	2026-11-02T05:49:54.5037349Z Artifact download URL: https://github.com/insightlabs38-pixel/sd-td/actions/runs/41395812791/artifacts/13119666668
+compare	Post Run actions/setup-python@v5	﻿2026-11-02T05:49:54.5214799Z Post job cleanup.
+compare	Post Run actions/setup-python@v5	2026-11-02T05:49:54.6051997Z (node:16275) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+compare	Post Run actions/setup-python@v5	2026-11-02T05:49:54.6052698Z (Use `node --trace-deprecation ...` to show where the warning was created)
+compare	Post Run actions/checkout@v4	﻿2026-11-02T05:49:54.6164673Z Post job cleanup.
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.6796786Z [command]/usr/bin/git version
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.6864150Z git version 2.56.0
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.6890351Z Temporarily overriding HOME='/home/runner/work/_temp/97f62e6f-b490-4bfb-95e6-d3073e3b515e' before making global git config changes
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.6891106Z Adding repository directory to the temporary git global config as a safe directory
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.6895056Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/sd-td/sd-td
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.6940176Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.6974198Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.7216237Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.7252331Z http.https://github.com/.extraheader
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.7277938Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.7325728Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.7602116Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+compare	Post Run actions/checkout@v4	2026-11-02T05:49:54.7656815Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+compare	Complete job	﻿2026-11-02T05:49:54.8027341Z Cleaning up orphan processes
+compare	Complete job	2026-11-02T05:49:54.8290393Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

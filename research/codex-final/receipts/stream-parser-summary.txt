@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.487486 cpu 0.487215 maxrss 145160
+1 stream_parser16 wall 0.483289 cpu 0.48285 maxrss 145200
+1 stream_parser64 wall 0.479293 cpu 0.478974 maxrss 145144
+4 fix_atomic wall 0.331356 cpu 0.655057 maxrss 145796
+4 stream_parser16 wall 0.332 cpu 0.654684 maxrss 145496
+4 stream_parser64 wall 0.329966 cpu 0.643362 maxrss 145548
+6 fix_atomic wall 0.360125 cpu 0.64918 maxrss 145896
+6 stream_parser16 wall 0.359121 cpu 0.648238 maxrss 145844
+6 stream_parser64 wall 0.346544 cpu 0.636027 maxrss 145796
+12 fix_atomic wall 0.363117 cpu 0.636653 maxrss 146668
+12 stream_parser16 wall 0.340527 cpu 0.623867 maxrss 146764
+12 stream_parser64 wall 0.359904 cpu 0.616445 maxrss 146764

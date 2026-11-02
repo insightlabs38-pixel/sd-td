@@ -1,0 +1,8 @@
+000000000040bd40 t _ZN4SideImE5drainERKS0_Rm
+000000000040121a t _ZN4SideImE5drainERKS0_Rm.cold
+000000000040b060 t _ZN4SideItE5drainERKS0_Rm
+0000000000401210 t _ZN4SideItE5drainERKS0_Rm.cold
+000000000045ac70 T _dl_runtime_resolve_fxsave
+000000000045acf0 T _dl_runtime_resolve_xsave
+000000000045adc0 T _dl_runtime_resolve_xsavec
+00000000004f5ff8 B _dl_x86_64_runtime_resolve

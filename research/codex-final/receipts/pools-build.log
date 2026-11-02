@@ -1,0 +1,2 @@
+/usr/bin/ld: /usr/local/lib/gcc/x86_64-linux-gnu/15.3.0/../../../../lib64/libgomp.a(oacc-profiling.o): in function `goacc_profiling_initialize':
+(.text+0xb14): warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking

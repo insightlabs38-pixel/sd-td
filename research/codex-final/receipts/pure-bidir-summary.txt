@@ -1,0 +1,16 @@
+1 fix_atomic wall 0.48287 cpu 0.481962 maxrss 145100
+1 pure_frontier wall 0.476018 cpu 0.47519 maxrss 145212
+1 pure_distance wall 0.487493 cpu 0.487096 maxrss 145208
+1 pure_alternate wall 0.491014 cpu 0.490299 maxrss 145208
+4 fix_atomic wall 0.361202 cpu 0.663864 maxrss 145456
+4 pure_frontier wall 0.330234 cpu 0.646521 maxrss 145540
+4 pure_distance wall 0.361531 cpu 0.665633 maxrss 145620
+4 pure_alternate wall 0.332929 cpu 0.658229 maxrss 145680
+6 fix_atomic wall 0.356138 cpu 0.64265 maxrss 145900
+6 pure_frontier wall 0.330355 cpu 0.633184 maxrss 145820
+6 pure_distance wall 0.336024 cpu 0.642427 maxrss 145992
+6 pure_alternate wall 0.336707 cpu 0.633005 maxrss 145948
+12 fix_atomic wall 0.364626 cpu 0.617376 maxrss 146628
+12 pure_frontier wall 0.361579 cpu 0.611895 maxrss 146792
+12 pure_distance wall 0.332636 cpu 0.617715 maxrss 146680
+12 pure_alternate wall 0.337025 cpu 0.622408 maxrss 146652

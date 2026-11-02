@@ -1,0 +1,4 @@
+000000000040b060 t Side<unsigned short>::drain(Side<unsigned short> const&, unsigned long&)
+0000000000401210 t Side<unsigned short>::drain(Side<unsigned short> const&, unsigned long&) [clone .cold]
+0000000000401100 t Side<unsigned short>::~Side()
+0000000000401100 t Side<unsigned short>::~Side()

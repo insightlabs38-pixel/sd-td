@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.485518 cpu 0.484607 maxrss 145100
+1 csr_raw_recycled wall 0.502256 cpu 0.501424 maxrss 144188
+1 csr_raw_recycled_bin8 wall 0.503723 cpu 0.502947 maxrss 144276
+4 fix_atomic wall 0.332452 cpu 0.650121 maxrss 145552
+4 csr_raw_recycled wall 0.362086 cpu 0.666951 maxrss 144620
+4 csr_raw_recycled_bin8 wall 0.339108 cpu 0.6679 maxrss 144660
+6 fix_atomic wall 0.330409 cpu 0.641686 maxrss 145784
+6 csr_raw_recycled wall 0.367044 cpu 0.674719 maxrss 144988
+6 csr_raw_recycled_bin8 wall 0.368248 cpu 0.659917 maxrss 145024
+12 fix_atomic wall 0.361339 cpu 0.617807 maxrss 146720
+12 csr_raw_recycled wall 0.367998 cpu 0.643671 maxrss 145840
+12 csr_raw_recycled_bin8 wall 0.344034 cpu 0.634444 maxrss 145692

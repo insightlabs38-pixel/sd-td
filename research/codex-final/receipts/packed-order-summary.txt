@@ -1,0 +1,8 @@
+1 fix_atomic wall 0.478788 cpu 0.47701 maxrss 145164
+1 packed_order wall 0.474916 cpu 0.473922 maxrss 140724
+4 fix_atomic wall 0.33047 cpu 0.648738 maxrss 145556
+4 packed_order wall 0.359727 cpu 0.653971 maxrss 141184
+6 fix_atomic wall 0.341301 cpu 0.647756 maxrss 146040
+6 packed_order wall 0.363226 cpu 0.648609 maxrss 141484
+12 fix_atomic wall 0.362357 cpu 0.61929 maxrss 146648
+12 packed_order wall 0.338354 cpu 0.629339 maxrss 145632

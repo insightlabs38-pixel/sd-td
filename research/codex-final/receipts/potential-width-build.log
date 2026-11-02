@@ -1,0 +1,8 @@
+lto-wrapper: warning: using serial compilation of 2 LTRANS jobs
+lto-wrapper: note: see the '-flto' option documentation for more information
+variants/potential_width0.cpp:733:18: error: redefinition of 'template<unsigned int P> std::vector<unsigned int> metric(const Graph&, const Graph&, unsigned int)'
+  733 | std::vector<u32> metric(const Graph &f, const Graph &r, unsigned workers) {
+      |                  ^~~~~~
+variants/potential_width0.cpp:608:18: note: 'template<unsigned int P> std::vector<unsigned int> metric(const Graph&, const Graph&, unsigned int)' previously declared here
+  608 | std::vector<u32> metric(const Graph &f, const Graph &r, unsigned workers) {
+      |                  ^~~~~~

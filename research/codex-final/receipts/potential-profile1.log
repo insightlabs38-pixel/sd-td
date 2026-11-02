@@ -1,0 +1,5 @@
+start wall=0.001 cpu=1.280
+raw wall=134.126 cpu=133.982
+contract wall=183.645 cpu=183.623
+index wall=134.663 cpu=134.633
+queries wall=635.184 cpu=634.946

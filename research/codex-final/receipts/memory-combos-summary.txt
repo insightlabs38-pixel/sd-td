@@ -1,0 +1,16 @@
+1 fix_atomic wall 0.477427 cpu 0.476632 maxrss 145148
+1 stream_parser64 wall 0.470469 cpu 0.469306 maxrss 145208
+1 packed_stream wall 0.468439 cpu 0.467986 maxrss 140392
+1 packed_stream_stash wall 0.484709 cpu 0.484227 maxrss 140396
+4 fix_atomic wall 0.327801 cpu 0.65282 maxrss 145680
+4 stream_parser64 wall 0.323026 cpu 0.632842 maxrss 145616
+4 packed_stream wall 0.356753 cpu 0.645824 maxrss 140428
+4 packed_stream_stash wall 0.333966 cpu 0.66225 maxrss 140360
+6 fix_atomic wall 0.354579 cpu 0.631734 maxrss 145876
+6 stream_parser64 wall 0.327069 cpu 0.629438 maxrss 145952
+6 packed_stream wall 0.331517 cpu 0.640043 maxrss 140468
+6 packed_stream_stash wall 0.36697 cpu 0.660214 maxrss 140564
+12 fix_atomic wall 0.341226 cpu 0.642994 maxrss 146788
+12 stream_parser64 wall 0.338573 cpu 0.6266 maxrss 146612
+12 packed_stream wall 0.3664 cpu 0.634696 maxrss 145100
+12 packed_stream_stash wall 0.373818 cpu 0.649082 maxrss 142696

@@ -1,0 +1,16 @@
+1 fix_atomic wall 0.482736 cpu 0.482323 maxrss 145160
+1 pure_sse wall 0.483524 cpu 0.482021 maxrss 145216
+1 pthread_pool wall 0.480926 cpu 0.479972 maxrss 145168
+1 openmp_pool wall 0.478563 cpu 0.478176 maxrss 145400
+4 fix_atomic wall 0.331624 cpu 0.654032 maxrss 145504
+4 pure_sse wall 0.325775 cpu 0.636912 maxrss 145512
+4 pthread_pool wall 0.33079 cpu 0.677903 maxrss 145560
+4 openmp_pool wall 0.350303 cpu 0.679064 maxrss 145812
+6 fix_atomic wall 0.338956 cpu 0.646325 maxrss 145856
+6 pure_sse wall 0.358368 cpu 0.642168 maxrss 145916
+6 pthread_pool wall 0.333987 cpu 0.68368 maxrss 145940
+6 openmp_pool wall 0.330954 cpu 0.685459 maxrss 146164
+12 fix_atomic wall 0.368753 cpu 0.635293 maxrss 146716
+12 pure_sse wall 0.364636 cpu 0.631829 maxrss 146716
+12 pthread_pool wall 0.342222 cpu 0.697676 maxrss 146652
+12 openmp_pool wall 0.361053 cpu 0.698285 maxrss 147028

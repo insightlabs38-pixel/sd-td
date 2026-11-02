@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.478603 cpu 0.478244 maxrss 145100
+1 step_two wall 0.477487 cpu 0.476977 maxrss 145180
+1 step_two_sse wall 0.470915 cpu 0.469578 maxrss 145136
+4 fix_atomic wall 0.355871 cpu 0.639602 maxrss 145452
+4 step_two wall 0.326651 cpu 0.640161 maxrss 145544
+4 step_two_sse wall 0.325299 cpu 0.639134 maxrss 145628
+6 fix_atomic wall 0.358284 cpu 0.64221 maxrss 145928
+6 step_two wall 0.335932 cpu 0.640776 maxrss 145880
+6 step_two_sse wall 0.330821 cpu 0.631381 maxrss 145840
+12 fix_atomic wall 0.363522 cpu 0.631191 maxrss 146700
+12 step_two wall 0.365252 cpu 0.630835 maxrss 146804
+12 step_two_sse wall 0.36311 cpu 0.620203 maxrss 146748

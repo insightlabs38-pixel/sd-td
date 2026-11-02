@@ -1,0 +1,12 @@
+{
+  "fix_atomic": 647,
+  "pure_sse": 641,
+  "pure_sse_byte": 664,
+  "pure_sse_byte_cap6": 664,
+  "pure_sse_byte_cap8": 664,
+  "byte_degrees": 664,
+  "byte_stream": 674,
+  "byte_stream_stash": 686,
+  "pure_frontier": 639,
+  "step_two_sse": 649
+}

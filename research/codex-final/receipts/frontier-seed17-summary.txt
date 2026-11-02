@@ -1,0 +1,9 @@
+1 fix_atomic wall 0.482755 cpu 0.481812 maxrss 145160
+1 pure_sse wall 0.474109 cpu 0.473791 maxrss 145212
+1 pure_sse_byte wall 0.473522 cpu 0.472878 maxrss 141544
+6 fix_atomic wall 0.358826 cpu 0.644252 maxrss 145704
+6 pure_sse wall 0.330461 cpu 0.634414 maxrss 145888
+6 pure_sse_byte wall 0.328263 cpu 0.632684 maxrss 141628
+12 fix_atomic wall 0.339416 cpu 0.637306 maxrss 146444
+12 pure_sse wall 0.336061 cpu 0.626753 maxrss 146476
+12 pure_sse_byte wall 0.364202 cpu 0.627333 maxrss 144692

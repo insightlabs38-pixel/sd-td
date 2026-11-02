@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.479617 cpu 0.47893 maxrss 145160
+1 decimal_four wall 0.481184 cpu 0.480873 maxrss 145156
+1 decimal_four64 wall 0.485723 cpu 0.485061 maxrss 145156
+4 fix_atomic wall 0.359587 cpu 0.652054 maxrss 145560
+4 decimal_four wall 0.329949 cpu 0.64594 maxrss 145556
+4 decimal_four64 wall 0.330477 cpu 0.651806 maxrss 145492
+6 fix_atomic wall 0.33169 cpu 0.638208 maxrss 145828
+6 decimal_four wall 0.338011 cpu 0.641011 maxrss 145868
+6 decimal_four64 wall 0.330717 cpu 0.639608 maxrss 145956
+12 fix_atomic wall 0.367496 cpu 0.626522 maxrss 146676
+12 decimal_four wall 0.337648 cpu 0.634069 maxrss 146672
+12 decimal_four64 wall 0.369544 cpu 0.633835 maxrss 146696

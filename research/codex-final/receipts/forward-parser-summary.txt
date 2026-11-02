@@ -1,0 +1,8 @@
+1 fix_atomic wall 0.483595 cpu 0.482918 maxrss 145164
+1 forward_parser wall 0.507204 cpu 0.50603 maxrss 145096
+4 fix_atomic wall 0.35575 cpu 0.658948 maxrss 145640
+4 forward_parser wall 0.338403 cpu 0.65423 maxrss 145464
+6 fix_atomic wall 0.361661 cpu 0.643306 maxrss 145872
+6 forward_parser wall 0.328102 cpu 0.636613 maxrss 145848
+12 fix_atomic wall 0.338248 cpu 0.628502 maxrss 146728
+12 forward_parser wall 0.365995 cpu 0.633318 maxrss 146724

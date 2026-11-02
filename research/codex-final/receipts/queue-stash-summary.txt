@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.484312 cpu 0.483956 maxrss 145160
+1 queue_stash wall 0.491181 cpu 0.490819 maxrss 145136
+1 queue_free wall 0.496625 cpu 0.49617 maxrss 145200
+4 fix_atomic wall 0.331782 cpu 0.648437 maxrss 145636
+4 queue_stash wall 0.361612 cpu 0.663961 maxrss 145512
+4 queue_free wall 0.344026 cpu 0.675487 maxrss 145688
+6 fix_atomic wall 0.336654 cpu 0.653243 maxrss 145964
+6 queue_stash wall 0.362988 cpu 0.663047 maxrss 145876
+6 queue_free wall 0.369335 cpu 0.667149 maxrss 146060
+12 fix_atomic wall 0.371651 cpu 0.636527 maxrss 146660
+12 queue_stash wall 0.370931 cpu 0.640445 maxrss 146640
+12 queue_free wall 0.372861 cpu 0.649873 maxrss 146720

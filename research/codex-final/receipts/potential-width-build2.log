@@ -1,0 +1,97 @@
+lto-wrapper: warning: using serial compilation of 2 LTRANS jobs
+lto-wrapper: note: see the '-flto' option documentation for more information
+lto-wrapper: warning: using serial compilation of 2 LTRANS jobs
+lto-wrapper: note: see the '-flto' option documentation for more information
+variants/potential_width2.cpp:707:3: error: 'QueryQueue' does not name a type [-Wtemplate-body]
+  707 |   QueryQueue queue;
+      |   ^~~~~~~~~~
+variants/potential_width2.cpp: In constructor 'Side<L>::Side(const Graph&, const std::vector<unsigned int>&)':
+variants/potential_width2.cpp:709:40: error: class 'Side<L>' does not have any field named 'queue' [-Wtemplate-body]
+  709 |       : g(g), potential(p), dist(g.n), queue(g.n) {}
+      |                                        ^~~~~
+variants/potential_width2.cpp: In member function 'void Side<L>::start(u32)':
+variants/potential_width2.cpp:711:19: error: 'queue' was not declared in this scope; did you mean 'std::queue'? [-Wtemplate-body]
+  711 |     dist.reset(), queue.clear();
+      |                   ^~~~~
+      |                   std::queue
+In file included from /usr/local/include/c++/15.3.0/queue:72,
+                 from variants/potential_width2.cpp:10:
+/usr/local/include/c++/15.3.0/bits/stl_queue.h:104:11: note: 'std::queue' declared here
+  104 |     class queue
+      |           ^~~~~
+variants/potential_width2.cpp: In member function 'size_t Side<L>::drain_bits(const Side<L>&, u64&)':
+variants/potential_width2.cpp:718:5: error: 'QueryQueue' has not been declared [-Wtemplate-body]
+  718 |     QueryQueue::Bucket &bk = queue.bucket[queue.cur % QueryQueue::B];
+      |     ^~~~~~~~~~
+variants/potential_width2.cpp:718:25: error: 'bk' was not declared in this scope; did you mean 'brk'? [-Wtemplate-body]
+  718 |     QueryQueue::Bucket &bk = queue.bucket[queue.cur % QueryQueue::B];
+      |                         ^~
+      |                         brk
+variants/potential_width2.cpp:718:30: error: 'queue' was not declared in this scope; did you mean 'std::queue'? [-Wtemplate-body]
+  718 |     QueryQueue::Bucket &bk = queue.bucket[queue.cur % QueryQueue::B];
+      |                              ^~~~~
+      |                              std::queue
+/usr/local/include/c++/15.3.0/bits/stl_queue.h:104:11: note: 'std::queue' declared here
+  104 |     class queue
+      |           ^~~~~
+variants/potential_width2.cpp:718:55: error: 'QueryQueue' has not been declared [-Wtemplate-body]
+  718 |     QueryQueue::Bucket &bk = queue.bucket[queue.cur % QueryQueue::B];
+      |                                                       ^~~~~~~~~~
+variants/potential_width2.cpp:721:29: error: 'end' was not declared in this scope; did you mean 'std::end'? [-Wtemplate-body]
+  721 |     for (u32 k = first; k < end; ++k) {
+      |                             ^~~
+      |                             std::end
+In file included from /usr/local/include/c++/15.3.0/deque:70,
+                 from /usr/local/include/c++/15.3.0/queue:68:
+/usr/local/include/c++/15.3.0/bits/range_access.h:122:37: note: 'std::end' declared here
+  122 |   template<typename _Tp> const _Tp* end(const valarray<_Tp>&) noexcept;
+      |                                     ^~~
+variants/potential_width2.cpp:730:9: error: 'settled' was not declared in this scope [-Wtemplate-body]
+  730 |       ++settled;
+      |         ^~~~~~~
+variants/potential_width2.cpp:747:18: error: 'end' was not declared in this scope; did you mean 'std::end'? [-Wtemplate-body]
+  747 |     queue.read = end;
+      |                  ^~~
+      |                  std::end
+/usr/local/include/c++/15.3.0/bits/range_access.h:122:37: note: 'std::end' declared here
+  122 |   template<typename _Tp> const _Tp* end(const valarray<_Tp>&) noexcept;
+      |                                     ^~~
+variants/potential_width2.cpp:751:34: error: 'QueryQueue' has not been declared [-Wtemplate-body]
+  751 |       queue.occupied[queue.cur % QueryQueue::B / 64] &= ~(u64(1) << queue.cur % 64);
+      |                                  ^~~~~~~~~~
+variants/potential_width2.cpp:753:12: error: 'settled' was not declared in this scope [-Wtemplate-body]
+  753 |     return settled;
+      |            ^~~~~~~
+variants/potential_width2.cpp: In function 'int main()':
+variants/potential_width2.cpp:816:49: error: 'termistruct' was not declared in this scope
+  816 |   Graph *raw = read_graph(graph, graph + gsize, termistruct QueryQueue {
+      |                                                 ^~~~~~~~~~~
+variants/potential_width2.cpp:876:1: error: 'nal' was not declared in this scope
+  876 | nal, bypass, threads);
+      | ^~~
+variants/potential_width2.cpp: In instantiation of 'u64 Worker<L>::solve(u32, u32) [with L = short unsigned int; u64 = long unsigned int; u32 = unsigned int]':
+variants/potential_width2.cpp:898:27:   required from here
+  898 |       u64 d = narrow.solve(s, t);
+      |               ~~~~~~~~~~~~^~~~~~
+variants/potential_width2.cpp:778:19: error: 'struct Side<short unsigned int>' has no member named 'queue'
+  778 |       u64 f = fwd.queue.lower_bound(), known = fwd.dist.get(t);
+      |               ~~~~^~~~~
+variants/potential_width2.cpp:786:19: error: 'struct Side<short unsigned int>' has no member named 'queue'
+  786 |       u64 f = fwd.queue.lower_bound(), b = bwd.queue.lower_bound();
+      |               ~~~~^~~~~
+variants/potential_width2.cpp:786:48: error: 'struct Side<short unsigned int>' has no member named 'queue'
+  786 |       u64 f = fwd.queue.lower_bound(), b = bwd.queue.lower_bound();
+      |                                            ~~~~^~~~~
+variants/potential_width2.cpp: In instantiation of 'u64 Worker<L>::solve(u32, u32) [with L = long unsigned int; u64 = long unsigned int; u32 = unsigned int]':
+variants/potential_width2.cpp:902:24:   required from here
+  902 |         d = wide->solve(s, t);
+      |             ~~~~~~~~~~~^~~~~~
+variants/potential_width2.cpp:778:19: error: 'struct Side<long unsigned int>' has no member named 'queue'
+  778 |       u64 f = fwd.queue.lower_bound(), known = fwd.dist.get(t);
+      |               ~~~~^~~~~
+variants/potential_width2.cpp:786:19: error: 'struct Side<long unsigned int>' has no member named 'queue'
+  786 |       u64 f = fwd.queue.lower_bound(), b = bwd.queue.lower_bound();
+      |               ~~~~^~~~~
+variants/potential_width2.cpp:786:48: error: 'struct Side<long unsigned int>' has no member named 'queue'
+  786 |       u64 f = fwd.queue.lower_bound(), b = bwd.queue.lower_bound();
+      |                                            ~~~~^~~~~

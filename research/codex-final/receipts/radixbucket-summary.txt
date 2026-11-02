@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.484685 cpu 0.484367 maxrss 145100
+1 radixbucket32 wall 0.520675 cpu 0.52011 maxrss 145148
+1 radixbucket128 wall 0.517323 cpu 0.517 maxrss 145200
+1 radixbucket512 wall 0.504075 cpu 0.502972 maxrss 145200
+6 fix_atomic wall 0.336008 cpu 0.660617 maxrss 145864
+6 radixbucket32 wall 0.38182 cpu 0.702895 maxrss 145960
+6 radixbucket128 wall 0.378353 cpu 0.692025 maxrss 145924
+6 radixbucket512 wall 0.349483 cpu 0.675596 maxrss 145884
+12 fix_atomic wall 0.34089 cpu 0.634315 maxrss 146620
+12 radixbucket32 wall 0.385401 cpu 0.674933 maxrss 146836
+12 radixbucket128 wall 0.384361 cpu 0.678897 maxrss 146796
+12 radixbucket512 wall 0.37449 cpu 0.649672 maxrss 146792

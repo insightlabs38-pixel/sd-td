@@ -1,0 +1,12 @@
+1 fix_atomic wall 0.492473 cpu 0.491879 maxrss 145100
+1 potential_width0 wall 1.122569 cpu 1.122221 maxrss 145544
+1 potential_width2 wall 1.100809 cpu 1.10005 maxrss 145544
+1 potential_width4 wall 1.027529 cpu 1.027097 maxrss 145484
+6 fix_atomic wall 0.358784 cpu 0.65335 maxrss 145848
+6 potential_width0 wall 0.858116 cpu 1.590955 maxrss 161768
+6 potential_width2 wall 0.818034 cpu 1.548177 maxrss 165956
+6 potential_width4 wall 0.78931 cpu 1.457305 maxrss 164604
+12 fix_atomic wall 0.32945 cpu 0.611937 maxrss 146720
+12 potential_width0 wall 0.847635 cpu 1.612438 maxrss 176392
+12 potential_width2 wall 0.857166 cpu 1.560308 maxrss 182460
+12 potential_width4 wall 0.782331 cpu 1.44148 maxrss 180324

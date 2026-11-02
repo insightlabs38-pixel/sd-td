@@ -1,0 +1,16 @@
+1 fix_atomic wall 0.482125 cpu 0.48108 maxrss 145152
+1 pure_sse wall 0.472531 cpu 0.471316 maxrss 145216
+1 shared_label_pool wall 0.473642 cpu 0.473394 maxrss 145208
+1 recycled_label_pool wall 0.477664 cpu 0.477181 maxrss 145276
+4 fix_atomic wall 0.327195 cpu 0.649463 maxrss 145516
+4 pure_sse wall 0.325104 cpu 0.639611 maxrss 145664
+4 shared_label_pool wall 0.3299 cpu 0.642165 maxrss 145672
+4 recycled_label_pool wall 0.35351 cpu 0.642305 maxrss 145844
+6 fix_atomic wall 0.339546 cpu 0.641753 maxrss 145776
+6 pure_sse wall 0.333492 cpu 0.630547 maxrss 145880
+6 shared_label_pool wall 0.327802 cpu 0.629559 maxrss 145908
+6 recycled_label_pool wall 0.330772 cpu 0.63235 maxrss 146128
+12 fix_atomic wall 0.368533 cpu 0.631477 maxrss 146732
+12 pure_sse wall 0.364192 cpu 0.620193 maxrss 146756
+12 shared_label_pool wall 0.33531 cpu 0.625112 maxrss 146676
+12 recycled_label_pool wall 0.333671 cpu 0.615881 maxrss 148124

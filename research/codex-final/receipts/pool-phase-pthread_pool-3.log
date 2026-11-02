@@ -1,0 +1,17 @@
+start wall=0.000 cpu=1.257
+raw wall=98.339 cpu=201.759
+growth wall=105.349 cpu=217.240
+region 75615/255012
+region 117932/397352
+region 110830/373715
+region 94703/318857
+region 65604/220906
+region 160619/540967
+region 47176/159229
+region 74015/248379
+region 168491/566999
+region 92946/312982
+region 142291/479899
+region 48857/164893
+rename-reverse wall=33.096 cpu=84.241
+queries wall=143.171 cpu=234.586
